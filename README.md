@@ -1,5 +1,5 @@
 # Bot.wssp
-![Codacy grade](https://img.shields.io/codacy/grade/3a8ad92e804c437f83d7f858c2a26662?style=flat-square)
+![Codacy grade](https://img.shields.io/codacy/grade/3a8ad92e804c437f83d7f858c2a26662?style=flat-square) ![GitHub](https://img.shields.io/github/license/ywssp/bot.wssp?style=flat-square)
 
 This is an open-source discord bot that you can invite and even suggest commands to! Pretty neat huh?
 
