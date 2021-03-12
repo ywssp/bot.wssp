@@ -37,6 +37,6 @@
   },
   "license": "MPL-2.0",
   "devDependencies": {
-    "eslint": "^7.20.0"
+    "eslint": "^7.21.0"
   }
 }
