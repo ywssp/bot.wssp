@@ -1,5 +1,5 @@
 # Bot.wssp
-![Codacy grade](https://img.shields.io/codacy/grade/3a8ad92e804c437f83d7f858c2a26662?style=flat-square) ![GitHub](https://img.shields.io/github/license/ywssp/bot.wssp?style=flat-square) ![Depfu](https://img.shields.io/depfu/ywssp/bot.wssp?style=flat-square)
+![Codacy grade][codacy_grade] ![Depfu][dependencies] ![License][license]
 
 This is an open-source discord bot that you can invite and even suggest commands to! Pretty neat huh?
 
@@ -59,3 +59,7 @@ PREFIX='+|!|/'
 ## Credits
 
 Part of the code of the commands on [Commands/Music](./Commands/Music/) are from [galnir/Master-Bot](https://github.com/galnir/Master-Bot). The code is altered so that it uses [Akairo](https://discord-akairo.github.io/#/)
+
+[codacy_grade]: https://img.shields.io/codacy/grade/3a8ad92e804c437f83d7f858c2a26662/stable?style=flat-square
+[license]: https://img.shields.io/github/license/ywssp/bot.wssp?style=flat-square
+[dependencies]: https://img.shields.io/depfu/ywssp/bot.wssp?style=flat-square
