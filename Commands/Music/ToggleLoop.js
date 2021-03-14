@@ -17,7 +17,8 @@ class LoopCommand extends Command {
       type: /^(track)|(queue)|(off)$/,
       prompt: {
         start: (msg) =>
-          createEmbed(msg, 'query', {
+          createEmbed(msg, {
+            preset: 'query',
             title: 'Loop',
             description: `Enter the type of loop that you want\n\`track\`, \`queue\`, \`off\`\nCurrent: ${msg.guild.musicData.loop}`,
             authorBool: true,

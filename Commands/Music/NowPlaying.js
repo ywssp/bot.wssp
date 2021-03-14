@@ -28,7 +28,8 @@ class NowPlayingCommand extends Command {
         ? visualiseDuration(message, playing)
         : playing.duration;
 
-    return createEmbed(message, 'default', {
+    return createEmbed(message, {
+      preset: 'default',
       title: 'Now Playing',
       thumbnail: playing.thumbnail,
       fields: [

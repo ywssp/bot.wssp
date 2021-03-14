@@ -17,7 +17,8 @@ class RemoveCommand extends Command {
       type: 'integer',
       prompt: {
         start: (message) =>
-          createEmbed(message, 'query', {
+          createEmbed(message, {
+            preset: 'query',
             title: 'Remove track',
             description: 'Enter the number of the song you want to remove',
             authorBool: true,
@@ -39,7 +40,8 @@ class RemoveCommand extends Command {
       args.songNumber - 1,
       1
     )[0];
-    return createEmbed(message, 'error', {
+    return createEmbed(message, {
+      preset: 'error',
       title: 'Removed song:',
       descFalse: true,
       fields: [

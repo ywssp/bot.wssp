@@ -17,7 +17,8 @@ class VolumeCommand extends Command {
       type: Argument.range('integer', 0, 100, true),
       prompt: {
         start: (message) =>
-          createEmbed(message, 'query', {
+          createEmbed(message, {
+            preset: 'query',
             title: 'Volume',
             description: `Enter volume to set from 0-100\nCurrent volume: ${
               message.guild.musicData.volume * 50
@@ -25,7 +26,8 @@ class VolumeCommand extends Command {
             authorBool: true,
           }),
         retry: (message) =>
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             description: 'The number you entered is not within range!',
             authorBool: true,
           }),
@@ -49,7 +51,8 @@ class VolumeCommand extends Command {
     message.guild.musicData.volume = volume;
     message.guild.musicData.songDispatcher.setVolume(volume);
     const { musicData } = message.guild;
-    return createEmbed(message, 'success', {
+    return createEmbed(message, {
+      preset: 'success',
       title: 'Done!',
       description: 'Changed the volume!',
       fields: [

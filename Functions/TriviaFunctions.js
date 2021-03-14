@@ -66,7 +66,8 @@ module.exports = {
       }
     }
 
-    createEmbed(message, 'query', {
+    createEmbed(message, {
+      preset: 'query',
       title: `${b64toText(qObject.category)} | ${
         b64toText(qObject.difficulty).charAt(0).toUpperCase() +
         b64toText(qObject.difficulty).slice(1)
@@ -88,12 +89,14 @@ module.exports = {
     type,
     prompt: {
       start: (message) =>
-        createEmbed(message, 'query', {
+        createEmbed(message, {
+          preset: 'query',
           title,
           description,
         }),
       retry: (message) =>
-        createEmbed(message, 'error', {
+        createEmbed(message, {
+          preset: 'error',
           description: 'Your input is invalid!',
         }),
     },

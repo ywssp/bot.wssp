@@ -30,7 +30,8 @@ class QueueCommand extends Command {
     const { musicData } = message.guild;
 
     return splitDatabase.forEach((data) =>
-      createEmbed(message, 'default', {
+      createEmbed(message, {
+        preset: 'default',
         title: 'Queue',
         fields: data,
         footer: `Paused: ${

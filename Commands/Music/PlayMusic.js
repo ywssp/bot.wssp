@@ -22,7 +22,8 @@ class PlayCommand extends Command {
       match: 'content',
       prompt: {
         start: (msg) =>
-          createEmbed(msg, 'query', {
+          createEmbed(msg, {
+            preset: 'query',
             title: 'Search',
             description:
               'Enter a search term or a YouTube link. Use the `--current` or `-c` flag to add the current song',
@@ -37,15 +38,18 @@ class PlayCommand extends Command {
       video = message.guild.musicData.nowPlaying.id;
       // If the term is a playlist link, get all video ids of the playlist
     } else if ((/^.*(youtu.be\/|list=)([^#&?]*).*/).test(searchTerm)) {
-      const playlist = await youtube.getPlaylist(searchTerm).catch(() =>
-        createEmbed(message, 'error', {
+      const playlist = await youtube.getPlaylist(searchTerm).catch(() => {
+        createEmbed(message, {
+          preset: 'error',
           description: 'The playlist cannot be found!',
           send: 'channel',
-        })
-      );
+        });
+        return { error: true };
+      });
 
       video = await playlist.getVideos().catch(() => {
-        createEmbed(message, 'error', {
+        createEmbed(message, {
+          preset: 'error',
           descShort: 'getting one of the videos',
           send: 'channel',
         });
@@ -63,7 +67,8 @@ class PlayCommand extends Command {
       const videoFetched = await youtube
         .searchVideos(searchTerm, 1)
         .catch(() => {
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             descShort: 'searching for a video',
             send: 'channel',
           });
@@ -72,7 +77,8 @@ class PlayCommand extends Command {
 
       // If there are not enough videos found while searching
       if (videoFetched.length < 1) {
-        createEmbed(message, 'error', {
+        createEmbed(message, {
+          preset: 'error',
           description: 'No videos were found while searching',
           send: 'channel',
         });
@@ -102,7 +108,8 @@ class PlayCommand extends Command {
             .on('start', async () => {
               msg.guild.musicData.songDispatcher = dispatcher;
               dispatcher.setVolume(msg.guild.musicData.volume);
-              const songEmbed = await createEmbed(msg, 'default', {
+              const songEmbed = await createEmbed(msg, {
+                preset: 'default',
                 title: 'Now playing:',
                 fields: [
                   {
@@ -166,7 +173,8 @@ class PlayCommand extends Command {
               return msg.guild.me.voice.channel.leave();
             })
             .on('error', (e) => {
-              createEmbed(msg, 'error', {
+              createEmbed(msg, {
+                preset: 'error',
                 descShort: 'playing the song',
                 send: 'channel',
               });
@@ -201,7 +209,8 @@ class PlayCommand extends Command {
         video = await youtube.getVideoByID(args.video);
       } catch (e) {
         console.error(e);
-        return createEmbed(message, 'error', {
+        return createEmbed(message, {
+          preset: 'error',
           descShort: 'getting the video ID',
           authorBool: true,
           send: 'channel',
@@ -212,7 +221,8 @@ class PlayCommand extends Command {
         video.duration.hours !== 0 ||
         (video.duration.hours >= 1 && video.duration.minutes > 20)
       ) {
-        return createEmbed(message, 'error', {
+        return createEmbed(message, {
+          preset: 'error',
           description: 'I don\'t support videos longer than 1 hour!',
           authorBool: true,
           send: 'channel',
@@ -225,7 +235,8 @@ class PlayCommand extends Command {
         message.guild.musicData.isPlaying = true;
         playSong(message);
       } else if (message.guild.musicData.isPlaying) {
-        return createEmbed(message, 'success', {
+        return createEmbed(message, {
+          preset: 'success',
           title: 'New song added to queue',
           fields: [
             {
@@ -272,7 +283,8 @@ class PlayCommand extends Command {
         message.guild.musicData.isPlaying = true;
         playSong(message);
       } else {
-        return createEmbed(message, 'success', {
+        return createEmbed(message, {
+          preset: 'success',
           title: 'New playlist added to queue',
           fields: [
             {

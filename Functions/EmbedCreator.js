@@ -1,7 +1,7 @@
 'use strict';
 const Discord = require('discord.js');
 
-module.exports = function embedCreator(message, preset, settings) {
+module.exports = function embedCreator(message, settings) {
   const presets = {
     error: {
       color: '#FF7043',
@@ -22,7 +22,7 @@ module.exports = function embedCreator(message, preset, settings) {
 
   // Initialize the embed
   const createdEmbed = new Discord.MessageEmbed(
-    presets[preset] ? presets[preset] : null
+    presets[settings.preset] || null
   );
 
   // Check if the author field should be filled

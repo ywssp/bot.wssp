@@ -1,6 +1,6 @@
 'use strict';
 const { Listener } = require('discord-akairo');
-const activities = require('../Others/Activities.js');
+const activities = require('../Others/Activities.json');
 
 class ReadyListener extends Listener {
   constructor() {

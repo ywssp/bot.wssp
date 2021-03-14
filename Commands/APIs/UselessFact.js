@@ -16,7 +16,8 @@ class FactCommand extends Command {
       'https://uselessfacts.jsph.pl/random.json?language=en'
     ).then((resp) => resp.json());
 
-    createEmbed(message, 'default', {
+    createEmbed(message, {
+      preset: 'default',
       title: fact.text,
       description: `Source: [${fact.source}](${fact.source_url})\nLink: [uselessfacts.jsph.pl](${fact.permalink})`,
       authorBool: true,

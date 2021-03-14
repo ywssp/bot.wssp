@@ -26,6 +26,7 @@ module.exports = (
       songNumber !== false,
   };
   const embedData = {
+    preset: 'error',
     authorBool: true,
     send: 'channel',
   };
@@ -38,7 +39,7 @@ module.exports = (
   if (checks.queue) { embedData.description = 'There are no songs in the queue!'; }
   if (checks.songNumber) { embedData.description = 'That isn\'t a valid song number!'; }
   if (embedData.description) {
-    createEmbed(message, 'error', embedData);
+    createEmbed(message, embedData);
     return true;
   }
   return false;

@@ -16,8 +16,8 @@ class UrbanCommand extends Command {
           prompt: {
             start: (message) =>
               createEmbed(message, {
+                preset: 'query',
                 title: 'Search',
-                color: 'qYellow',
                 description: 'Enter a search term',
                 authorBool: true,
               }),
@@ -37,7 +37,8 @@ class UrbanCommand extends Command {
     ).then((response) => response.json());
 
     if (!list.length) {
-      return createEmbed(message, 'error', {
+      return createEmbed(message, {
+        preset: 'error',
         authorBool: true,
         description: `No results found for **${args.join(' ')}**.`,
         send: 'channel',
@@ -45,7 +46,8 @@ class UrbanCommand extends Command {
     }
 
     const [answer] = list;
-    return createEmbed(message, 'default', {
+    return createEmbed(message, {
+      preset: 'default',
       authorBool: true,
       title: answer.word,
       url: answer.permalink,

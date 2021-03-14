@@ -1,18 +1,5 @@
 'use strict';
 module.exports = {
-  unescapeHTML(str) {
-    return str.replace(
-      /&amp;|&lt;|&gt;|&#39;|&quot;/g,
-      (tag) =>
-        ({
-          '&amp;': '&',
-          '&lt;': '<',
-          '&gt;': '>',
-          '&#39;': '\'',
-          '&quot;': '"',
-        }[tag] || tag)
-    );
-  },
   createSongObj(video, voiceChannel, msg) {
     return {
       title: video.title,

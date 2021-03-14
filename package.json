@@ -33,7 +33,7 @@
     "node": "15.x"
   },
   "repository": {
-    "url": "https://github.com/ywssp/Bot.wssp"
+    "url": "https://github.com/ywssp/bot.wssp"
   },
   "license": "MPL-2.0",
   "devDependencies": {

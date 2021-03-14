@@ -57,17 +57,20 @@ class Client extends AkairoClient {
         retries: 2,
         modifyStart: (embed) => embed.description += 'Type `cancel` to cancel the command',
         timeout: (message) =>
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             description: 'The prompt time ran out',
             authorBool: true,
           }),
         ended: (message) =>
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             description: 'Too many retries, the command was cancelled',
             authorBool: true,
           }),
         cancel: (message) =>
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             description: 'The command was cancelled',
             authorBool: true,
           }),

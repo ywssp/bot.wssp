@@ -1,0 +1,14 @@
+[
+  {
+    "type": "WATCHING",
+    "list": ["you"]
+  },
+  {
+    "type": "PLAYING",
+    "list": ["Minecraft"]
+  },
+  {
+    "type": "LISTENING",
+    "list": ["music"]
+  }
+]

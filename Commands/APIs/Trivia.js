@@ -90,7 +90,8 @@ class TriviaCommand extends Command {
       }&encode=base64`
     ).then((response) => response.json());
     if (questionSet.response_code !== 0) {
-      return createEmbed(message, 'error', {
+      return createEmbed(message, {
+        preset: 'error',
         descShort: 'fetching the trivia questions',
         send: 'command',
       });
@@ -108,7 +109,8 @@ class TriviaCommand extends Command {
         })
         .then((collected) => {
           if (collected.first().content.toLowerCase()[0] === answer[0]) {
-            createEmbed(collected.first(), 'success', {
+            createEmbed(collected.first(), {
+              preset: 'success',
               title: 'Yay!',
               description: 'Your answer is correct!',
               authorBool: true,
@@ -120,7 +122,8 @@ class TriviaCommand extends Command {
               scores[collected.first().author]++;
             }
           } else {
-            createEmbed(collected.first(), 'error', {
+            createEmbed(collected.first(), {
+              preset: 'error',
               title: 'Wrong!',
               description: `The answer was ${answer[1]}`,
               authorBool: true,
@@ -132,7 +135,8 @@ class TriviaCommand extends Command {
           }
         })
         .catch(() => {
-          createEmbed(message, 'error', {
+          createEmbed(message, {
+            preset: 'error',
             title: 'Times up!',
             description: `The answer was ${answer[1]}`,
             send: 'channel',
@@ -144,7 +148,8 @@ class TriviaCommand extends Command {
       scoreString += `\n${user[0]}: ${user[1]}`;
     }
 
-    return createEmbed(message, 'default', {
+    return createEmbed(message, {
+      preset: 'default',
       title: 'Scores',
       description: scoreString,
       send: 'channel',
