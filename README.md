@@ -1,9 +1,7 @@
 # Bot.wssp
 ![Codacy grade][codacy_grade] ![Depfu][dependencies] ![License][license]
 
-This is an open-source discord bot that you can invite and even suggest commands to! Pretty neat huh?
-
-UPDATE: I'm currently at school, so i can't fix bugs all the time.
+This is an open-source Discord bot. 
 
 ## .env contents
 
