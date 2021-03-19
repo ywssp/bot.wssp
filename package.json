@@ -18,7 +18,7 @@
     "discord.js": "^12.5.0",
     "dotenv": "^8.2.0",
     "erlpack": "^0.1.3",
-    "ffmpeg-static": "^4.2.7",
+    "ffmpeg-static": "^4.2.8",
     "libsodium-wrappers": "^0.7.9",
     "lodash": "^4.17.21",
     "lyrics-finder": "^21.7.0",
