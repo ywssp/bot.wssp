@@ -12,7 +12,7 @@ class ReloadCommand extends Command {
         },
       ],
       ownerOnly: true,
-      category: 'owner-only',
+      category: 'Owner Only',
     });
   }
 

@@ -20,7 +20,7 @@ class RemoveCommand extends Command {
           createEmbed(message, {
             preset: 'query',
             title: 'Remove track',
-            description: 'Enter the number of the song you want to remove',
+            description: 'Enter the position of the song you want to remove',
             authorBool: true,
           }),
       },

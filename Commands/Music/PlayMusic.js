@@ -37,7 +37,7 @@ class PlayCommand extends Command {
     if ((/^(-c)|(--current)$/).test(searchTerm)) {
       video = message.guild.musicData.nowPlaying.id;
       // If the term is a playlist link, get all video ids of the playlist
-    } else if ((/^.*(youtu.be\/|list=)([^#&?]*).*/).test(searchTerm)) {
+    } else if ((/(https?:\/\/)?((www)\.|(music)\.)?youtu((\.be)|(be\.com))\/playlist\?list=PL[\w-]{32,}/).test(searchTerm)) {
       const playlist = await youtube.getPlaylist(searchTerm).catch(() => {
         createEmbed(message, {
           preset: 'error',
@@ -58,11 +58,10 @@ class PlayCommand extends Command {
 
       video.push(playlist);
       // If the term is a video link, get the video id
-    } else if ((/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/).test(searchTerm)) {
+    } else if ((/(https?:\/\/)?((www)\.|(music)\.)?youtu((\.be)|(be\.com))\/((watch\?v=)|(embed\/))?[\w-]{11,}/).test(searchTerm)) {
       video = searchTerm
-        .replace(/(>|<)/gi, '')
-        .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/)[2]
-        .split(/[^0-9a-z_-]/i)[0];
+        .split(/(v=|\.be\/|\/embed\/)/)[1]
+        .split('&')[0];
     } else {
       const videoFetched = await youtube
         .searchVideos(searchTerm, 1)
@@ -105,10 +104,10 @@ class PlayCommand extends Command {
                 quality: 'highestaudio',
               })
             )
-            .on('start', async () => {
+            .on('start', () => {
               msg.guild.musicData.songDispatcher = dispatcher;
               dispatcher.setVolume(msg.guild.musicData.volume);
-              const songEmbed = await createEmbed(msg, {
+              const songEmbed = createEmbed(msg, {
                 preset: 'default',
                 title: 'Now playing:',
                 fields: [
@@ -166,8 +165,9 @@ class PlayCommand extends Command {
               ) {
                 return playSong(msg);
               }
-              msg.guild.musicData.isPlaying = false;
+
               msg.guild.musicData.nowPlaying = null;
+              msg.guild.musicData.isPlaying = true;
               msg.guild.musicData.loop = false;
               msg.guild.musicData.songDispatcher = null;
               return msg.guild.me.voice.channel.leave();
@@ -196,7 +196,7 @@ class PlayCommand extends Command {
 
     if (
       musicCheck(message, {
-        sameVC: false,
+        sameVC: message.guild.musicData.isPlaying,
         playing: false,
       })
     ) { return false; }
@@ -234,7 +234,7 @@ class PlayCommand extends Command {
       if (!message.guild.musicData.isPlaying) {
         message.guild.musicData.isPlaying = true;
         playSong(message);
-      } else if (message.guild.musicData.isPlaying) {
+      } else {
         return createEmbed(message, {
           preset: 'success',
           title: 'New song added to queue',
@@ -272,13 +272,13 @@ class PlayCommand extends Command {
       );
       for (const vid of args.video) {
         if (vid.raw.status.privacyStatus !== 'private') {
-          const video = await vid.fetch();
+          const video = vid.fetch();
           message.guild.musicData.queue.push(
-            createSongObj(video, voiceChannel, message)
+            createSongObj(await video, voiceChannel, message)
           );
         }
       }
-      await processingStatus.delete();
+      processingStatus.delete();
       if (!message.guild.musicData.isPlaying) {
         message.guild.musicData.isPlaying = true;
         playSong(message);

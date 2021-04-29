@@ -45,8 +45,8 @@ class VolumeCommand extends Command {
     const volume = args.volume / 50;
     let volumeIndex = Math.ceil((volume * 5) - 1);
     volumeIndex = volumeIndex < 0 ? 0 : volumeIndex;
-    const volumeArray = ['│', '│', '│', '│', '│', '│', '│', '│', '│', '│'];
-    volumeArray[volumeIndex] = `┿ ${args.volume}`;
+    const volumeString = '▬▬▬▬▬▬▬▬▬▬'.split('');
+    volumeString[volumeIndex] = '○';
 
     message.guild.musicData.volume = volume;
     message.guild.musicData.songDispatcher.setVolume(volume);
@@ -58,7 +58,7 @@ class VolumeCommand extends Command {
       fields: [
         {
           name: 'Volume',
-          value: volumeArray.reverse().join('\n'),
+          value: volumeString.reverse().join('') + ` ${args.volume}`,
         },
       ],
       authorBool: true,
