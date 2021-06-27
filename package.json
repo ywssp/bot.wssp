@@ -26,7 +26,7 @@
     "simple-youtube-api": "^5.2.1",
     "unified": "^9.2.1",
     "utf-8-validate": "^5.0.5",
-    "ytdl-core": "^4.8.2",
+    "ytdl-core": "^4.8.3",
     "zlib-sync": "^0.1.7"
   },
   "engines": {
