@@ -24,7 +24,7 @@
     "lyrics-finder": "^21.7.0",
     "node-fetch": "^2.6.1",
     "simple-youtube-api": "^5.2.1",
-    "unified": "^9.2.1",
+    "unified": "^9.2.2",
     "utf-8-validate": "^5.0.5",
     "ytdl-core": "^4.8.3",
     "zlib-sync": "^0.1.7"
