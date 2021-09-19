@@ -2,6 +2,8 @@
 ![Codacy grade][codacy_grade] ![Depfu][dependencies] ![License][license]
 
 This is an open-source Discord bot. 
+UPDATE: Discord.js v13 just came out. Don't copy code from this repo if your bot isn't using discord.js v12.
+I am learning TypeScript so i can revise the code for v13.
 
 ## .env contents
 
