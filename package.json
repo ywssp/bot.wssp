@@ -19,7 +19,7 @@
     "dotenv": "^8.6.0",
     "erlpack": "^0.1.4",
     "ffmpeg-static": "^4.4.1",
-    "libsodium-wrappers": "^0.7.9",
+    "libsodium-wrappers": "^0.7.10",
     "lodash": "^4.17.21",
     "lyrics-finder": "^21.7.0",
     "node-fetch": "^3.2.3",
