@@ -8,16 +8,16 @@ module.exports = function embedCreator(message, settings) {
       title: 'Whooops!',
       description: !settings.descFalse
         ? `An error occured while ${
-          settings.descShort ? settings.descShort : 'executing the command'
-        }`
-        : '',
+            settings.descShort ? settings.descShort : 'executing the command'
+          }`
+        : ''
     },
     default: { color: '#03A9F4' },
     success: {
       color: '#8BC34A',
-      title: 'Success!',
+      title: 'Success!'
     },
-    query: { color: '#FFEE58' },
+    query: { color: '#FFEE58' }
   };
 
   // Initialize the embed
@@ -34,22 +34,34 @@ module.exports = function embedCreator(message, settings) {
   }
 
   // Check if a title was given
-  if (settings.title) { createdEmbed.setTitle(settings.title); }
+  if (settings.title) {
+    createdEmbed.setTitle(settings.title);
+  }
 
   // Check if there was a given url
-  if (settings.url) { createdEmbed.setURL(settings.url); }
+  if (settings.url) {
+    createdEmbed.setURL(settings.url);
+  }
 
   // Check if a thumbnail url was given
-  if (settings.thumbnail) { createdEmbed.setThumbnail(settings.thumbnail); }
+  if (settings.thumbnail) {
+    createdEmbed.setThumbnail(settings.thumbnail);
+  }
 
   // Check if a description was given
-  if (settings.description) { createdEmbed.setDescription(settings.description); }
+  if (settings.description) {
+    createdEmbed.setDescription(settings.description);
+  }
 
   // Check if there are given fields
-  if (settings.fields) { createdEmbed.addFields(settings.fields); }
+  if (settings.fields) {
+    createdEmbed.addFields(settings.fields);
+  }
 
   // Check if an image url was given
-  if (settings.image) { createdEmbed.setImage(settings.image); }
+  if (settings.image) {
+    createdEmbed.setImage(settings.image);
+  }
 
   // Check if the footer field should be filled
   if (settings.footer) {
@@ -61,11 +73,11 @@ module.exports = function embedCreator(message, settings) {
   }
 
   switch (settings.send) {
-  case 'author':
-    return message.author.send(createdEmbed);
-  case 'channel':
-    return message.channel.send(createdEmbed);
-  default:
-    return createdEmbed;
+    case 'author':
+      return message.author.send(createdEmbed);
+    case 'channel':
+      return message.channel.send(createdEmbed);
+    default:
+      return createdEmbed;
   }
 };

@@ -7,16 +7,18 @@ class ShuffleCommand extends Command {
     super('shuffle', {
       aliases: ['shuffle'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   exec(message) {
     if (
       musicCheck(message, {
-        queue: true,
+        queue: true
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
     const shuffle = ([...arr]) => {
       let m = arr.length;

@@ -5,14 +5,16 @@ const musicCheck = require('../../Functions/MusicCheck.js');
 class PauseCommand extends Command {
   constructor() {
     super('pause', {
-      aliases: ['pause', 'resume'],
+      aliases: ['pause', 'resume', 'unpause'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   exec(message) {
-    if (musicCheck(message)) { return false; }
+    if (musicCheck(message)) {
+      return false;
+    }
 
     if (message.guild.musicData.songDispatcher.paused) {
       message.guild.musicData.songDispatcher.resume();

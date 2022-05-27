@@ -1,7 +1,6 @@
 'use strict';
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
-const querystring = require('querystring');
 const createEmbed = require('../../Functions/EmbedCreator.js');
 
 class UrbanCommand extends Command {
@@ -19,21 +18,22 @@ class UrbanCommand extends Command {
                 preset: 'query',
                 title: 'Search',
                 description: 'Enter a search term',
-                authorBool: true,
-              }),
-          },
-        },
-      ],
+                authorBool: true
+              })
+          }
+        }
+      ]
     });
   }
 
   async exec(message, args) {
-    const trim = (str, max) => str.length > max ? `${str.slice(0, max - 3)}...` : str;
-
-    const query = querystring.stringify({ term: args.query });
+    const trim = (str, max) =>
+      str.length > max ? `${str.slice(0, max - 3)}...` : str;
 
     const { list } = await fetch(
-      `https://api.urbandictionary.com/v0/define?${query}`
+      `https://api.urbandictionary.com/v0/define?${new URLSearchParams({
+        term: args.query
+      }).toString()}`
     ).then((response) => response.json());
 
     if (!list.length) {
@@ -41,7 +41,7 @@ class UrbanCommand extends Command {
         preset: 'error',
         authorBool: true,
         description: `No results found for **${args.join(' ')}**.`,
-        send: 'channel',
+        send: 'channel'
       });
     }
 
@@ -56,11 +56,11 @@ class UrbanCommand extends Command {
         { name: 'Example', value: trim(answer.example, 1024) },
         {
           name: 'Rating',
-          value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.`,
-        },
+          value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.`
+        }
       ],
       footer: 'This command uses https://api.urbandictionary.com/v0/define?',
-      send: 'channel',
+      send: 'channel'
     });
   }
 }

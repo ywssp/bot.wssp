@@ -7,14 +7,14 @@ class NextCommand extends Command {
     super('next', {
       aliases: ['next', 'skip'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   *args() {
     const songNumber = yield {
       type: 'number',
-      default: 1,
+      default: 1
     };
 
     return { songNumber };
@@ -24,9 +24,11 @@ class NextCommand extends Command {
     if (
       musicCheck(message, {
         queue: args.songNumber > 1,
-        songNumber: args.songNumber,
+        songNumber: args.songNumber
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
     message.guild.musicData.queue.splice(0, args.songNumber - 1);
     message.guild.musicData.songDispatcher.resume();

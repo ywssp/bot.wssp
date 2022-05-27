@@ -7,12 +7,14 @@ class ClearCommand extends Command {
     super('clear', {
       aliases: ['clear'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   exec(message) {
-    if (musicCheck(message)) { return false; }
+    if (musicCheck(message)) {
+      return false;
+    }
 
     message.guild.musicData.queue.length = 0;
 

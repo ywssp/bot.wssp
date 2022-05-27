@@ -1,24 +1,24 @@
 'use strict';
 const { Command } = require('discord-akairo');
 const ytdl = require('ytdl-core');
-const Youtube = require('simple-youtube-api');
+const ytpl = require('ytpl');
+const ytsr = require('ytsr');
 const createEmbed = require('../../Functions/EmbedCreator.js');
 const musicCheck = require('../../Functions/MusicCheck.js');
-const { createSongObj, } = require('../../Functions/MusicFunctions.js');
-
-const youtube = new Youtube(process.env.YOUTUBE);
+const { createSongObj } = require('../../Functions/MusicFunctions.js');
+const playSong = require('../../Functions/PlaySong.js');
 
 class PlayCommand extends Command {
   constructor() {
     super('play', {
-      aliases: ['play', 'add'],
+      aliases: ['play', 'add', 'search'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   async *args(message) {
-    const searchTerm = yield {
+    const search = yield {
       match: 'content',
       prompt: {
         start: (msg) =>
@@ -26,170 +26,81 @@ class PlayCommand extends Command {
             preset: 'query',
             title: 'Search',
             description:
-              'Enter a search term or a YouTube link. Use the `--current` or `-c` flag to add the current song',
-          }),
-      },
+              'Enter a search term or a YouTube link. Use the `--current` or `-c` flag to add the current song'
+          })
+      }
     };
 
-    let video;
-
     // If the '--current' flag is present, get the video id of the song currently playing
-    if ((/^(-c)|(--current)$/).test(searchTerm)) {
-      video = message.guild.musicData.nowPlaying.id;
+    if (/^(-c)|(--current)$/.test(search)) {
+      return { video: message.guild.musicData.nowPlaying.id };
       // If the term is a playlist link, get all video ids of the playlist
-    } else if ((/^.*(youtu.be\/|list=)([^#&?]*).*/).test(searchTerm)) {
-      const playlist = await youtube.getPlaylist(searchTerm).catch(() => {
+    } else if (ytpl.validateID(search)) {
+      const playlist = await ytpl(search).catch(() => {
         createEmbed(message, {
           preset: 'error',
           description: 'The playlist cannot be found!',
-          send: 'channel',
+          send: 'channel'
         });
         return { error: true };
       });
 
-      video = await playlist.getVideos().catch(() => {
-        createEmbed(message, {
-          preset: 'error',
-          descShort: 'getting one of the videos',
-          send: 'channel',
-        });
-        return { error: true };
-      });
-
-      video.push(playlist);
+      return { playlist };
       // If the term is a video link, get the video id
-    } else if ((/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/).test(searchTerm)) {
-      video = searchTerm
-        .replace(/(>|<)/gi, '')
-        .split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/)[2]
-        .split(/[^0-9a-z_-]/i)[0];
-    } else {
-      const videoFetched = await youtube
-        .searchVideos(searchTerm, 1)
-        .catch(() => {
-          createEmbed(message, {
-            preset: 'error',
-            descShort: 'searching for a video',
-            send: 'channel',
-          });
-          return { error: true };
-        });
+    } else if (ytdl.validateURL(search)) {
+      let videoID;
 
-      // If there are not enough videos found while searching
-      if (videoFetched.length < 1) {
+      try {
+        videoID = ytdl.getURLVideoID(search);
+      } catch (e) {
         createEmbed(message, {
           preset: 'error',
-          description: 'No videos were found while searching',
-          send: 'channel',
+          description: 'An error occured while parsing the Video ID.',
+          send: 'channel'
         });
         return { error: true };
       }
-      video = videoFetched[0].id;
+
+      return { video: videoID };
     }
 
-    return { video };
+    const videosFetched = await ytsr(search, {
+      limit: 10
+    });
+
+    if (!videosFetched.items.some((item) => item.type === 'video')) {
+      if (!videosFetched.items.some((item) => item.type === 'playlist')) {
+        createEmbed(message, {
+          preset: 'error',
+          description: 'No videos/playlists were found while searching.',
+          send: 'channel'
+        });
+        return { error: true };
+      }
+
+      const playlist = await ytpl(
+        videosFetched.items.find((item) => item.type === 'playlist').id
+      ).catch(() => {
+        createEmbed(message, {
+          preset: 'error',
+          description: 'An error occurred while parsing the playlist.',
+          send: 'channel'
+        });
+        return { error: true };
+      });
+
+      return { playlist };
+    }
+
+    return {
+      video: videosFetched.items.find((item) => item.type === 'video').id
+    };
   }
 
   async exec(message, args) {
-    async function playSong(msg) {
-      const song =
-        message.guild.musicData.loop === 'track'
-          ? msg.guild.musicData.nowPlaying
-          : msg.guild.musicData.queue[0];
-      await song.voiceChannel
-        .join()
-        .then((connection) => {
-          const dispatcher = connection
-            .play(
-              ytdl(song.url, {
-                quality: 'highestaudio',
-              })
-            )
-            .on('start', async () => {
-              msg.guild.musicData.songDispatcher = dispatcher;
-              dispatcher.setVolume(msg.guild.musicData.volume);
-              const songEmbed = await createEmbed(msg, {
-                preset: 'default',
-                title: 'Now playing:',
-                fields: [
-                  {
-                    name: 'Title',
-                    value: song.title,
-                  },
-                  {
-                    name: 'Channel',
-                    value: song.channelName,
-                  },
-                  {
-                    name: 'Length',
-                    value: song.duration,
-                  },
-                  {
-                    name: 'URL',
-                    value: song.url,
-                  },
-                  {
-                    name: 'Requester',
-                    value: song.requester,
-                  },
-                ],
-                thumbnail: song.thumbnail,
-                footer: `Paused: ${
-                  msg.guild.musicData.songDispatcher.paused ? '✅' : '❌'
-                } |  Looped: ${
-                  msg.guild.musicData.loop ? msg.guild.musicData.loop : '❌'
-                } | Volume: ${msg.guild.musicData.volume * 50}`,
-              });
-              if (msg.guild.musicData.loop !== 'track') {
-                msg.guild.musicData.queue.shift();
-              }
-              if (msg.guild.musicData.queue[0]) {
-                songEmbed.addFields(
-                  { name: '\u200B', value: '\u200B' },
-                  {
-                    name: 'Next Song',
-                    value: msg.guild.musicData.queue[0].title,
-                  }
-                );
-              }
-              msg.guild.musicData.nowPlaying = song;
-              return msg.channel.send(songEmbed);
-            })
-            .on('finish', () => {
-              if (msg.guild.musicData.loop === 'queue') {
-                msg.guild.musicData.queue.push(msg.guild.musicData.nowPlaying);
-              }
-
-              if (
-                msg.guild.musicData.queue.length >= 1 ||
-                msg.guild.musicData.loop === 'track'
-              ) {
-                return playSong(msg);
-              }
-              msg.guild.musicData.isPlaying = false;
-              msg.guild.musicData.nowPlaying = null;
-              msg.guild.musicData.loop = false;
-              msg.guild.musicData.songDispatcher = null;
-              return msg.guild.me.voice.channel.leave();
-            })
-            .on('error', (e) => {
-              createEmbed(msg, {
-                preset: 'error',
-                descShort: 'playing the song',
-                send: 'channel',
-              });
-              console.error(e);
-              msg.guild.musicData.queue.length = 0;
-              msg.guild.musicData.isPlaying = false;
-              msg.guild.musicData.nowPlaying = null;
-              msg.guild.musicData.songDispatcher = null;
-              return msg.guild.me.voice.channel.leave();
-            });
-        })
-        .catch((e) => {
-          console.error(e);
-          return msg.guild.me.voice.channel.leave();
-        });
+    // Exit immediately if an error occurred during the search
+    if (args.error) {
+      return false;
     }
 
     const voiceChannel = message.member.voice.channel;
@@ -197,85 +108,78 @@ class PlayCommand extends Command {
     if (
       musicCheck(message, {
         sameVC: false,
-        playing: false,
+        playing: false
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
-    if (args.error) { return false; }
-
-    if (typeof args.video === 'string') {
+    if (args.video !== undefined) {
       let video;
       try {
-        video = await youtube.getVideoByID(args.video);
+        video = await ytdl.getBasicInfo(args.video);
+        video = video.videoDetails;
       } catch (e) {
         console.error(e);
         return createEmbed(message, {
           preset: 'error',
-          descShort: 'getting the video ID',
+          descShort: 'getting the video info.',
           authorBool: true,
-          send: 'channel',
-        });
-      }
-
-      if (
-        video.duration.hours !== 0 ||
-        (video.duration.hours >= 1 && video.duration.minutes > 20)
-      ) {
-        return createEmbed(message, {
-          preset: 'error',
-          description: 'I don\'t support videos longer than 1 hour!',
-          authorBool: true,
-          send: 'channel',
+          send: 'channel'
         });
       }
 
       const songObj = createSongObj(video, voiceChannel, message);
+
       message.guild.musicData.queue.push(songObj);
+
       if (!message.guild.musicData.isPlaying) {
         message.guild.musicData.isPlaying = true;
         playSong(message);
-      } else if (message.guild.musicData.isPlaying) {
-        return createEmbed(message, {
+      } else {
+        createEmbed(message, {
           preset: 'success',
           title: 'New song added to queue',
           fields: [
             {
               name: 'Title',
-              value: songObj.title,
+              value: songObj.title
             },
             {
               name: 'Channel',
-              value: songObj.channelName,
+              value: songObj.channelName
             },
             {
               name: 'Length',
-              value: songObj.duration,
+              value: songObj.durationString
             },
             {
               name: 'URL',
-              value: songObj.url,
+              value: songObj.url
             },
             {
               name: 'Requester',
-              value: songObj.requester,
-            },
+              value: songObj.requester
+            }
           ],
           thumbnail: songObj.thumbnail,
           authorBool: true,
-          send: 'channel',
+          send: 'channel'
         });
       }
     } else {
-      const playlistData = args.video.pop();
+      const playlistData = args.playlist;
       const processingStatus = await message.channel.send(
         'Processing playlist...'
       );
-      for (const vid of args.video) {
-        if (vid.raw.status.privacyStatus !== 'private') {
-          const video = await vid.fetch();
+      let videoCount = 0;
+      for (const vid of args.playlist.items) {
+        if (vid.isPlayable) {
+          const video = await ytdl.getBasicInfo(vid.id);
           message.guild.musicData.queue.push(
-            createSongObj(video, voiceChannel, message)
+            createSongObj(video.videoDetails, voiceChannel, message)
           );
+          videoCount++;
         }
       }
       await processingStatus.delete();
@@ -283,33 +187,34 @@ class PlayCommand extends Command {
         message.guild.musicData.isPlaying = true;
         playSong(message);
       } else {
-        return createEmbed(message, {
+        createEmbed(message, {
           preset: 'success',
           title: 'New playlist added to queue',
           fields: [
             {
               name: 'Title',
-              value: playlistData.title,
+              value: playlistData.title
             },
             {
               name: 'Channel',
-              value: playlistData.channelName,
+              value: playlistData.author.name
             },
             {
               name: 'No. of videos',
-              value: playlistData.length,
+              value: videoCount
             },
             {
               name: 'URL',
-              value: playlistData.url,
-            },
+              value: playlistData.url
+            }
           ],
-          thumbnail: playlistData.thumbnail,
+          thumbnail: playlistData.bestThumbnail.url,
           authorBool: true,
-          send: 'channel',
+          send: 'channel'
         });
       }
     }
+
     return 0;
   }
 }

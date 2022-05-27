@@ -8,7 +8,7 @@ class RemoveCommand extends Command {
     super('remove', {
       aliases: ['remove'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
@@ -21,9 +21,9 @@ class RemoveCommand extends Command {
             preset: 'query',
             title: 'Remove track',
             description: 'Enter the number of the song you want to remove',
-            authorBool: true,
-          }),
-      },
+            authorBool: true
+          })
+      }
     };
     return { songNumber };
   }
@@ -32,9 +32,11 @@ class RemoveCommand extends Command {
     if (
       musicCheck(message, {
         queue: true,
-        songNumber: args.songNumber,
+        songNumber: args.songNumber
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
     const removedSong = message.guild.musicData.queue.splice(
       args.songNumber - 1,
@@ -47,24 +49,24 @@ class RemoveCommand extends Command {
       fields: [
         {
           name: 'Title',
-          value: removedSong.title,
+          value: removedSong.title
         },
         {
           name: 'Length',
-          value: removedSong.duration,
+          value: removedSong.durationString
         },
         {
           name: 'URL',
-          value: removedSong.url,
+          value: removedSong.url
         },
         {
           name: 'Requester',
-          value: removedSong.requester,
-        },
+          value: removedSong.requester
+        }
       ],
       thumbnail: removedSong.thumbnail,
       authorBool: true,
-      send: 'channel',
+      send: 'channel'
     });
   }
 }

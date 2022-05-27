@@ -6,10 +6,10 @@ module.exports = (message, video) => {
   const passedTime = formatDuration({
     seconds: Math.floor((passedTimeMS / 1000) % 60),
     minutes: Math.floor((passedTimeMS / 60000) % 60),
-    hours: Math.floor((passedTimeMS / 3600000) % 24),
+    hours: Math.floor((passedTimeMS / 3600000) % 24)
   });
   const totalTimeMS = video.durationMS;
-  const totalTime = video.duration;
+  const totalTime = video.durationString;
 
   const playBackBarLocation = Math.round((passedTimeMS / totalTimeMS) * 10);
   let playBack = '';

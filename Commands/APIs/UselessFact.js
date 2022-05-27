@@ -7,7 +7,7 @@ class FactCommand extends Command {
   constructor() {
     super('fact', {
       aliases: ['fact'],
-      category: 'APIs',
+      category: 'APIs'
     });
   }
 
@@ -21,7 +21,7 @@ class FactCommand extends Command {
       title: fact.text,
       description: `Source: [${fact.source}](${fact.source_url})\nLink: [uselessfacts.jsph.pl](${fact.permalink})`,
       authorBool: true,
-      send: 'channel',
+      send: 'channel'
     });
   }
 }

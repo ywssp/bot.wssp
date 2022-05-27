@@ -1,12 +1,12 @@
 'use strict';
 const { Listener } = require('discord-akairo');
-const activities = require('../Others/Activities.json');
+const { interval, activities } = require('../Others/Activities.json');
 
 class ReadyListener extends Listener {
   constructor() {
     super('ready', {
       emitter: 'client',
-      event: 'ready',
+      event: 'ready'
     });
   }
 
@@ -26,7 +26,7 @@ class ReadyListener extends Listener {
         const i = Math.floor(Math.random() * m--);
         [activityArray[m], activityArray[i]] = [
           activityArray[i],
-          activityArray[m],
+          activityArray[m]
         ];
       }
 
@@ -37,7 +37,7 @@ class ReadyListener extends Listener {
     const firstAct = shuffledActs.pop();
     this.client.setTimeout(() => {
       this.client.user.setActivity(firstAct[1], {
-        type: firstAct[0],
+        type: firstAct[0]
       });
     }, 15000);
 
@@ -47,9 +47,9 @@ class ReadyListener extends Listener {
       }
       const activity = shuffledActs.pop();
       this.client.user.setActivity(activity[1], {
-        type: activity[0],
+        type: activity[0]
       });
-    }, 60000);
+    }, interval * 1000);
   }
 }
 

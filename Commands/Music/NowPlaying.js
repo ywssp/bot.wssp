@@ -9,7 +9,7 @@ class NowPlayingCommand extends Command {
     super('np', {
       aliases: ['np', 'playing', 'nowplaying'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
@@ -17,16 +17,18 @@ class NowPlayingCommand extends Command {
     if (
       musicCheck(message, {
         vc: false,
-        sameVC: false,
+        sameVC: false
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
     const playing = message.guild.musicData.nowPlaying;
     const { musicData } = message.guild;
     const duration =
-      playing.duration !== '🔴 Live Stream'
+      playing.durationString !== '🔴 Live Stream'
         ? visualiseDuration(message, playing)
-        : playing.duration;
+        : playing.durationString;
 
     return createEmbed(message, {
       preset: 'default',
@@ -35,31 +37,29 @@ class NowPlayingCommand extends Command {
       fields: [
         {
           name: 'Title',
-          value: playing.title,
+          value: playing.title
         },
         {
           name: 'Channel',
-          value: playing.channelName,
+          value: playing.channelName
         },
         {
           name: 'Length',
-          value: duration,
+          value: duration
         },
         {
           name: 'URL',
-          value: playing.url,
+          value: playing.url
         },
         {
           name: 'Requester',
-          value: playing.requester,
-        },
+          value: playing.requester
+        }
       ],
-      footer: `Paused: ${
-        musicData.songDispatcher.paused ? '✅' : '❌'
-      } |  Looped: ${musicData.loop ? musicData.loop : '❌'} | Volume: ${
-        musicData.volume * 50
-      }`,
-      send: 'channel',
+      footer: `${musicData.songDispatcher.paused ? '⏸️' : '▶️'} | ${
+        musicData.loop.emoji
+      } | 🔊 ${musicData.volume * 50}`,
+      send: 'channel'
     });
   }
 }

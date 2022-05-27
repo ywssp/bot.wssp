@@ -1,17 +1,9 @@
 'use strict';
 require('dotenv').config();
-const http = require('http');
-
-const server = http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end('Server Ok!');
-});
-server.listen(3000);
-
 const {
   AkairoClient,
   CommandHandler,
-  ListenerHandler,
+  ListenerHandler
 } = require('discord-akairo');
 const { Structures } = require('discord.js');
 const createEmbed = require('./Functions/EmbedCreator.js');
@@ -22,10 +14,14 @@ Structures.extend('Guild', (Guild) => {
       super(client, data);
       this.musicData = {
         isPlaying: false,
-        loop: 'off',
+        hideNextSongs: false,
+        loop: {
+          setting: 'off',
+          emoji: '➡️'
+        },
         queue: [],
         songDispatcher: null,
-        volume: 0.8,
+        volume: 0.8
       };
     }
   }
@@ -36,16 +32,16 @@ class Client extends AkairoClient {
   constructor() {
     super(
       {
-        ownerID: process.env.OWNER.split(/ +/),
+        ownerID: process.env.OWNER.split(/ +/)
       },
       {
         disableEveryone: true,
         presence: {
           activity: {
             name: 'Loading...',
-            type: 'WATCHING',
-          },
-        },
+            type: 'WATCHING'
+          }
+        }
       }
     );
 
@@ -55,30 +51,32 @@ class Client extends AkairoClient {
       prefix: process.env.PREFIX.split(/|/),
       argumentDefaults: {
         retries: 2,
-        modifyStart: (embed) => embed.description += 'Type `cancel` to cancel the command',
+        modifyStart: (embed) => {
+          embed.description += 'Type `cancel` to cancel the command';
+        },
         timeout: (message) =>
           createEmbed(message, {
             preset: 'error',
             description: 'The prompt time ran out',
-            authorBool: true,
+            authorBool: true
           }),
         ended: (message) =>
           createEmbed(message, {
             preset: 'error',
             description: 'Too many retries, the command was cancelled',
-            authorBool: true,
+            authorBool: true
           }),
         cancel: (message) =>
           createEmbed(message, {
             preset: 'error',
             description: 'The command was cancelled',
-            authorBool: true,
-          }),
-      },
+            authorBool: true
+          })
+      }
     });
 
     this.listenerHandler = new ListenerHandler(this, {
-      directory: './Listeners/',
+      directory: './Listeners/'
     });
 
     this.commandHandler.useListenerHandler(this.listenerHandler);

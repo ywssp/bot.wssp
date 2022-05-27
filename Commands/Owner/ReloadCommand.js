@@ -8,11 +8,11 @@ class ReloadCommand extends Command {
       args: [
         {
           id: 'commandID',
-          default: 'all',
-        },
+          default: 'all'
+        }
       ],
       ownerOnly: true,
-      category: 'owner-only',
+      category: 'Owner'
     });
   }
 

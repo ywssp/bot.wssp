@@ -1,0 +1,23 @@
+{
+  "interval": 60,
+  "activities": [
+    {
+      "type": "WATCHING",
+      "list": [
+        "movies"
+      ]
+    },
+    {
+      "type": "PLAYING",
+      "list": [
+        "games"
+      ]
+    },
+    {
+      "type": "LISTENING",
+      "list": [
+        "music"
+      ]
+    }
+  ]
+}

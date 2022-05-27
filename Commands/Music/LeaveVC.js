@@ -7,12 +7,14 @@ class LeaveCommand extends Command {
     super('leave', {
       aliases: ['leave', 'disconnect', 'dc'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   exec(message) {
-    if (musicCheck(message)) { return false; }
+    if (musicCheck(message)) {
+      return false;
+    }
 
     message.guild.musicData.queue.length = 0;
     message.guild.musicData.loop = 'off';

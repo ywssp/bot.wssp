@@ -8,7 +8,7 @@ class VolumeCommand extends Command {
     super('volume', {
       aliases: ['volume', 'vol'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
@@ -23,15 +23,15 @@ class VolumeCommand extends Command {
             description: `Enter volume to set from 0-100\nCurrent volume: ${
               message.guild.musicData.volume * 50
             }`,
-            authorBool: true,
+            authorBool: true
           }),
         retry: (message) =>
           createEmbed(message, {
             preset: 'error',
             description: 'The number you entered is not within range!',
-            authorBool: true,
-          }),
-      },
+            authorBool: true
+          })
+      }
     };
 
     return { volume };
@@ -43,10 +43,10 @@ class VolumeCommand extends Command {
     }
 
     const volume = args.volume / 50;
-    let volumeIndex = Math.ceil((volume * 5) - 1);
+    let volumeIndex = Math.ceil(volume * 5 - 1);
     volumeIndex = volumeIndex < 0 ? 0 : volumeIndex;
-    const volumeArray = ['│', '│', '│', '│', '│', '│', '│', '│', '│', '│'];
-    volumeArray[volumeIndex] = `┿ ${args.volume}`;
+    const volumeArray = ['─', '─', '─', '─', '─', '─', '─', '─', '─', '─'];
+    volumeArray[volumeIndex] = '╫';
 
     message.guild.musicData.volume = volume;
     message.guild.musicData.songDispatcher.setVolume(volume);
@@ -58,16 +58,14 @@ class VolumeCommand extends Command {
       fields: [
         {
           name: 'Volume',
-          value: volumeArray.reverse().join('\n'),
-        },
+          value: volumeArray.join('') + ' ' + args.volume
+        }
       ],
       authorBool: true,
-      footer: `Paused: ${
-        musicData.songDispatcher.paused ? '✅' : '❌'
-      } |  Looped: ${musicData.loop ? musicData.loop : '❌'} | Volume: ${
-        musicData.volume * 50
+      footer: `${musicData.songDispatcher.paused ? '⏸️' : '▶️'} | ${
+        musicData.loop.emoji
       }`,
-      send: 'channel',
+      send: 'channel'
     });
   }
 }

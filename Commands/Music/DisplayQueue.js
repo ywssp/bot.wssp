@@ -9,7 +9,7 @@ class QueueCommand extends Command {
     super('queue', {
       aliases: ['queue'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
@@ -18,13 +18,15 @@ class QueueCommand extends Command {
       musicCheck(message, {
         vc: false,
         sameVC: false,
-        queue: true,
+        queue: true
       })
-    ) { return false; }
+    ) {
+      return false;
+    }
 
     const songDataset = message.guild.musicData.queue.map((song, index) => ({
       name: `${index + 1}. ${song.title}`,
-      value: `Channel: ${song.channelName}\nLength: ${song.duration}\nRequested by: ${song.requester}`,
+      value: `Channel: ${song.channelName}\nLength: ${song.durationString}\nRequested by: ${song.requester}`
     }));
     const splitDatabase = _.chunk(songDataset, 10);
     const { musicData } = message.guild;
@@ -34,12 +36,10 @@ class QueueCommand extends Command {
         preset: 'default',
         title: 'Queue',
         fields: data,
-        footer: `Paused: ${
-          musicData.songDispatcher.paused ? '✅' : '❌'
-        } |  Looped: ${musicData.loop ? musicData.loop : '❌'} | Volume: ${
-          musicData.volume * 50
-        }`,
-        send: 'channel',
+        footer: `${musicData.songDispatcher.paused ? '⏸️' : '▶️'} | ${
+          musicData.loop.emoji
+        } | 🔊 ${message.guild.musicData.volume * 50}`,
+        send: 'channel'
       })
     );
   }

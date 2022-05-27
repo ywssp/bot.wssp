@@ -1,42 +1,46 @@
 {
-  "name": "bot.wssp",
-  "author": {
-    "name": "ywssp",
-    "email": "ywspcodes@gmail.com"
-  },
-  "version": "3.0.0",
-  "private": true,
-  "description": "A Discord bot using Discord.js and discord-akairo, nothing else.",
-  "main": "start.js",
-  "scripts": {
-    "start": "node start.js"
-  },
-  "dependencies": {
-    "@discordjs/opus": "^0.4.0",
-    "bufferutil": "^4.0.6",
-    "discord-akairo": "^8.1.0",
-    "discord.js": "^12.5.3",
-    "dotenv": "^8.6.0",
-    "erlpack": "^0.1.4",
-    "ffmpeg-static": "^4.4.1",
-    "libsodium-wrappers": "^0.7.10",
-    "lodash": "^4.17.21",
-    "lyrics-finder": "^21.7.0",
-    "node-fetch": "^3.2.3",
-    "simple-youtube-api": "^5.2.1",
-    "unified": "^9.2.2",
-    "utf-8-validate": "^5.0.9",
-    "ytdl-core": "^4.11.0",
-    "zlib-sync": "^0.1.7"
-  },
-  "engines": {
-    "node": "15.x"
-  },
-  "repository": {
-    "url": "https://github.com/ywssp/bot.wssp"
-  },
-  "license": "MPL-2.0",
-  "devDependencies": {
-    "eslint": "^7.32.0"
-  }
+    "name": "bot.wssp",
+    "author": {
+        "name": "ywssp",
+        "email": "ywspcodes@gmail.com"
+    },
+    "version": "3.0.0",
+    "private": true,
+    "description": "A Discord bot using Discord.js and discord-akairo, nothing else.",
+    "main": "start.js",
+    "scripts": {
+        "start": "node start.js"
+    },
+    "dependencies": {
+        "@discordjs/opus": "^0.4.0",
+        "bufferutil": "^4.0.3",
+        "discord-akairo": "^8.1.0",
+        "discord.js": "^12.5.3",
+        "dotenv": "^8.6.0",
+        "erlpack": "^0.1.3",
+        "ffmpeg-static": "^4.3.0",
+        "i18n-iso-countries": "^7.3.0",
+        "libsodium-wrappers": "^0.7.9",
+        "lodash": "^4.17.21",
+        "node-fetch": "^2.6.1",
+        "opusscript": "^0.0.8",
+        "utf-8-validate": "^5.0.5",
+        "ytdl-core": "^4.11.0",
+        "ytpl": "^2.2.3",
+        "ytsr": "^3.5.3",
+        "zlib-sync": "^0.1.7"
+    },
+    "engines": {
+        "node": "16.x.x"
+    },
+    "repository": {
+        "url": "https://github.com/ywssp/bot.wssp"
+    },
+    "license": "MPL-2.0",
+    "devDependencies": {
+        "eslint": "^7.27.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.6.2"
+    }
 }

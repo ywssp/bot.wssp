@@ -3,22 +3,32 @@ module.exports = {
   createSongObj(video, voiceChannel, msg) {
     return {
       title: video.title,
-      channelName: video.channel.title,
-      duration:
-        video.duration === '00:00'
+      channelName: video.author.name,
+      durationObj: module.exports.secondsToObj(+video.lengthSeconds),
+      durationString:
+        video.isLive && video.isLiveContent
           ? '🔴 Live Stream'
-          : module.exports.formatDuration(video.duration),
-      durationMS: video.durationSeconds * 1000,
-      thumbnail: video.thumbnails.high.url,
-      url: `https://www.youtube.com/watch?v=${video.raw.id}`,
-      id: video.raw.id,
+          : module.exports.formatDuration(
+              module.exports.secondsToObj(+video.lengthSeconds)
+            ),
+      durationMS: +video.lengthSeconds * 1000,
+      thumbnail: video.thumbnails[video.thumbnails.length - 1].url,
+      url: video.video_url,
+      id: video.videoID,
       requester: msg.author.tag,
-      voiceChannel,
+      voiceChannel
     };
   },
   formatDuration({ hours, minutes, seconds }) {
-    return `${hours ? `${hours}:` : ''}${minutes || '00'}:${
-      seconds < 10 ? `0${seconds}` : seconds || '00'
-    }`;
+    return `${hours ? `${hours}:` : ''}${minutes || '00'}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
   },
+  secondsToObj(lengthSeconds) {
+    return {
+      hours: Math.floor(lengthSeconds / 3600),
+      minutes: Math.floor((lengthSeconds % 3600) / 60),
+      seconds: lengthSeconds % 60
+    };
+  }
 };

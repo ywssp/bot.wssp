@@ -7,7 +7,7 @@ class CatCommand extends Command {
   constructor() {
     super('cat', {
       aliases: ['cat'],
-      category: 'APIs',
+      category: 'APIs'
     });
   }
 
@@ -23,7 +23,7 @@ class CatCommand extends Command {
       image: cat,
       footer: 'This command uses https://awl.random.cat/meow',
       authorBool: true,
-      send: 'channel',
+      send: 'channel'
     });
   }
 }

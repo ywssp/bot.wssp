@@ -8,33 +8,46 @@ class LoopCommand extends Command {
     super('loop', {
       aliases: ['loop', 'repeat'],
       category: 'Music',
-      channel: 'guild',
+      channel: 'guild'
     });
   }
 
   *args() {
     const loopType = yield {
-      type: /^(track)|(queue)|(off)$/,
+      type: /^(track)|(queue)|(off)$/i,
       prompt: {
         start: (msg) =>
           createEmbed(msg, {
             preset: 'query',
             title: 'Loop',
             description: `Enter the type of loop that you want\n\`track\`, \`queue\`, \`off\`\nCurrent: ${msg.guild.musicData.loop}`,
-            authorBool: true,
-          }),
-      },
+            authorBool: true
+          })
+      }
     };
 
     return { loopType };
   }
 
   exec(message, args) {
-    if (musicCheck(message)) { return false; }
+    if (musicCheck(message)) {
+      return false;
+    }
 
-    message.guild.musicData.loop = args.loopType.match[0];
+    message.guild.musicData.loop.setting = args.loopType.match[0].toLowerCase();
 
-    return message.react('🔂');
+    if (message.guild.musicData.loop === 'off') {
+      message.guild.musicData.loop = '➡️';
+      message.react('➡️');
+    } else if (message.guild.musicData.loop === 'track') {
+      message.guild.musicData.loop = '🔂';
+      message.react('🔂');
+    } else if (message.guild.musicData.loop === 'queue') {
+      message.guild.musicData.loop = '🔁';
+      message.react('🔁');
+    }
+
+    return true;
   }
 }
 

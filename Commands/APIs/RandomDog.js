@@ -7,7 +7,7 @@ class DogCommand extends Command {
   constructor() {
     super('dog', {
       aliases: ['dog'],
-      category: 'APIs',
+      category: 'APIs'
     });
   }
 
@@ -23,7 +23,7 @@ class DogCommand extends Command {
       image: dog,
       footer: 'This command uses https://dog.ceo/api/breeds/image/random',
       authorBool: true,
-      send: 'channel',
+      send: 'channel'
     });
   }
 }
