@@ -12,13 +12,11 @@ module.exports = (
   } = {}
 ) => {
   const checks = {
-    vc: vc && !message.member.voice.channel && vc,
+    vc: vc && !message.member.voice.channel,
     sameVC:
-      sameVC &&
-      message.member.voice.channel !== message.guild.me.voice.channel &&
-      sameVC,
-    playing: playing && !message.guild.musicData.songDispatcher && playing,
-    queue: queue && message.guild.musicData.queue.length < 1 && queue,
+      sameVC && message.member.voice.channel !== message.guild.me.voice.channel,
+    playing: playing && !message.guild.musicData.songDispatcher,
+    queue: queue && message.guild.musicData.queue.length < 1,
     songNumber:
       typeof songNumber === 'number' &&
       (songNumber < 1 ||
