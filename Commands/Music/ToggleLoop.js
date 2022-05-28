@@ -20,7 +20,7 @@ class LoopCommand extends Command {
           createEmbed(msg, {
             preset: 'query',
             title: 'Loop',
-            description: `Enter the type of loop that you want\n\`track\`, \`queue\`, \`off\`\nCurrent: ${msg.guild.musicData.loop}`,
+            description: `Enter the type of loop that you want\n\`track\`, \`queue\`, \`off\`\nCurrent: ${msg.guild.musicData.loop.setting}`,
             authorBool: true
           })
       }
@@ -36,13 +36,13 @@ class LoopCommand extends Command {
 
     message.guild.musicData.loop.setting = args.loopType.match[0].toLowerCase();
 
-    if (message.guild.musicData.loop === 'off') {
-      message.guild.musicData.loop = '➡️';
+    if (message.guild.musicData.loop.setting === 'off') {
+      message.guild.musicData.loop.setting = '➡️';
       message.react('➡️');
-    } else if (message.guild.musicData.loop === 'track') {
+    } else if (message.guild.musicData.loop.setting === 'track') {
       message.guild.musicData.loop = '🔂';
       message.react('🔂');
-    } else if (message.guild.musicData.loop === 'queue') {
+    } else if (message.guild.musicData.loop.setting === 'queue') {
       message.guild.musicData.loop = '🔁';
       message.react('🔁');
     }

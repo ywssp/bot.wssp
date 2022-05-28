@@ -17,7 +17,7 @@ class LeaveCommand extends Command {
     }
 
     message.guild.musicData.queue.length = 0;
-    message.guild.musicData.loop = 'off';
+    message.guild.musicData.loop.setting = 'off';
     message.guild.musicData.songDispatcher.end();
 
     return message.react('🛑');

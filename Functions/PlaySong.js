@@ -5,7 +5,7 @@ const ytdl = require('ytdl-core');
 
 async function playSong(msg) {
   const song =
-    msg.guild.musicData.loop === 'track'
+    msg.guild.musicData.loop.setting === 'track'
       ? msg.guild.musicData.nowPlaying
       : msg.guild.musicData.queue[0];
   await song.voiceChannel
@@ -53,7 +53,7 @@ async function playSong(msg) {
               msg.guild.musicData.volume * 50
             }`
           });
-          if (msg.guild.musicData.loop !== 'track') {
+          if (msg.guild.musicData.loop.setting !== 'track') {
             msg.guild.musicData.queue.shift();
           }
           if (msg.guild.musicData.queue[0]) {
@@ -71,20 +71,20 @@ async function playSong(msg) {
           }
         })
         .once('finish', () => {
-          if (msg.guild.musicData.loop === 'queue') {
+          if (msg.guild.musicData.loop.setting === 'queue') {
             msg.guild.musicData.queue.push(msg.guild.musicData.nowPlaying);
           }
 
           if (
             msg.guild.musicData.queue.length >= 1 ||
-            msg.guild.musicData.loop === 'track'
+            msg.guild.musicData.loop.setting === 'track'
           ) {
             return playSong(msg);
           }
           msg.guild.musicData.isPlaying = false;
           msg.guild.musicData.hideNextSongs = false;
           msg.guild.musicData.nowPlaying = null;
-          msg.guild.musicData.loop = false;
+          msg.guild.musicData.loop.setting = 'off';
           msg.guild.musicData.songDispatcher = null;
           return msg.guild.me.voice.channel.leave();
         })
