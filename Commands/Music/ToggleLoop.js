@@ -37,13 +37,13 @@ class LoopCommand extends Command {
     message.guild.musicData.loop.setting = args.loopType.match[0].toLowerCase();
 
     if (message.guild.musicData.loop.setting === 'off') {
-      message.guild.musicData.loop.setting = '➡️';
+      message.guild.musicData.loop.emoji = '➡️';
       message.react('➡️');
     } else if (message.guild.musicData.loop.setting === 'track') {
-      message.guild.musicData.loop = '🔂';
+      message.guild.musicData.loop.emoji = '🔂';
       message.react('🔂');
     } else if (message.guild.musicData.loop.setting === 'queue') {
-      message.guild.musicData.loop = '🔁';
+      message.guild.musicData.loop.emoji = '🔁';
       message.react('🔁');
     }
 
