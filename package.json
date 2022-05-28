@@ -20,7 +20,7 @@
         "erlpack": "^0.1.4",
         "ffmpeg-static": "^4.3.0",
         "i18n-iso-countries": "^7.3.0",
-        "libsodium-wrappers": "^0.7.9",
+        "libsodium-wrappers": "^0.7.10",
         "lodash": "^4.17.21",
         "node-fetch": "^3.2.4",
         "opusscript": "^0.0.8",
