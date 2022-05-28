@@ -206,7 +206,7 @@ class TetrioCommand extends Command {
       };
 
       if (basicData.verified) {
-        embedObject.title += ' <:verified:979305980900831332>';
+        embedObject.title += ' ✅';
       }
 
       if (userRecords.success) {
