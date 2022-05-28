@@ -22,7 +22,7 @@
         "i18n-iso-countries": "^7.3.0",
         "libsodium-wrappers": "^0.7.10",
         "lodash": "^4.17.21",
-        "node-fetch": "^3.2.4",
+        "node-fetch": "^2.6.7",
         "opusscript": "^0.0.8",
         "utf-8-validate": "^5.0.9",
         "ytdl-core": "^4.11.0",
