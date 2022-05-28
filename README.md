@@ -47,6 +47,6 @@ PREFIX='+|!|/'
 
 -   Other npm packages on [package.json](package.json)
 
-[codacy_grade]: https://img.shields.io/codacy/grade/3a8ad92e804c437f83d7f858c2a26662/stable?style=flat-square
+[codacy_grade]: https://img.shields.io/codacy/grade/52ab11c35a2e43a9a536568e7d562115?style=flat-square
 [license]: https://img.shields.io/github/license/ywssp/bot.wssp?style=flat-square
 [dependencies]: https://img.shields.io/depfu/ywssp/bot.wssp?style=flat-square
