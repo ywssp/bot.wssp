@@ -206,7 +206,6 @@ class TetrioCommand extends Command {
       };
 
       if (basicData.verified) {
-        console.log('verified');
         embedObject.title += ' <:verified:979305980900831332>';
       }
 

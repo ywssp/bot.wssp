@@ -19,7 +19,6 @@ async function playSong(msg) {
           })
         )
         .once('start', async () => {
-          console.log(song.seek);
           msg.guild.musicData.songDispatcher = dispatcher;
           dispatcher.setVolume(msg.guild.musicData.volume);
           const songEmbed = await createEmbed(msg, {
