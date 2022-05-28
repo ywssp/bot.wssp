@@ -24,7 +24,7 @@
         "lodash": "^4.17.21",
         "node-fetch": "^3.2.4",
         "opusscript": "^0.0.8",
-        "utf-8-validate": "^5.0.5",
+        "utf-8-validate": "^5.0.9",
         "ytdl-core": "^4.11.0",
         "ytpl": "^2.2.3",
         "ytsr": "^3.5.3",
