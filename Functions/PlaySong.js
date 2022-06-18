@@ -3,7 +3,30 @@
 const createEmbed = require('./EmbedCreator.js');
 const ytdl = require('ytdl-core');
 
+// eslint-disable-next-line consistent-return
 async function playSong(msg) {
+  if (msg.guild.me.voice.channel) {
+    const vcMembers = msg.guild.me.voice.channel.members;
+
+    if (vcMembers.filter((vcMember) => !vcMember.user.bot).size < 1) {
+      msg.guild.musicData.queue.length = 0;
+      msg.guild.musicData.isPlaying = false;
+      msg.guild.musicData.hideNextSongs = false;
+      msg.guild.musicData.nowPlaying = null;
+      msg.guild.musicData.loop.setting = 'off';
+      msg.guild.musicData.songDispatcher = null;
+      msg.guild.me.voice.channel.leave();
+
+      console.log('No users in voice chat. Leaving VC.');
+
+      return createEmbed(msg, {
+        preset: 'error',
+        description: 'No users are in the voice chat. Leaving VC.',
+        send: 'channel'
+      });
+    }
+  }
+
   const song =
     msg.guild.musicData.loop.setting === 'track'
       ? msg.guild.musicData.nowPlaying
@@ -14,7 +37,6 @@ async function playSong(msg) {
       const dispatcher = connection
         .play(
           ytdl(song.url, {
-            begin: song.seek ? song.seek : 0,
             quality: 'highestaudio'
           })
         )
@@ -99,6 +121,7 @@ async function playSong(msg) {
           msg.guild.musicData.isPlaying = false;
           msg.guild.musicData.hideNextSongs = false;
           msg.guild.musicData.nowPlaying = null;
+          msg.guild.musicData.loop.setting = 'off';
           msg.guild.musicData.songDispatcher = null;
           return msg.guild.me.voice.channel.leave();
         });
