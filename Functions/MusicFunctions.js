@@ -14,7 +14,7 @@ module.exports = {
       durationMS: +video.lengthSeconds * 1000,
       thumbnail: video.thumbnails[video.thumbnails.length - 1].url,
       url: video.video_url,
-      id: video.videoID,
+      id: video.videoId,
       requester: msg.author.tag,
       voiceChannel
     };
