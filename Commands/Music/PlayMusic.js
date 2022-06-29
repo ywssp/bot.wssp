@@ -33,6 +33,14 @@ class PlayCommand extends Command {
 
     // If the '--current' flag is present, get the video id of the song currently playing
     if (/^(-c)|(--current)$/.test(search)) {
+      if (typeof message.guild.musicData.nowPlaying === 'undefined') {
+        createEmbed(message, {
+          preset: 'error',
+          description: 'No song is playing right now!',
+          send: 'channel'
+        });
+        return { error: true };
+      }
       return { video: message.guild.musicData.nowPlaying.id };
       // If the term is a playlist link, get all video ids of the playlist
     } else if (ytpl.validateID(search)) {
