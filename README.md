@@ -1,4 +1,4 @@
-# Bot.wssp
+# bot.wssp
 ![Codacy grade][codacy_grade] ![Depfu][dependencies] ![License][license]
 
 This is an open-source Discord bot. 
