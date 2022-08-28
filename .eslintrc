@@ -1,0 +1,86 @@
+{
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "prettier/prettier": "error",
+    "capitalized-comments": "error",
+    "consistent-return": "error",
+    "curly": [
+      "error",
+      "all"
+    ],
+    "default-case": "error",
+    "default-case-last": "error",
+    "eqeqeq": "error",
+    "guard-for-in": "error",
+    "handle-callback-err": "off",
+    "max-nested-callbacks": [
+      "error",
+      {
+        "max": 4
+      }
+    ],
+    "max-statements-per-line": [
+      "error",
+      {
+        "max": 2
+      }
+    ],
+    "no-bitwise": "error",
+    "no-console": "off",
+    "no-else-return": "error",
+    "no-empty-function": "error",
+    "no-eq-null": "error",
+    "no-inline-comments": "error",
+    "no-lonely-if": "error",
+    "no-nested-ternary": "error",
+    "no-new": "error",
+    "no-new-func": "error",
+    "no-new-wrappers": "error",
+    "no-restricted-properties": "error",
+    "no-return-await": "error",
+    "no-self-assign": "error",
+    "no-self-compare": "error",
+    "no-shadow": [
+      "error",
+      {
+        "allow": [
+          "err",
+          "resolve",
+          "reject"
+        ]
+      }
+    ],
+    "no-trailing-spaces": [
+      "error"
+    ],
+    "no-unneeded-ternary": "error",
+    "no-unreachable-loop": "error",
+    "no-use-before-define": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "prefer-regex-literals": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "require-await": "error",
+    "spaced-comment": "error",
+    "strict": "error",
+    "yoda": "error"
+  }
+}

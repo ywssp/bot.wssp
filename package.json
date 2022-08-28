@@ -1,0 +1,43 @@
+{
+  "name": "bot.wssp-sapphire",
+  "version": "1.0.0",
+  "description": "",
+  "main": "out/main.js",
+  "scripts": {
+    "start": "node out/main.js",
+    "watch": "pm2 start out/main.js --name \"bot.wssp\" --watch && pm2 logs",
+    "stop": "pm2 stop bot.wssp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "bot.wssp"
+  },
+  "author": "ywssp",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/luxon": "^3.0.0",
+    "@types/node": "^18.0.5",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@discordjs/opus": "^0.8.0",
+    "@discordjs/voice": "^0.10.0",
+    "@sapphire/fetch": "^2.4.1",
+    "@sapphire/framework": "^3.0.0",
+    "discord.js": "^13.8.1",
+    "dotenv": "^16.0.1",
+    "ffmpeg-static": "^5.0.2",
+    "i18n-iso-countries": "^7.5.0",
+    "libsodium-wrappers": "^0.7.10",
+    "luxon": "^3.0.1",
+    "sodium": "^3.0.2",
+    "ytdl-core": "^4.10.0",
+    "ytsr": "^3.8.0"
+  }
+}

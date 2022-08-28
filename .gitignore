@@ -1,0 +1,6 @@
+node_modules
+test_assets
+src/commands/Tests
+.vscode
+.env
+out
