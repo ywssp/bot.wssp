@@ -38,7 +38,7 @@ PREFIX='+|!|/'
 
 ### Discord
 
--   [@sapphire/framework](https://discord-akairo.github.io/#/)
+-   [@sapphire/framework](https://www.sapphirejs.dev/)
 -   [Discord.js](https://discord.js.org/#/)
 
 ### Others
