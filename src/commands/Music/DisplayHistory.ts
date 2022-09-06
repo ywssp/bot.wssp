@@ -30,7 +30,7 @@ export class DisplayHistoryCommand extends Command {
     const history = guildMusicData?.getHistory();
 
     if (typeof history === 'undefined' || history.length === 0) {
-      interaction.reply('The queue is empty.');
+      interaction.reply('❓ | The video history is empty.');
       return;
     }
 

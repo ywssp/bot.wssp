@@ -72,7 +72,9 @@ export class SetLoopCommand extends Command {
         break;
     }
 
-    interaction.reply(`Loop mode set to ${mode}.`);
+    interaction.reply(
+      `${guildMusicData.loop.emoji} | Loop mode set to \`${mode}\`.`
+    );
     return;
   }
 }

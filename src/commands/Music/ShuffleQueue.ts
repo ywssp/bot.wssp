@@ -31,7 +31,10 @@ export class ShuffleQueueCommand extends Command {
       typeof guildMusicData === 'undefined' ||
       guildMusicData.getQueue().length === 0
     ) {
-      interaction.reply({ content: 'The queue is empty.', ephemeral: true });
+      interaction.reply({
+        content: '❓ | The queue is empty.',
+        ephemeral: true
+      });
       return;
     }
 
@@ -48,7 +51,7 @@ export class ShuffleQueueCommand extends Command {
 
     guildMusicData.videoList.push(...queue);
 
-    interaction.reply('🔀 Shuffled the queue.');
+    interaction.reply('🔀 | Shuffled the queue.');
     return;
   }
 }

@@ -72,7 +72,7 @@ export class RemoveVideoCommand extends Command {
       removalStart >= guildMusicData.videoList.length
     ) {
       interaction.reply({
-        content: 'The start index is out of bounds.',
+        content: '⛔ | The start index is out of bounds.',
         ephemeral: true
       });
       return;
@@ -80,7 +80,7 @@ export class RemoveVideoCommand extends Command {
 
     if (removalAmount < 1) {
       interaction.reply({
-        content: 'The amount of videos to remove must be at least 1.',
+        content: '⛔ | The amount of videos to remove must be at least 1.',
         ephemeral: true
       });
       return;
@@ -91,7 +91,7 @@ export class RemoveVideoCommand extends Command {
       removalEnd > guildMusicData.videoList.length
     ) {
       interaction.reply({
-        content: 'The end index is out of bounds.',
+        content: '⛔ | The end index is out of bounds.',
         ephemeral: true
       });
       return;

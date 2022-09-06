@@ -33,17 +33,17 @@ export class ResumePlaybackCommand extends Command {
       .subscription?.player;
 
     if (audioPlayer === undefined) {
-      interaction.reply('There is no video playing!');
+      interaction.reply('❓ | There is no video playing.');
       return;
     }
 
     if (audioPlayer.state.status === 'playing') {
-      interaction.reply('The video is already playing!');
+      interaction.reply('❓ | The video is already playing.');
       return;
     }
 
     audioPlayer.unpause();
-    interaction.reply('▶️');
+    interaction.reply('▶️ | Resumed the video.');
     return;
   }
 }

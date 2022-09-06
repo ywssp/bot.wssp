@@ -54,7 +54,7 @@ export class SkipVideoCommand extends Command {
 
     if (audioPlayer === undefined) {
       interaction.reply({
-        content: 'There is no video playing!',
+        content: '❓ | There is no video playing.',
         ephemeral: true
       });
       return;
@@ -67,7 +67,7 @@ export class SkipVideoCommand extends Command {
       skipNumber >=
         guildMusicData.videoList.length - guildMusicData.videoListIndex
     ) {
-      interaction.reply({ content: 'Invalid number.', ephemeral: true });
+      interaction.reply({ content: '⛔ | Invalid number.', ephemeral: true });
       return;
     }
 

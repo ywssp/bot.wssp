@@ -72,10 +72,12 @@ export class LeaveVCCommand extends Command {
       this.container.guildMusicDataMap.delete(interaction.guildId as string);
     }
 
+    const voiceChannelName = interaction.guild?.me?.voice.channel?.name;
+
     audioPlayer.removeAllListeners();
     audioPlayer.stop();
     voiceConnection.destroy();
-    interaction.reply('🛑');
+    interaction.reply(`🛑 | Left the voice channel \`${voiceChannelName}\``);
     return;
   }
 }

@@ -62,7 +62,7 @@ export class NowPlayingCommand extends Command {
         audioPlayer.state.status !== 'paused')
     ) {
       interaction.reply({
-        content: 'There is no video playing.',
+        content: '❓ | There is no video playing.',
         ephemeral: true
       });
       return;

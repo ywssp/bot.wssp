@@ -63,7 +63,7 @@ export class MusicAnnounceSettingsCommand extends Command {
 
     if (typeof guildMusicData === 'undefined') {
       interaction.reply({
-        content: 'There is no video playing.',
+        content: '❓ | There is no video playing.',
         ephemeral: true
       });
       return;
@@ -78,7 +78,7 @@ export class MusicAnnounceSettingsCommand extends Command {
       guildMusicData.textUpdateChannelId = channel.id;
 
       interaction.reply(
-        `The music announcements will now be sent to #${channel.name}.`
+        `✅ | Music announcements will now be sent to <#${channel.id}>.`
       );
     }
     if (interaction.options.getSubcommand() === 'style') {
@@ -87,7 +87,7 @@ export class MusicAnnounceSettingsCommand extends Command {
       ) as 'full' | 'minimal' | 'none';
 
       interaction.reply(
-        `Set the music announce style to \`${guildMusicData.musicAnnounceStyle}\`.`
+        `✅ | Set the music announce style to \`${guildMusicData.musicAnnounceStyle}\`.`
       );
     }
 

@@ -33,17 +33,17 @@ export class PausePlaybackCommand extends Command {
       .subscription?.player;
 
     if (audioPlayer === undefined) {
-      interaction.reply('There is no video playing!');
+      interaction.reply('❓ | There is no video playing.');
       return;
     }
 
     if (audioPlayer.state.status === 'paused') {
-      interaction.reply('The video is already paused!');
+      interaction.reply('❓ | The video is already paused.');
       return;
     }
 
     audioPlayer.pause();
-    interaction.reply('⏸️');
+    interaction.reply('⏸️ | Paused the video.');
     return;
   }
 }

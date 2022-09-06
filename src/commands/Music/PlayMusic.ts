@@ -62,7 +62,7 @@ export class PlayMusicCommand extends Command {
 
       if (!searchResults.items.some((item) => item.type === 'video')) {
         interaction.reply({
-          content: 'No videos found.',
+          content: '❓ | No videos found.',
           ephemeral: true
         });
 

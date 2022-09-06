@@ -48,7 +48,7 @@ export class ShuffleQueueCommand extends Command {
     if (interaction.options.getSubcommand() === 'queue') {
       if (guildMusicData.getQueue().length === 0) {
         interaction.reply({
-          content: 'The queue is empty.',
+          content: '❓ | The queue is empty.',
           ephemeral: true
         });
         return;
@@ -59,12 +59,12 @@ export class ShuffleQueueCommand extends Command {
         guildMusicData.videoList.length - guildMusicData.videoListIndex - 1
       );
 
-      interaction.reply('🗑 Cleared the queue.');
+      interaction.reply('🗑 | Cleared the queue.');
     }
     if (interaction.options.getSubcommand() === 'history') {
       if (guildMusicData.getHistory().length === 0) {
         interaction.reply({
-          content: 'The video history is empty.',
+          content: '❓ | The video history is empty.',
           ephemeral: true
         });
         return;
@@ -73,7 +73,7 @@ export class ShuffleQueueCommand extends Command {
       guildMusicData.videoList.splice(0, guildMusicData.videoListIndex);
       guildMusicData.videoListIndex = 0;
 
-      interaction.reply('🗑 Cleared the video history.');
+      interaction.reply('🗑 | Cleared the video history.');
     }
 
     return;

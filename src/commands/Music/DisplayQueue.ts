@@ -33,7 +33,7 @@ export class DisplayQueueCommand extends Command {
       typeof queue === 'undefined' ||
       (queue.length === 0 && guildMusicData?.loop.type !== 'track')
     ) {
-      interaction.reply('The queue is empty.');
+      interaction.reply('❓ | The queue is empty.');
       return;
     }
 

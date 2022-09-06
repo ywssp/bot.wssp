@@ -125,7 +125,7 @@ export class PlayMusicCommand extends Command {
     });
 
     if (selectionMessage === undefined) {
-      interaction.editReply('Failed to send selection message.');
+      interaction.editReply('🚫 | Failed to send selection message.');
       return;
     }
 
@@ -142,7 +142,7 @@ export class PlayMusicCommand extends Command {
       if (collected.customId === 'cancel') {
         selectionMessage.delete();
         interaction.editReply({
-          content: 'Selection cancelled.'
+          content: '🛑 | Selection cancelled.'
         });
         return;
       }
@@ -156,7 +156,7 @@ export class PlayMusicCommand extends Command {
         interaction.user
       );
     } catch (e) {
-      interaction.editReply('No video selected.');
+      interaction.editReply('🛑 | No video selected.');
       selectionMessage.delete();
       return;
     }
