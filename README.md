@@ -4,7 +4,8 @@ No badges yet ¯\\\_(ツ)_/¯
 This is an open-source Discord bot. 
 
 ## HUGE Note
-This branch is still in development. Most of the music commands are not yet implemented.
+This branch is now being finalized.
+Most of the planned music commands are implemented.
 
 Most of the commands here work with slash commands.
 
