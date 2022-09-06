@@ -12,6 +12,7 @@ client.login(process.env.TOKEN);
 declare module '@sapphire/framework' {
   interface Preconditions {
     InVoiceChannel: never;
+    IsPlaying: never;
     OwnerOnly: never;
   }
 }
