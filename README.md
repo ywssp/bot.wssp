@@ -8,7 +8,8 @@ A Discord bot that uses slash commands.
 - No API keys required (Except for the discord bot token)
 
 ## Usage
-- Clone the repository
+- Clone the repository, or download the zip file [here](https://github.com/ywssp/bot.wssp/archive/refs/heads/v13-sapphire.zip)
+- Create a Discord bot application [here](https://discord.com/developers/applications) (Instructions [here](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
 - Install the dependencies with `npm install`
 - Create a file called `.env`, and add [these values](#env-contents)
 - Compile the code with `npm run build`
@@ -18,7 +19,7 @@ A Discord bot that uses slash commands.
 
 ### TOKEN
 
-The token of the bot
+The token of the bot. Available in the Discord developer portal.
 
 ### CLIENT_ID
 
@@ -26,13 +27,13 @@ The client ID of the bot. Only required to delete the slash command registry
 
 ### OWNER
 
-The user id of the owner(s)
+The user id of the owner(s). Separate multiple owners with a comma.
+
+Get the user id by enabling developer mode in Discord, and right clicking on the user.
 
 ### PREFIX (?)
 
-The prefix that the bot uses. Multiple prefixes are separated using `|`.
-Might be removed since slash commands are better.
-If they get removed, a version for message commands will be created.
+The prefix that the bot uses. Only used by commands that can run without slash commands.
 
 Here is an example of a .env file:
 
