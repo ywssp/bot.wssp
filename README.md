@@ -1,5 +1,5 @@
 # bot.wssp
-No badges yet ¯\\\_(ツ)_/¯
+![Codacy grade][codacy_grade] ![License][license]
 
 This is an open-source Discord bot. 
 
@@ -45,3 +45,6 @@ PREFIX='+|!|/'
 ### Others
 
 -   Other npm packages on [package.json](package.json)
+
+[codacy_grade]: https://img.shields.io/codacy/grade/52ab11c35a2e43a9a536568e7d562115?style=flat-square
+[license]: https://img.shields.io/github/license/ywssp/bot.wssp?style=flat-square
