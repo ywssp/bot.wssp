@@ -1,38 +1,46 @@
 # bot.wssp
 ![Codacy grade][codacy_grade] ![License][license]
 
-This is an open-source Discord bot. 
+A Discord bot that uses slash commands.
 
-## HUGE Note
-This branch is now being finalized.
-Most of the planned music commands are implemented.
+- Written in TypeScript
+- Has music commands, with a song history
+- No API keys required (Except for the discord bot token)
 
-Most of the commands here work with slash commands.
-
-Also, the code is now written in TypeScript.
+## Usage
+- Clone the repository
+- Install the dependencies with `npm install`
+- Create a file called `.env`, and add [these values](#env-contents)
+- Compile the code with `npm run build`
+- Run the bot with `npm run start`
 
 ## .env contents
 
-### process.env.TOKEN
+### TOKEN
 
 The token of the bot
 
-### process.env.OWNER
+### CLIENT_ID
 
-The user id of the owner/s
+The client ID of the bot. Only required to delete the slash command registry
 
-### process.env.PREFIX (?)
+### OWNER
+
+The user id of the owner(s)
+
+### PREFIX (?)
 
 The prefix that the bot uses. Multiple prefixes are separated using `|`.
 Might be removed since slash commands are better.
 If they get removed, a version for message commands will be created.
 
-your `.env` file should look like this:
+Here is an example of a .env file:
 
-```shell
-TOKEN=NzIwNjA1ODE4MzgyMzE5Njk4.XuIadw.kjtUXvBOzzTxepM_R3y5eW7mBnc
-OWNER=689607114011705439
-PREFIX='+|!|/'
+```env
+TOKEN = NzIwNjA1ODE4MzgyMzE5Njk4.XuIadw.kjtUXvBOzzTxepM_R3y5eW7mBnc
+CLIENT_ID = 720605818382319698
+OWNER = 689607114011705439
+PREFIX = '+|!|/'
 ```
 
 ## NPM Packages
