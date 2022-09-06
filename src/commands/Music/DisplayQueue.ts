@@ -40,8 +40,9 @@ export class DisplayQueueCommand extends Command {
     const embed = new MessageEmbed().setColor('#88c0d0').setTitle('Queue');
 
     if (guildMusicData?.loop.type === 'track') {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const loopedVideo = guildMusicData!.videoList[guildMusicData!.videoListIndex];
+      const loopedVideo =
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        guildMusicData!.videoList[guildMusicData!.videoListIndex];
 
       embed.addField(
         `🔂 ${loopedVideo.title}`,
