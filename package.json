@@ -5,16 +5,14 @@
   "main": "out/main.js",
   "scripts": {
     "start": "node out/main.js",
-    "watch": "pm2 start out/main.js --name \"bot.wssp\" --watch && pm2 logs",
-    "stop": "pm2 stop bot.wssp",
     "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js"
   },
   "repository": {
     "type": "git",
-    "url": "bot.wssp"
+    "url": "https://github.com/ywssp/bot.wssp"
   },
   "author": "ywssp",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "devDependencies": {
     "@types/lodash": "^4.14.184",
     "@types/luxon": "^3.0.0",
