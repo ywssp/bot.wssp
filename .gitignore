@@ -4,3 +4,4 @@ src/commands/Tests
 .vscode
 .env
 out
+notes.txt
