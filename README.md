@@ -4,9 +4,7 @@
 This is an open-source Discord bot. 
 
 ## Note
-4.0 might be be the last major update that uses Discord.js v12.
-I will now try to use v13 for future versions.
-This branch will still be updated for bug fixes.
+This version is no longer supported, since it uses Discord.js v12. Please use the latest version [here](https://github.com/ywssp/bot.wssp).
 
 ## .env contents
 
