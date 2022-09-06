@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node out/main.js",
     "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js",
-    "compile": "tsc"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
