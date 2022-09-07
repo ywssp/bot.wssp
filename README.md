@@ -7,9 +7,13 @@ A Discord bot that uses slash commands.
 - Has music commands, with a song history
 - No API keys required (Except for the discord bot token)
 
+## Pre-requisites
+- Node.js 16.6.0 or higher, with Additional Tools for Node.js
+- A Discord bot account 
+- - Create a Discord bot application [here](https://discord.com/developers/applications) (Instructions [here](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
+
 ## Usage
 - Clone the repository, or download the zip file [here](https://github.com/ywssp/bot.wssp/archive/refs/heads/v13-sapphire.zip)
-- Create a Discord bot application [here](https://discord.com/developers/applications) (Instructions [here](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
 - Install the dependencies with `npm install`
 - Create a file called `.env`, and add [these values](#env-contents)
 - Compile the code with `npm run build`
