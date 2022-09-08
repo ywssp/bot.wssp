@@ -1,5 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { chunk } from 'lodash';
+import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 
 export class DisplayQueueCommand extends Command {
@@ -37,24 +39,7 @@ export class DisplayQueueCommand extends Command {
       return;
     }
 
-    const embed = new MessageEmbed().setColor('#88c0d0').setTitle('Queue');
-
-    if (guildMusicData?.loop.type === 'track') {
-      const loopedVideo =
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        guildMusicData!.videoList[guildMusicData!.videoListIndex];
-
-      embed.addField(
-        `🔂 ${loopedVideo.title}`,
-        `[Link](${loopedVideo.url}) | ${
-          typeof loopedVideo.duration === 'string'
-            ? loopedVideo.duration
-            : loopedVideo.duration.toFormat('m:ss')
-        } | By [${loopedVideo.channel.name}](${loopedVideo.channel.url})`
-      );
-    }
-
-    embed.addFields(
+    const queueChunks = chunk(
       queue.map((video, index) => ({
         name: `${index + 1}. ${video.title}`,
         value: `[Link](${video.url}) | ${
@@ -62,10 +47,35 @@ export class DisplayQueueCommand extends Command {
             ? video.duration
             : video.duration.toFormat('m:ss')
         } | By [${video.channel.name}](${video.channel.url})`
-      }))
+      })),
+      10
     );
 
-    interaction.reply({ embeds: [embed] });
+    if (guildMusicData?.loop.type === 'track') {
+      const loopedVideo =
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        guildMusicData!.videoList[guildMusicData!.videoListIndex];
+
+      queueChunks[0].unshift({
+        name: `🔂 ${loopedVideo.title}`,
+        value: `[Link](${loopedVideo.url}) | ${
+          typeof loopedVideo.duration === 'string'
+            ? loopedVideo.duration
+            : loopedVideo.duration.toFormat('m:ss')
+        } | By [${loopedVideo.channel.name}](${loopedVideo.channel.url})`
+      });
+    }
+
+    const embed = new MessageEmbed().setColor('#88c0d0').setTitle('Queue');
+
+    if (queueChunks.length === 1) {
+      embed.addFields(queueChunks[0]);
+
+      interaction.reply({ embeds: [embed] });
+      return;
+    }
+
+    createPagedEmbed(interaction, queueChunks, embed);
     return;
   }
 }

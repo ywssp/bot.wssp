@@ -1,5 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { chunk } from 'lodash';
+import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 
 export class DisplayHistoryCommand extends Command {
@@ -34,11 +36,9 @@ export class DisplayHistoryCommand extends Command {
       return;
     }
 
-    const embed = new MessageEmbed()
-      .setColor('#88c0d0')
-      .setTitle('History')
-      .addFields(
-        history.map((video) => ({
+    const historyChunks = chunk(
+      history
+        .map((video) => ({
           name: `${video.title}`,
           value: `[Link](${video.url}) | ${
             typeof video.duration === 'string'
@@ -46,9 +46,19 @@ export class DisplayHistoryCommand extends Command {
               : video.duration.toFormat('m:ss')
           } | By [${video.channel.name}](${video.channel.url})`
         }))
-      );
+        .reverse(),
+      10
+    );
 
-    interaction.reply({ embeds: [embed] });
-    return;
+    const embed = new MessageEmbed().setColor('#88c0d0').setTitle('History');
+
+    if (historyChunks.length === 1) {
+      embed.addFields(historyChunks[0]);
+
+      interaction.reply({ embeds: [embed] });
+      return;
+    }
+
+    createPagedEmbed(interaction, historyChunks, embed);
   }
 }
