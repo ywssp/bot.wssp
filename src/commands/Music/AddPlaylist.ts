@@ -89,7 +89,7 @@ export class AddPlaylistCommand extends Command {
       limit: Infinity
     });
 
-    const waitingMesage = await interaction.channel?.send(
+    const waitingMessage = await interaction.channel?.send(
       'Processing playlist...'
     );
 
@@ -105,7 +105,7 @@ export class AddPlaylistCommand extends Command {
       videos.push(createVideoObject(videoInfo, interaction.user));
     }
 
-    waitingMesage?.delete();
+    waitingMessage?.delete();
 
     if (videos.length === 0) {
       interaction.editReply({

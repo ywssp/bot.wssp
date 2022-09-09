@@ -5,16 +5,19 @@
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "plugin:prettier/recommended"
   ],
   "env": {
     "node": true,
     "es6": true
   },
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "project": "./tsconfig.json"
   },
   "parser": "@typescript-eslint/parser",
   "rules": {

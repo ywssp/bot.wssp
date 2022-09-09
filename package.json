@@ -5,8 +5,8 @@
   "main": "out/main.js",
   "scripts": {
     "start": "node out/main.js",
-    "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js",
-    "build": "tsc"
+    "build": "tsc",
+    "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js"
   },
   "repository": {
     "type": "git",
@@ -22,9 +22,12 @@
     "@typescript-eslint/parser": "^5.36.1",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
     "prettier": "^2.7.1",
-    "typescript": "^4.8.2"
+    "typescript": "^4.8.2",
+    "lint-staged": "^13.0.3"
   },
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
