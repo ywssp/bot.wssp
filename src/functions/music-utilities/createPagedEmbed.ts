@@ -12,28 +12,80 @@ export async function createPagedEmbed(
   fieldChunks: EmbedFieldData[][],
   embedLayout: MessageEmbed
 ) {
-  const actionRows = [
-    new MessageActionRow().addComponents(
+  const navigationButtons = new MessageActionRow();
+  const disabledNavigationButtons = new MessageActionRow();
+
+  if (fieldChunks.length > 3) {
+    navigationButtons.addComponents(
       new MessageButton()
         .setCustomId('first')
         .setEmoji('⏮️')
         .setStyle('PRIMARY')
-        .setDisabled(true),
+        .setDisabled(true)
+    );
+
+    disabledNavigationButtons.addComponents(
       new MessageButton()
-        .setCustomId('previous')
-        .setEmoji('◀️')
-        .setStyle('PRIMARY')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('page')
-        .setLabel(`1/${fieldChunks.length}`)
-        .setStyle('SECONDARY')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('next')
-        .setEmoji('▶️')
-        .setStyle('PRIMARY'),
+        .setCustomId('first')
+        .setEmoji('⛔')
+        .setStyle('DANGER')
+        .setDisabled(true)
+    );
+  }
+
+  navigationButtons.addComponents(
+    new MessageButton()
+      .setCustomId('previous')
+      .setEmoji('◀️')
+      .setStyle('PRIMARY')
+      .setDisabled(true),
+    new MessageButton()
+      .setCustomId('page_number')
+      .setLabel(`1/${fieldChunks.length}`)
+      .setStyle('SECONDARY')
+      .setDisabled(true),
+    new MessageButton().setCustomId('next').setEmoji('▶️').setStyle('PRIMARY')
+  );
+
+  disabledNavigationButtons.addComponents(
+    new MessageButton()
+      .setCustomId('previous')
+      .setEmoji('⛔')
+      .setStyle('DANGER')
+      .setDisabled(true),
+    new MessageButton()
+      .setCustomId('page_number')
+      .setLabel('Expired')
+      .setStyle('SECONDARY')
+      .setDisabled(true),
+    new MessageButton()
+      .setCustomId('next')
+      .setEmoji('⛔')
+      .setStyle('DANGER')
+      .setDisabled(true)
+  );
+
+  if (fieldChunks.length > 3) {
+    navigationButtons.addComponents(
       new MessageButton().setCustomId('last').setEmoji('⏭️').setStyle('PRIMARY')
+    );
+
+    disabledNavigationButtons.addComponents(
+      new MessageButton()
+        .setCustomId('last')
+        .setEmoji('⛔')
+        .setStyle('DANGER')
+        .setDisabled(true)
+    );
+  }
+
+  const actionRows = [
+    navigationButtons,
+    new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId('close')
+        .setLabel('Close')
+        .setStyle('DANGER')
     )
   ];
 
@@ -54,6 +106,11 @@ export async function createPagedEmbed(
   let pageNumber = 1;
 
   collector.on('collect', (i) => {
+    if (i.customId === 'close') {
+      collector.stop();
+      return;
+    }
+
     switch (i.customId) {
       case 'first':
         pageNumber = 1;
@@ -71,29 +128,39 @@ export async function createPagedEmbed(
         break;
     }
 
+    const getComponentIndex = (buttonId: string) => {
+      return actionRows[0].components.findIndex(
+        (component) => component.customId === buttonId
+      );
+    };
+
     actionRows[0].components.forEach((button) => {
       button.setDisabled(true);
     });
 
     if (pageNumber > 2) {
-      actionRows[0].components[0].setDisabled(false);
+      actionRows[0].components[getComponentIndex('first')]?.setDisabled(false);
     }
 
     if (pageNumber !== 1) {
-      actionRows[0].components[1].setDisabled(false);
+      actionRows[0].components[getComponentIndex('previous')].setDisabled(
+        false
+      );
     }
 
     if (pageNumber !== fieldChunks.length) {
-      actionRows[0].components[3].setDisabled(false);
+      actionRows[0].components[getComponentIndex('next')].setDisabled(false);
     }
 
     if (pageNumber < fieldChunks.length - 1) {
-      actionRows[0].components[4].setDisabled(false);
+      actionRows[0].components[getComponentIndex('last')]?.setDisabled(false);
     }
 
-    (actionRows[0].components[2] as MessageButton).setLabel(
-      `${pageNumber}/${fieldChunks.length}`
-    );
+    (
+      actionRows[0].components[
+        getComponentIndex('page_number')
+      ] as MessageButton
+    ).setLabel(`${pageNumber}/${fieldChunks.length}`);
 
     i.update({
       embeds: [
@@ -104,37 +171,9 @@ export async function createPagedEmbed(
   });
 
   collector.on('end', () => {
-    const disabledActionRow = new MessageActionRow().addComponents(
-      new MessageButton()
-        .setCustomId('first_disabled')
-        .setEmoji('⛔')
-        .setStyle('DANGER')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('previous_disabled')
-        .setEmoji('⛔')
-        .setStyle('DANGER')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('page_disabled')
-        .setLabel('Expired')
-        .setStyle('SECONDARY')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('next_disabled')
-        .setEmoji('⛔')
-        .setStyle('DANGER')
-        .setDisabled(true),
-      new MessageButton()
-        .setCustomId('last_disabled')
-        .setEmoji('⛔')
-        .setStyle('DANGER')
-        .setDisabled(true)
-    );
-
     pageEmbed.edit({
       embeds: [embed.setColor('#bf616a')],
-      components: [disabledActionRow]
+      components: [disabledNavigationButtons]
     });
   });
 }
