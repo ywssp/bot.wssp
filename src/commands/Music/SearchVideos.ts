@@ -12,6 +12,7 @@ import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
 import { play } from '../../functions/music-utilities/playInVoiceChannel';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -108,7 +109,7 @@ export class PlayMusicCommand extends Command {
     ];
 
     const selectionEmbed = new MessageEmbed()
-      .setColor('#ebcb8b')
+      .setColor(ColorPalette.selection)
       .setTitle('Select a video')
       .addFields(
         (searchResults.items as ytsr.Video[]).map((item, index) => ({
@@ -165,7 +166,7 @@ export class PlayMusicCommand extends Command {
     guildMusicData.videoList.push(video);
 
     const replyEmbed = new MessageEmbed()
-      .setColor('#a3be8c')
+      .setColor(ColorPalette.success)
       .setTitle('Added video to queue')
       .setDescription(`[${video.title}](${video.url})`)
       .addFields([

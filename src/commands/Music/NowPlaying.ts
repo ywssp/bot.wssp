@@ -7,6 +7,7 @@ import { MessageEmbed } from 'discord.js';
 import { capitalize } from 'lodash';
 import { Duration } from 'luxon';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class NowPlayingCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -92,7 +93,7 @@ export class NowPlayingCommand extends Command {
     }
 
     const embed = new MessageEmbed()
-      .setColor('#5e81ac')
+      .setColor(ColorPalette.info)
       .setTitle('Now Playing')
       .addFields(
         {

@@ -6,6 +6,7 @@ import {
   MessageButton,
   MessageEmbed
 } from 'discord.js';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export async function createPagedEmbed(
   interaction: CommandInteraction,
@@ -172,7 +173,7 @@ export async function createPagedEmbed(
 
   collector.on('end', () => {
     pageEmbed.edit({
-      embeds: [embed.setColor('#bf616a')],
+      embeds: [embed.setColor(ColorPalette.error)],
       components: [disabledNavigationButtons]
     });
   });

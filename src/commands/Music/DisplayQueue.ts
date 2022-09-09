@@ -3,6 +3,7 @@ import { MessageEmbed } from 'discord.js';
 import { chunk } from 'lodash';
 import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class DisplayQueueCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -66,7 +67,9 @@ export class DisplayQueueCommand extends Command {
       });
     }
 
-    const embed = new MessageEmbed().setColor('#88c0d0').setTitle('Queue');
+    const embed = new MessageEmbed()
+      .setColor(ColorPalette.default)
+      .setTitle('Queue');
 
     if (queueChunks.length === 1) {
       embed.addFields(queueChunks[0]);

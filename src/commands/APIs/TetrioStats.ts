@@ -13,6 +13,7 @@ import {
   isValid as isValidCountry
 } from 'i18n-iso-countries';
 import { Duration } from 'luxon';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class TetrioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -100,7 +101,7 @@ export class TetrioCommand extends Command {
     // Special cases for some user roles
     if (userData.role === 'bot') {
       const embed = new MessageEmbed()
-        .setColor('#4e342e')
+        .setColor('GREY')
         .setTitle(userData.username.toUpperCase())
         .setURL(`https://ch.tetr.io/u/${userData.username}`)
         .setDescription(
@@ -120,7 +121,7 @@ export class TetrioCommand extends Command {
 
     if (userData.role === 'banned') {
       const embed = new MessageEmbed()
-        .setColor('#ff6f00')
+        .setColor(ColorPalette.error)
         .setTitle(userData.username.toUpperCase())
         .setURL(`https://ch.tetr.io/u/${userData.username}`)
         .setThumbnail('https://tetr.io/res/avatar-banned.png')
@@ -131,7 +132,7 @@ export class TetrioCommand extends Command {
 
     if (userData.role === 'anon') {
       const embed = new MessageEmbed()
-        .setColor('#b0bec5')
+        .setColor('WHITE')
         .setTitle(userData.username.toUpperCase())
         .setURL(`https://ch.tetr.io/u/${userData.username}`)
         .setThumbnail('https://tetr.io/res/avatar.png')
@@ -164,7 +165,7 @@ export class TetrioCommand extends Command {
 
     // Create embed
     const embed = new MessageEmbed()
-      .setColor('#1de9b6')
+      .setColor(ColorPalette.default)
       .setTitle(userData.username.toUpperCase())
       .setURL(`https://ch.tetr.io/u/${userData.username}`);
 

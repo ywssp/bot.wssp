@@ -3,6 +3,7 @@ import { MessageEmbed } from 'discord.js';
 import { chunk } from 'lodash';
 import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class DisplayHistoryCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -50,7 +51,9 @@ export class DisplayHistoryCommand extends Command {
       10
     );
 
-    const embed = new MessageEmbed().setColor('#88c0d0').setTitle('History');
+    const embed = new MessageEmbed()
+      .setColor(ColorPalette.default)
+      .setTitle('History');
 
     if (historyChunks.length === 1) {
       embed.addFields(historyChunks[0]);

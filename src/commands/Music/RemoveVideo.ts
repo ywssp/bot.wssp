@@ -1,6 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class RemoveVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -103,7 +104,7 @@ export class RemoveVideoCommand extends Command {
     );
 
     const embed = new MessageEmbed()
-      .setColor('#bf616a')
+      .setColor(ColorPalette.error)
       .setTitle(`Removed ${removedVideos.length} videos from the queue`)
       .setFields(
         removedVideos.map((video) => ({

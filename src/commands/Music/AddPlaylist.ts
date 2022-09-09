@@ -7,6 +7,7 @@ import type { GuildMember } from 'discord.js';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { play } from '../../functions/music-utilities/playInVoiceChannel';
 import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -133,7 +134,7 @@ export class AddPlaylistCommand extends Command {
     }
 
     const embed = new MessageEmbed()
-      .setColor('#a3be8c')
+      .setColor(ColorPalette.success)
       .setTitle('Playlist Added to queue')
       .addFields([
         {

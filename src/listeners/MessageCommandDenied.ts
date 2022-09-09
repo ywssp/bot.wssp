@@ -4,6 +4,7 @@ import {
   MessageCommandDeniedPayload
 } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { ColorPalette } from '../settings/ColorPalette';
 
 export class MessageCommandDeniedListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
@@ -14,7 +15,7 @@ export class MessageCommandDeniedListener extends Listener {
   }
   public run(error: UserError, { message }: MessageCommandDeniedPayload) {
     const embed = new MessageEmbed()
-      .setColor('#ff0000')
+      .setColor(ColorPalette.error)
       .setTitle('Command Denied')
       .setDescription(error.message);
 

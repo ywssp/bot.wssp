@@ -3,6 +3,7 @@ import type { Client, Message } from 'discord.js';
 import { MessageEmbed } from 'discord.js';
 
 import { DateTime, Duration } from 'luxon';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class EmbedTestCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -36,7 +37,7 @@ export class EmbedTestCommand extends Command {
 
   private createEmbed(client: Client) {
     const embed = new MessageEmbed()
-      .setColor('#88c0d0')
+      .setColor(ColorPalette.default)
       .setTitle('Bot Information');
 
     if (client.user) {

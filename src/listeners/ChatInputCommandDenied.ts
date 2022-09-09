@@ -4,6 +4,7 @@ import {
   ChatInputCommandDeniedPayload
 } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { ColorPalette } from '../settings/ColorPalette';
 
 export class ChatInputCommandDeniedListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
@@ -14,7 +15,7 @@ export class ChatInputCommandDeniedListener extends Listener {
   }
   public run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
     const embed = new MessageEmbed()
-      .setColor('#ff0000')
+      .setColor(ColorPalette.error)
       .setTitle('Command Denied')
       .setDescription(error.message);
 

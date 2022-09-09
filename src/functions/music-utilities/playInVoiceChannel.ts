@@ -12,6 +12,7 @@ import { MessageEmbed, TextBasedChannel, VoiceBasedChannel } from 'discord.js';
 import { getGuildMusicData } from './getGuildMusicData';
 import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 import ytdl from 'ytdl-core';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 function createNowPlayingMessage(
   video: SimpleVideoInfo,
@@ -20,7 +21,7 @@ function createNowPlayingMessage(
 ): MessageEmbed | string {
   if (style === 'full') {
     const embed = new MessageEmbed()
-      .setColor('#b48ead')
+      .setColor(ColorPalette.info)
       .setTitle('Now Playing')
       .setDescription(`[${video.title}](${video.url})`)
       .setFields([
@@ -103,7 +104,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
 
     const embed = new MessageEmbed()
-      .setColor('#bf616a')
+      .setColor(ColorPalette.error)
       .setTitle('Playback Error')
       .setDescription('An error occurred while playing the following video:')
       .setFields([
