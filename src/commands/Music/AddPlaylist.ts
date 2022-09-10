@@ -84,29 +84,23 @@ export class AddPlaylistCommand extends Command {
       return;
     }
 
-    interaction.deferReply();
+    interaction.reply('Processing playlist...');
 
     const playlist = await ytpl(link, {
       limit: Infinity
     });
 
-    const waitingMessage = await interaction.channel?.send(
-      'Processing playlist...'
-    );
-
     const videos: SimpleVideoInfo[] = [];
 
-    for (const video of playlist.items) {
-      const videoInfo = await ytdl.getBasicInfo(video.url);
+    await Promise.allSettled(
+      playlist.items.map(async (video) => {
+        const videoInfo = await ytdl.getBasicInfo(video.url);
 
-      if (videoInfo.videoDetails.isPrivate) {
-        continue;
-      }
-
-      videos.push(createVideoObject(videoInfo, interaction.user));
-    }
-
-    waitingMessage?.delete();
+        if (!videoInfo.videoDetails.isPrivate) {
+          videos.push(createVideoObject(videoInfo, interaction.user));
+        }
+      })
+    );
 
     if (videos.length === 0) {
       interaction.editReply({
@@ -127,10 +121,15 @@ export class AddPlaylistCommand extends Command {
 
     const modifier = interaction.options.getString('modifier');
 
-    if (modifier === 'shuffle') {
-      videos.sort(() => Math.random() - 0.5);
-    } else if (modifier === 'reverse') {
-      videos.reverse();
+    switch (modifier) {
+      case 'shuffle':
+        videos.sort(() => Math.random() - 0.5);
+        break;
+      case 'reverse':
+        videos.reverse();
+        break;
+      default:
+        break;
     }
 
     const embed = new MessageEmbed()
