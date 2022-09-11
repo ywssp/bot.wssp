@@ -6,7 +6,7 @@ import {
   MessageButton,
   MessageEmbed
 } from 'discord.js';
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../settings/ColorPalette';
 
 export async function createPagedEmbed(
   interaction: CommandInteraction,
