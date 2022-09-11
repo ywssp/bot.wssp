@@ -1,7 +1,8 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 import { chunk } from 'lodash';
-import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
+import { createPagedEmbed } from '../../functions/createPagedEmbed';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
@@ -25,29 +26,18 @@ export class DisplayHistoryCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
+    const history = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })?.getHistory();
 
-    const history = guildMusicData?.getHistory();
-
-    if (typeof history === 'undefined' || history.length === 0) {
+    if (history === undefined || history.length === 0) {
       interaction.reply('❓ | The video history is empty.');
       return;
     }
 
     const historyChunks = chunk(
-      history
-        .map((video) => ({
-          name: `${video.title}`,
-          value: `[Link](${video.url}) | ${
-            typeof video.duration === 'string'
-              ? video.duration
-              : video.duration.toFormat('m:ss')
-          } | By [${video.channel.name}](${video.channel.url})`
-        }))
-        .reverse(),
+      history.map((video) => formatVideoField(video)).reverse(),
       10
     );
 

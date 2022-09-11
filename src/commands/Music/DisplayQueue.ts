@@ -1,7 +1,8 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 import { chunk } from 'lodash';
-import { createPagedEmbed } from '../../functions/music-utilities/createPagedEmbed';
+import { createPagedEmbed } from '../../functions/createPagedEmbed';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
@@ -12,7 +13,8 @@ export class DisplayQueueCommand extends Command {
       name: 'queue',
       aliases: [],
       description: 'Displays the music queue of the server.',
-      runIn: 'GUILD_ANY'
+      runIn: 'GUILD_ANY',
+      preconditions: ['HasGuildMusicData']
     });
   }
 
@@ -25,46 +27,28 @@ export class DisplayQueueCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })!;
 
-    const queue = guildMusicData?.getQueue();
+    const queue = guildMusicData.getQueue();
 
-    if (
-      typeof queue === 'undefined' ||
-      (queue.length === 0 && guildMusicData?.loop.type !== 'track')
-    ) {
+    if (queue.length === 0 && guildMusicData?.loop.type !== 'track') {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
 
     const queueChunks = chunk(
-      queue.map((video, index) => ({
-        name: `${index + 1}. ${video.title}`,
-        value: `[Link](${video.url}) | ${
-          typeof video.duration === 'string'
-            ? video.duration
-            : video.duration.toFormat('m:ss')
-        } | By [${video.channel.name}](${video.channel.url})`
-      })),
+      queue.map((video, index) => formatVideoField(video, `${index + 1}. `)),
       10
     );
 
-    if (guildMusicData?.loop.type === 'track') {
-      const loopedVideo =
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        guildMusicData!.videoList[guildMusicData!.videoListIndex];
-
-      queueChunks[0].unshift({
-        name: `🔂 ${loopedVideo.title}`,
-        value: `[Link](${loopedVideo.url}) | ${
-          typeof loopedVideo.duration === 'string'
-            ? loopedVideo.duration
-            : loopedVideo.duration.toFormat('m:ss')
-        } | By [${loopedVideo.channel.name}](${loopedVideo.channel.url})`
-      });
+    if (guildMusicData.loop.type === 'track') {
+      queueChunks[0].unshift(
+        formatVideoField(guildMusicData.currentVideo(), '🔂 ')
+      );
     }
 
     const embed = new MessageEmbed()

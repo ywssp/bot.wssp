@@ -6,6 +6,8 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 import { capitalize } from 'lodash';
 import { Duration } from 'luxon';
+import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
@@ -92,31 +94,20 @@ export class NowPlayingCommand extends Command {
       durationVisual = '🔴 Live Stream';
     }
 
-    const embed = new MessageEmbed()
+    const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.info)
-      .setTitle('Now Playing')
-      .addFields(
-        {
-          name: 'Title',
-          value: `[${currentVideo.title}](${currentVideo.url})`
-        },
-        {
-          name: 'Channel',
-          value: `[${currentVideo.channel.name}](${currentVideo.channel.url})`
-        },
-        {
-          name: 'Duration',
-          value: durationVisual
-        },
-        {
-          name: '\u200b',
-          value: '\u200b'
-        },
-        {
-          name: 'Requested By',
-          value: currentVideo.requester
-        }
-      );
+      .setTitle('Now Playing');
+
+    const embed = formatVideoEmbed(
+      currentVideo,
+      baseEmbed,
+      {
+        requester: true
+      },
+      {
+        duration: durationVisual
+      }
+    );
 
     const playingEmoji = audioPlayer.state.status === 'playing' ? '▶️' : '⏸';
 

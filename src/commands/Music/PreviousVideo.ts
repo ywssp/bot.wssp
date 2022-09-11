@@ -4,6 +4,7 @@ import {
 } from '@discordjs/voice';
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
@@ -75,17 +76,14 @@ export class PreviousVideoCommand extends Command {
 
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle('Skipped the following videos:')
+      .setTitle(`Skipped ${skippedVideos.length} videos`)
       .setFields(
-        skippedVideos.map((video) => ({
-          name: video.title,
-          value: `[Link](${video.url}) | ${
-            typeof video.duration === 'string'
-              ? video.duration
-              : video.duration.toFormat('m:ss')
-          } | By [${video.channel.name}](${video.channel.url})`
-        }))
+        skippedVideos.slice(0, 9).map((video) => formatVideoField(video))
       );
+
+    if (skippedVideos.length > 8) {
+      embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
+    }
 
     guildMusicData.videoListIndex -= skipNumber;
 

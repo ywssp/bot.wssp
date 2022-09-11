@@ -9,7 +9,7 @@ export class ShuffleQueueCommand extends Command {
       aliases: [],
       description: 'Clears the video history or queue.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'HasGuildMusicData']
     });
   }
 
@@ -32,12 +32,13 @@ export class ShuffleQueueCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })!;
 
-    if (typeof guildMusicData === 'undefined') {
+    if (guildMusicData.videoList.length === 0) {
       interaction.reply({
         content: 'The video list is empty.',
         ephemeral: true

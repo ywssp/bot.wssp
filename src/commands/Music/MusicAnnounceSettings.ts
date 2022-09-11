@@ -41,9 +41,7 @@ export class MusicAnnounceSettingsCommand extends Command {
             .addStringOption((option) =>
               option
                 .setName('style')
-                .setDescription(
-                  'The style of the announcements. Defaults to `embed`.'
-                )
+                .setDescription('The style of the announcements.')
                 .setRequired(true)
                 .addChoices(
                   { name: 'Full | Embed', value: 'full' },

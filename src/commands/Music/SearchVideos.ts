@@ -13,6 +13,7 @@ import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusic
 import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
 import { play } from '../../functions/music-utilities/playInVoiceChannel';
 import { ColorPalette } from '../../settings/ColorPalette';
+import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -165,23 +166,11 @@ export class PlayMusicCommand extends Command {
     const isPlaying = guildMusicData.isPlaying();
     guildMusicData.videoList.push(video);
 
-    const replyEmbed = new MessageEmbed()
+    const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.success)
-      .setTitle('Added video to queue')
-      .setDescription(`[${video.title}](${video.url})`)
-      .addFields([
-        {
-          name: 'Channel',
-          value: `[${video.channel.name}](${video.channel.url})`
-        },
-        {
-          name: 'Length',
-          value:
-            typeof video.duration === 'string'
-              ? video.duration
-              : video.duration.toFormat('m:ss')
-        }
-      ]);
+      .setTitle('Added video to queue');
+
+    const replyEmbed = formatVideoEmbed(video, baseEmbed);
 
     if (video.thumbnail) {
       replyEmbed.setThumbnail(video.thumbnail);

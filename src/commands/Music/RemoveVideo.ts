@@ -1,5 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
@@ -107,15 +108,12 @@ export class RemoveVideoCommand extends Command {
       .setColor(ColorPalette.error)
       .setTitle(`Removed ${removedVideos.length} videos from the queue`)
       .setFields(
-        removedVideos.map((video) => ({
-          name: video.title,
-          value: `[Link](${video.url}) | ${
-            typeof video.duration === 'string'
-              ? video.duration
-              : video.duration.toFormat('m:ss')
-          } | By [${video.channel.name}](${video.channel.url})`
-        }))
+        removedVideos.slice(0, 9).map((video) => formatVideoField(video))
       );
+
+    if (removedVideos.length > 8) {
+      embed.addField('\u200b', `And ${removedVideos.length - 9} more videos.`);
+    }
 
     interaction.reply({ embeds: [embed] });
     return;

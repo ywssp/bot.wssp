@@ -14,5 +14,6 @@ declare module '@sapphire/framework' {
     InVoiceChannel: never;
     IsPlaying: never;
     OwnerOnly: never;
+    HasGuildMusicData: never;
   }
 }

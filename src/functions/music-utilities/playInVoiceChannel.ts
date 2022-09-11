@@ -13,6 +13,7 @@ import { getGuildMusicData } from './getGuildMusicData';
 import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 import ytdl from 'ytdl-core';
 import { ColorPalette } from '../../settings/ColorPalette';
+import { formatVideoEmbed } from './formatVideoEmbed';
 
 function createNowPlayingMessage(
   video: SimpleVideoInfo,
@@ -20,31 +21,13 @@ function createNowPlayingMessage(
   nextVideo?: SimpleVideoInfo
 ): MessageEmbed | string {
   if (style === 'full') {
-    const embed = new MessageEmbed()
+    const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.info)
-      .setTitle('Now Playing')
-      .setDescription(`[${video.title}](${video.url})`)
-      .setFields([
-        {
-          name: 'Channel',
-          value: `[${video.channel.name}](${video.channel.url})`
-        },
-        {
-          name: 'Duration',
-          value:
-            typeof video.duration === 'string'
-              ? video.duration
-              : video.duration.toFormat('m:ss')
-        },
-        {
-          name: 'Requester',
-          value: video.requester
-        }
-      ]);
+      .setTitle('Now Playing');
 
-    if (video.thumbnail) {
-      embed.setThumbnail(video.thumbnail);
-    }
+    const embed = formatVideoEmbed(video, baseEmbed, {
+      requester: true
+    });
 
     if (nextVideo) {
       embed.addFields([
@@ -103,35 +86,14 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     console.log(`An error "${error.name}" occurred: ${error.message}`);
     const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
 
-    const embed = new MessageEmbed()
+    const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle('Playback Error')
-      .setDescription('An error occurred while playing the following video:')
-      .setFields([
-        {
-          name: 'Title',
-          value: `[${resourceMetadata.title}](${resourceMetadata.url})`
-        },
-        {
-          name: 'Channel',
-          value: `[${resourceMetadata.channel.name}](${resourceMetadata.channel.url})`
-        },
-        {
-          name: 'Duration',
-          value:
-            typeof resourceMetadata.duration === 'string'
-              ? resourceMetadata.duration
-              : resourceMetadata.duration.toFormat('m:ss')
-        },
-        {
-          name: '\u200B',
-          value: '\u200B'
-        },
-        {
-          name: 'Error',
-          value: `${error.name}: ${error.message}`
-        }
-      ]);
+      .setTitle('Playback Error');
+
+    const embed = formatVideoEmbed(resourceMetadata, baseEmbed).addField(
+      'Error',
+      `${error.name}: ${error.message}`
+    );
 
     textUpdateChannel.send({ embeds: [embed] });
   });
