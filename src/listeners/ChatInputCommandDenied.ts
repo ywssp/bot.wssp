@@ -16,9 +16,9 @@ export class ChatInputCommandDeniedListener extends Listener {
   public run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle('Command Denied')
+      .setTitle('Cannot run command')
       .setDescription(error.message);
 
-    interaction.reply({ embeds: [embed] });
+    interaction.reply({ embeds: [embed], ephemeral: true });
   }
 }

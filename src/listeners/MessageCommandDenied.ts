@@ -16,7 +16,7 @@ export class MessageCommandDeniedListener extends Listener {
   public run(error: UserError, { message }: MessageCommandDeniedPayload) {
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle('Command Denied')
+      .setTitle('Cannot run command')
       .setDescription(error.message);
 
     message.channel.send({ embeds: [embed] });
