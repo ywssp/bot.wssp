@@ -25,17 +25,15 @@ export class LeaveVCCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addBooleanOption((option) =>
+        .addStringOption((option) =>
           option
-            .setName('clear-queue')
-            .setDescription('Clears the queue.')
+            .setName('clear')
+            .setDescription('What to clear after leaving the voice channel.')
             .setRequired(false)
-        )
-        .addBooleanOption((option) =>
-          option
-            .setName('clear-data')
-            .setDescription('Clears the music data of the server.')
-            .setRequired(false)
+            .addChoices(
+              { name: 'Queue - Clears the queue', value: 'queue' },
+              { name: 'Data - Clears all of the data', value: 'data' }
+            )
         )
     );
   }
@@ -53,23 +51,25 @@ export class LeaveVCCommand extends Command {
       return;
     }
 
-    const clearQueue = interaction.options.getBoolean('clear-queue') ?? false;
-    const clearData = interaction.options.getBoolean('clear-data') ?? false;
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
     }) as GuildMusicData;
 
-    if (clearQueue) {
-      guildMusicData.videoList.splice(
-        guildMusicData.videoListIndex,
-        guildMusicData.videoList.length - guildMusicData.videoListIndex
-      );
-      guildMusicData.videoListIndex = 0;
-    }
+    const clear = interaction.options.getString('clear');
 
-    if (clearData) {
-      this.container.guildMusicDataMap.delete(interaction.guildId as string);
+    switch (clear) {
+      case 'queue':
+        guildMusicData.videoList.splice(
+          guildMusicData.videoListIndex,
+          guildMusicData.videoList.length - guildMusicData.videoListIndex
+        );
+        break;
+      case 'data':
+        this.container.guildMusicDataMap.delete(interaction.guildId as string);
+        break;
+      default:
+        break;
     }
 
     const voiceChannelName = interaction.guild?.me?.voice.channel?.name;
