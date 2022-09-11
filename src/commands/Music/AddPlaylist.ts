@@ -2,7 +2,6 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 import type { GuildMember } from 'discord.js';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { play } from '../../functions/music-utilities/playInVoiceChannel';
@@ -90,17 +89,15 @@ export class AddPlaylistCommand extends Command {
       limit: Infinity
     });
 
-    const videos: SimpleVideoInfo[] = [];
-
-    await Promise.allSettled(
-      playlist.items.map(async (video) => {
-        const videoInfo = await ytdl.getBasicInfo(video.url);
-
-        if (!videoInfo.videoDetails.isPrivate) {
-          videos.push(createVideoObject(videoInfo, interaction.user));
-        }
-      })
+    const processedVideos = await Promise.allSettled(
+      playlist.items.map((video) => ytdl.getBasicInfo(video.url))
     );
+
+    const videos = (
+      processedVideos.filter(
+        (result) => result.status === 'fulfilled'
+      ) as PromiseFulfilledResult<ytdl.videoInfo>[]
+    ).map((result) => createVideoObject(result.value, interaction.user));
 
     if (videos.length === 0) {
       interaction.editReply({
@@ -150,7 +147,12 @@ export class AddPlaylistCommand extends Command {
         }
       ]);
 
+    if (playlist.bestThumbnail.url !== null) {
+      embed.setThumbnail(playlist.bestThumbnail.url);
+    }
+
     interaction.editReply({
+      content: null,
       embeds: [embed]
     });
 
