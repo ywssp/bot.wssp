@@ -2,19 +2,23 @@
   "name": "bot.wssp-sapphire",
   "version": "1.0.0",
   "description": "",
-  "main": "out/main.js",
+  "author": "ywssp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ywssp/bot.wssp"
+  },
+  "main": "./out/main.js",
+  "license": "MPL-2.0",
+  "engines": {
+    "node": ">=16.6.0"
+  },
   "scripts": {
     "start": "node out/main.js",
     "build": "tsc",
     "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ywssp/bot.wssp"
-  },
-  "author": "ywssp",
-  "license": "MPL-2.0",
   "devDependencies": {
+    "@types/inquirer": "^9.0.1",
     "@types/lodash": "^4.14.184",
     "@types/luxon": "^3.0.1",
     "@types/node": "^18.7.15",
@@ -25,9 +29,9 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
-    "typescript": "^4.8.2",
-    "lint-staged": "^13.0.3"
+    "typescript": "^4.8.2"
   },
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
@@ -35,11 +39,13 @@
     "@discordjs/voice": "^0.10.0",
     "@sapphire/fetch": "^2.4.1",
     "@sapphire/framework": "^3.1.1",
+    "chalk": "^4.1.2",
     "discord-api-types": "^0.37.5",
     "discord.js": "^13.8.1",
     "dotenv": "^16.0.2",
     "ffmpeg-static": "^5.1.0",
     "i18n-iso-countries": "^7.5.0",
+    "inquirer": "^8.0.0",
     "libsodium-wrappers": "^0.7.10",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
