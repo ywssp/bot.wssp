@@ -7,7 +7,6 @@ import { MessageEmbed } from 'discord.js';
 import { capitalize } from 'lodash';
 import { Duration } from 'luxon';
 import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { ColorPalette } from '../../settings/ColorPalette';
 
