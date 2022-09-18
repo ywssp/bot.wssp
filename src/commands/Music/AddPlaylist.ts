@@ -1,11 +1,13 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+import { MessageEmbed, GuildMember } from 'discord.js';
+
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
-import type { GuildMember } from 'discord.js';
+
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { play } from '../../functions/music-utilities/playInVoiceChannel';
 import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
+import { play } from '../../functions/music-utilities/playInVoiceChannel';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class AddPlaylistCommand extends Command {

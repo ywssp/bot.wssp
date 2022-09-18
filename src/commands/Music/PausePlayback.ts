@@ -1,8 +1,9 @@
+import { ChatInputCommand, Command } from '@sapphire/framework';
+
 import {
   getVoiceConnection,
   VoiceConnectionReadyState
 } from '@discordjs/voice';
-import { ChatInputCommand, Command } from '@sapphire/framework';
 
 export class PausePlaybackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

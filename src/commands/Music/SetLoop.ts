@@ -1,4 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
+
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 
 export class SetLoopCommand extends Command {

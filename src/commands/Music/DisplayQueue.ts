@@ -1,9 +1,12 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
+
 import { chunk } from 'lodash';
-import { createPagedEmbed } from '../../functions/createPagedEmbed';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
+
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
+import { createPagedEmbed } from '../../functions/createPagedEmbed';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class DisplayQueueCommand extends Command {

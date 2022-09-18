@@ -1,8 +1,10 @@
+import { ChatInputCommand, Command } from '@sapphire/framework';
+
 import {
   getVoiceConnection,
   VoiceConnectionReadyState
 } from '@discordjs/voice';
-import { ChatInputCommand, Command } from '@sapphire/framework';
+
 import {
   getGuildMusicData,
   GuildMusicData

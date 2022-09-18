@@ -6,14 +6,17 @@ import {
   MessageComponentInteraction,
   MessageEmbed
 } from 'discord.js';
+
 import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
+
 import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
 import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
-import { play } from '../../functions/music-utilities/playInVoiceChannel';
-import { ColorPalette } from '../../settings/ColorPalette';
 import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
+import { play } from '../../functions/music-utilities/playInVoiceChannel';
+
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

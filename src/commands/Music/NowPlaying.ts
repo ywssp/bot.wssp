@@ -1,13 +1,17 @@
+import { ChatInputCommand, Command } from '@sapphire/framework';
+import { MessageEmbed } from 'discord.js';
+
 import {
   getVoiceConnection,
   VoiceConnectionReadyState
 } from '@discordjs/voice';
-import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+
 import { capitalize } from 'lodash';
 import { Duration } from 'luxon';
-import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
+
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class NowPlayingCommand extends Command {

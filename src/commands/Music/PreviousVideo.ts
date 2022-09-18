@@ -1,11 +1,14 @@
+import { ChatInputCommand, Command } from '@sapphire/framework';
+import { MessageEmbed } from 'discord.js';
+
 import {
   getVoiceConnection,
   VoiceConnectionReadyState
 } from '@discordjs/voice';
-import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
+
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class PreviousVideoCommand extends Command {
