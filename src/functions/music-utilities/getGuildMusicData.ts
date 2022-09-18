@@ -1,7 +1,7 @@
 import { container } from '@sapphire/framework';
 import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
 
-class GuildMusicData {
+export class GuildMusicData {
   videoList: SimpleVideoInfo[];
   videoListIndex: number;
   volume: number;

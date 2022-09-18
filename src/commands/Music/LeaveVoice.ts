@@ -3,8 +3,10 @@ import {
   VoiceConnectionReadyState
 } from '@discordjs/voice';
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { GuildMusicData } from '../../interfaces/GuildMusicData';
+import {
+  getGuildMusicData,
+  GuildMusicData
+} from '../../functions/music-utilities/getGuildMusicData';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
