@@ -83,8 +83,10 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
   });
 
   player.on('error', (error) => {
-    console.log(`An error "${error.name}" occurred: ${error.message}`);
     const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
+    container.logger.error(
+      `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url}\n${error.name}${error.message}\n${error.stack}`
+    );
 
     const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.error)

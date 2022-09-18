@@ -1,22 +1,23 @@
-type TetrioRank =
-  | 'x'
-  | 'u'
-  | 'ss'
-  | 's+'
-  | 's'
-  | 's-'
-  | 'a+'
-  | 'a'
-  | 'a-'
-  | 'b+'
-  | 'b'
-  | 'b-'
-  | 'c+'
-  | 'c'
-  | 'c-'
-  | 'd+'
-  | 'd'
-  | 'z';
+type TetrioRank = [
+  'x',
+  'u',
+  'ss',
+  's+',
+  's',
+  's-',
+  'a+',
+  'a',
+  'a-',
+  'b+',
+  'b-',
+  'c+',
+  'c',
+  'c-',
+  'd+',
+  'd',
+  'b',
+  'z'
+][number];
 
 export type RecordEndContext = {
   seed: number;

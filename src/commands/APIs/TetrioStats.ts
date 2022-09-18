@@ -84,8 +84,8 @@ export class TetrioCommand extends Command {
         FetchResultTypes.JSON
       );
     } catch (error) {
-      console.error(error);
-      return `An error occurred.${error}`;
+      this.container.logger.error(error);
+      return `An error occurred.\n${error}`;
     }
 
     // API error
@@ -152,8 +152,8 @@ export class TetrioCommand extends Command {
         FetchResultTypes.JSON
       );
     } catch (error) {
-      console.error(error);
-      return `An error occurred.${error}`;
+      this.container.logger.error(error);
+      return `An error occurred.\n${error}`;
     }
 
     // API error
