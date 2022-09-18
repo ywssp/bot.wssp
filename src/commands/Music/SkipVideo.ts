@@ -92,11 +92,7 @@ export class SkipVideoCommand extends Command {
       embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
     }
 
-    guildMusicData.videoListIndex += skipNumber;
-
-    if (guildMusicData.loop.type !== 'track') {
-      guildMusicData.videoListIndex--;
-    }
+    guildMusicData.modifyIndex(skipNumber);
 
     audioPlayer.stop();
     interaction.reply({ embeds: [embed] });

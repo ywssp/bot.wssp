@@ -39,6 +39,14 @@ export class GuildMusicData {
   getHistory() {
     return this.videoList.slice(0, this.videoListIndex);
   }
+
+  modifyIndex(amount: number) {
+    this.videoListIndex += amount;
+
+    if (this.loop.type !== 'track') {
+      this.videoListIndex--;
+    }
+  }
 }
 
 export function getGuildMusicData({
