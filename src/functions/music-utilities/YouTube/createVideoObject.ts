@@ -1,13 +1,14 @@
 import { User } from 'discord.js';
 import { Duration } from 'luxon';
 import type { videoInfo } from 'ytdl-core';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 
 export function createVideoObject(
   { videoDetails }: videoInfo,
   user: User
 ): SimpleVideoInfo {
   return {
+    type: 'youtube',
     title: videoDetails.title,
     url: videoDetails.video_url,
     id: videoDetails.videoId,

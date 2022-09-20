@@ -1,5 +1,5 @@
 import { MessageEmbed } from 'discord.js';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 
 export function formatVideoEmbed(
   video: SimpleVideoInfo,

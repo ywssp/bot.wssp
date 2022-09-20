@@ -1,6 +1,7 @@
 import { Duration } from 'luxon';
 
 export interface SimpleVideoInfo {
+  type: 'youtube';
   title: string;
   duration: 'Live Stream' | Duration;
   url: string;

@@ -3,11 +3,11 @@ import { MessageEmbed } from 'discord.js';
 
 import { chunk } from 'lodash';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-import { createPagedEmbed } from '../../functions/createPagedEmbed';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class DisplayQueueCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -34,7 +34,7 @@ export class DisplayQueueCommand extends Command {
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    })!;
+    })!.youtubeData;
 
     const queue = guildMusicData.getQueue();
 

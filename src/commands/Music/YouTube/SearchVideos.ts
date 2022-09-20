@@ -10,13 +10,13 @@ import {
 import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
 
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
-import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
-import { play } from '../../functions/music-utilities/playInVoiceChannel';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
+import { play } from '../../../functions/music-utilities/YouTube/playInVoiceChannel';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -51,7 +51,7 @@ export class PlayMusicCommand extends Command {
       create: true,
       guildId: interaction.guildId as string,
       textChannelId: interaction.channelId
-    });
+    }).youtubeData;
 
     const query = interaction.options.getString('query');
 

@@ -1,9 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
+import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 
 export class PausePlaybackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -13,7 +10,7 @@ export class PausePlaybackCommand extends Command {
       aliases: [],
       description: 'Pauses the video playing.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
     });
   }
 
@@ -26,12 +23,7 @@ export class PausePlaybackCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // This command can only be run inside a guild.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId!)!;
-
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
       interaction.reply('❓ | There is no video playing.');

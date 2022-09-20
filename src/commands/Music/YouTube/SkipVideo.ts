@@ -1,15 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
+import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 
 export class SkipVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -19,7 +15,7 @@ export class SkipVideoCommand extends Command {
       aliases: [],
       description: 'Skips an amount of videos.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
     });
   }
 
@@ -43,19 +39,14 @@ export class SkipVideoCommand extends Command {
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })?.youtubeData;
 
     if (typeof guildMusicData === 'undefined') {
       interaction.reply('The queue is empty.');
       return;
     }
 
-    // This command can only be run inside a guild.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId!)!;
-
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
       interaction.reply({

@@ -1,10 +1,10 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class RemoveVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -14,7 +14,7 @@ export class RemoveVideoCommand extends Command {
       aliases: [],
       description: 'Removes an amount of videos from the queue.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
     });
   }
 
@@ -54,7 +54,7 @@ export class RemoveVideoCommand extends Command {
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })?.youtubeData;
 
     if (
       typeof guildMusicData === 'undefined' ||

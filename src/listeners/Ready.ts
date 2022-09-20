@@ -1,6 +1,6 @@
 import { Listener } from '@sapphire/framework';
 import type { Client } from 'discord.js';
-import { GuildMusicData } from '../functions/music-utilities/getGuildMusicData';
+import { GuildMusicData } from '../interfaces/GuildMusicData/GuildMusicData';
 
 export class ReadyListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {

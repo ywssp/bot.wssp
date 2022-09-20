@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 
 export class ShuffleQueueCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -26,7 +26,7 @@ export class ShuffleQueueCommand extends Command {
     const guildMusicData = getGuildMusicData({
       create: false,
       guildId: interaction.guildId as string
-    });
+    })?.youtubeData;
 
     if (
       typeof guildMusicData === 'undefined' ||

@@ -5,15 +5,19 @@ import {
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
+  getVoiceConnection,
   joinVoiceChannel,
   NoSubscriberBehavior
 } from '@discordjs/voice';
 import { MessageEmbed, TextBasedChannel, VoiceBasedChannel } from 'discord.js';
-import { getGuildMusicData } from './getGuildMusicData';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
+import { getGuildMusicData } from '../getGuildMusicData';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 import ytdl from 'ytdl-core';
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
+import { getPlayingType } from '../getPlayingType';
+import { getAudioPlayer } from '../getAudioPlayer';
+import { disconnectRadioWebsocket } from '../LISTEN.moe/disconnectWebsocket';
 
 function createNowPlayingMessage(
   video: SimpleVideoInfo,
@@ -65,10 +69,26 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     guildId
   })!;
 
+  const youtubeData = guildMusicData.youtubeData;
+
+  const isPlaying = getPlayingType(guildId);
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const textUpdateChannel = client.channels.cache.get(
     guildMusicData.textUpdateChannelId
   ) as TextBasedChannel;
+
+  if (isPlaying === 'radio') {
+    textUpdateChannel.send(
+      'Disconnecting from the radio to play a YouTube video...'
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const audioPlayer = getAudioPlayer(guildId)!;
+    audioPlayer.removeAllListeners();
+    audioPlayer.stop();
+    disconnectRadioWebsocket(guildId);
+  }
 
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
@@ -85,7 +105,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
   player.on('error', (error) => {
     const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
     container.logger.error(
-      `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url}\n${error.name}${error.message}\n${error.stack}`
+      `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url}\n${error.stack}`
     );
 
     const baseEmbed = new MessageEmbed()
@@ -105,28 +125,23 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     const localGuildMusicData = container.guildMusicDataMap.get(
       guildId as string
     )!;
+    const localYoutubeData = localGuildMusicData.youtubeData;
 
-    if (localGuildMusicData.loop.type === 'queue') {
-      localGuildMusicData.videoList.push(
-        localGuildMusicData.videoList[localGuildMusicData.videoListIndex]
-      );
+    if (localYoutubeData.loop.type === 'queue') {
+      localYoutubeData.videoList.push(localYoutubeData.currentVideo());
     }
 
-    if (localGuildMusicData.loop.type !== 'track') {
-      localGuildMusicData.videoListIndex++;
+    if (localYoutubeData.loop.type !== 'track') {
+      localYoutubeData.videoListIndex++;
     }
 
-    if (
-      localGuildMusicData.videoList.length ===
-      localGuildMusicData.videoListIndex
-    ) {
+    if (localYoutubeData.videoList.length === localYoutubeData.videoListIndex) {
       player.stop();
       connection.destroy();
       return;
     }
 
-    const currentVideo =
-      localGuildMusicData.videoList[localGuildMusicData.videoListIndex];
+    const currentVideo = localYoutubeData.currentVideo();
 
     const audioResource = createAudioResource(
       ytdl(currentVideo.url, {
@@ -147,7 +162,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
       const message = createNowPlayingMessage(
         currentVideo,
         localGuildMusicData.musicAnnounceStyle,
-        localGuildMusicData.videoList[localGuildMusicData.videoListIndex + 1]
+        localYoutubeData.videoList[localYoutubeData.videoListIndex + 1]
       );
 
       if (typeof message === 'string') {
@@ -158,12 +173,12 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     }
   });
 
-  const currentVideo = guildMusicData.currentVideo();
+  const currentVideo = youtubeData.currentVideo();
 
   connection.subscribe(player);
 
   const createdResource = createAudioResource(
-    ytdl(guildMusicData.videoList[guildMusicData.videoListIndex].url, {
+    ytdl(currentVideo.url, {
       quality: 'highestaudio'
     }),
     {
@@ -177,7 +192,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     const message = createNowPlayingMessage(
       currentVideo,
       guildMusicData.musicAnnounceStyle,
-      guildMusicData.videoList[guildMusicData.videoListIndex + 1]
+      youtubeData.videoList[youtubeData.videoListIndex + 1]
     );
 
     if (typeof message === 'string') {

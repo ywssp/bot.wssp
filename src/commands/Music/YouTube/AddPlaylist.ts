@@ -4,11 +4,11 @@ import { MessageEmbed, GuildMember } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
-import { play } from '../../functions/music-utilities/playInVoiceChannel';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { play } from '../../../functions/music-utilities/YouTube/playInVoiceChannel';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -65,7 +65,7 @@ export class AddPlaylistCommand extends Command {
       create: true,
       guildId: interaction.guildId as string,
       textChannelId: interaction.channelId
-    });
+    }).youtubeData;
 
     const link = interaction.options.getString('link');
 

@@ -1,8 +1,11 @@
-import { getVoiceConnection } from '@discordjs/voice';
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
 import type { Message } from 'discord.js';
 
-export class IsPlayingPrecondition extends Precondition {
+import { getVoiceConnection } from '@discordjs/voice';
+
+import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
+
+export class IsPlayingYoutubePrecondition extends Precondition {
   public override messageRun(message: Message) {
     return this.check(message.guildId);
   }
@@ -20,8 +23,19 @@ export class IsPlayingPrecondition extends Precondition {
 
     const voiceConnection = getVoiceConnection(guildId);
 
-    if (voiceConnection === null) {
+    if (
+      voiceConnection === undefined ||
+      voiceConnection.state.status !== 'ready'
+    ) {
       return this.error({ message: 'There is no video playing!' });
+    }
+
+    const playingType = getPlayingType(guildId);
+
+    if (playingType !== 'youtube') {
+      return this.error({
+        message: 'The command can only be run when a YouTube video is playing!'
+      });
     }
 
     return this.ok();

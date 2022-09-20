@@ -1,53 +1,5 @@
 import { container } from '@sapphire/framework';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
-
-export class GuildMusicData {
-  videoList: SimpleVideoInfo[];
-  videoListIndex: number;
-  volume: number;
-  loop:
-    | { type: 'off'; emoji: '➡️' }
-    | { type: 'track'; emoji: '🔂' }
-    | { type: 'queue'; emoji: '🔁' };
-  textUpdateChannelId: string;
-  musicAnnounceStyle: 'full' | 'minimal' | 'none';
-
-  constructor(textUpdateChannelId: string) {
-    this.videoList = [];
-    this.videoListIndex = 0;
-    this.volume = 0.4;
-    this.loop = {
-      type: 'off',
-      emoji: '➡️'
-    };
-    this.textUpdateChannelId = textUpdateChannelId;
-    this.musicAnnounceStyle = 'full';
-  }
-
-  isPlaying() {
-    return this.videoList[this.videoListIndex] !== undefined;
-  }
-
-  currentVideo() {
-    return this.videoList[this.videoListIndex];
-  }
-
-  getQueue() {
-    return this.videoList.slice(this.videoListIndex + 1);
-  }
-
-  getHistory() {
-    return this.videoList.slice(0, this.videoListIndex);
-  }
-
-  modifyIndex(amount: number) {
-    this.videoListIndex += amount;
-
-    if (this.loop.type !== 'track') {
-      this.videoListIndex--;
-    }
-  }
-}
+import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
 
 export function getGuildMusicData({
   guildId,

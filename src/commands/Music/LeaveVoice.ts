@@ -1,14 +1,12 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
+import { getVoiceConnection } from '@discordjs/voice';
 
-import {
-  getGuildMusicData,
-  GuildMusicData
-} from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
+import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
+import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
+import { disconnectRadioWebsocket } from '../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -43,14 +41,11 @@ export class LeaveVCCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // This command can only be run inside a guild.
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId!)!;
+    const voiceConnection = getVoiceConnection(interaction.guildId as string)!;
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
-
-    if (audioPlayer === undefined) {
+    if (voiceConnection === undefined || audioPlayer === undefined) {
       interaction.reply('There is no video playing!');
       return;
     }
@@ -64,16 +59,23 @@ export class LeaveVCCommand extends Command {
 
     switch (clear) {
       case 'queue':
-        guildMusicData.videoList.splice(
-          guildMusicData.videoListIndex,
-          guildMusicData.videoList.length - guildMusicData.videoListIndex
-        );
+        if (guildMusicData.youtubeData !== undefined) {
+          guildMusicData.youtubeData.videoList.splice(
+            guildMusicData.youtubeData.videoListIndex,
+            guildMusicData.youtubeData.videoList.length -
+              guildMusicData.youtubeData.videoListIndex
+          );
+        }
         break;
       case 'data':
         this.container.guildMusicDataMap.delete(interaction.guildId as string);
         break;
       default:
         break;
+    }
+
+    if (getPlayingType(interaction.guildId as string) === 'radio') {
+      disconnectRadioWebsocket(interaction.guildId as string);
     }
 
     const voiceChannelName = interaction.guild?.me?.voice.channel?.name;
