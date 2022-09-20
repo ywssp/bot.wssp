@@ -7,9 +7,16 @@ A Discord bot that uses slash commands.
 - Has music commands, with a song history
 - No API keys required (Except for the discord bot token)
 
+### `v13-sapphire-radio` branch info
+This branch contains a beta version of the bot that has a radio command.
+
+Do not use this branch unless you want to help test it.
+
+_The `radio` command will literally stop working when you run the `play` command. You can ony fix it when you restart the bot._
+
 ## Pre-requisites
 - Node.js 16.6.0 or higher, with Additional Tools for Node.js
-- A Discord bot account 
+- A Discord bot account
 - - Create a Discord bot application [here](https://discord.com/developers/applications) (Instructions [here](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
 
 ## Usage
