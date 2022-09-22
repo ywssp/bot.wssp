@@ -7,6 +7,7 @@ import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import { disconnectRadioWebsocket } from '../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
+import { unsubscribeVoiceConnection } from '../../functions/music-utilities/unsubscribeVoiceConnection';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -41,8 +42,7 @@ export class LeaveVCCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId as string)!;
+    const voiceConnection = getVoiceConnection(interaction.guildId as string);
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (voiceConnection === undefined || audioPlayer === undefined) {
@@ -50,14 +50,15 @@ export class LeaveVCCommand extends Command {
       return;
     }
 
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    }) as GuildMusicData;
+    const guildMusicData = getGuildMusicData(
+      interaction.guildId as string
+    ) as GuildMusicData;
 
-    const clear = interaction.options.getString('clear');
+    if (getPlayingType(interaction.guildId as string) === 'radio') {
+      disconnectRadioWebsocket(interaction.guildId as string);
+    }
 
-    switch (clear) {
+    switch (interaction.options.getString('clear') as 'queue' | 'data' | null) {
       case 'queue':
         if (guildMusicData.youtubeData !== undefined) {
           guildMusicData.youtubeData.videoList.splice(
@@ -74,14 +75,11 @@ export class LeaveVCCommand extends Command {
         break;
     }
 
-    if (getPlayingType(interaction.guildId as string) === 'radio') {
-      disconnectRadioWebsocket(interaction.guildId as string);
-    }
-
     const voiceChannelName = interaction.guild?.me?.voice.channel?.name;
 
     audioPlayer.removeAllListeners();
     audioPlayer.stop();
+    unsubscribeVoiceConnection(interaction.guildId as string);
     voiceConnection.destroy();
     interaction.reply(`🛑 | Left the voice channel \`${voiceChannelName}\``);
     return;

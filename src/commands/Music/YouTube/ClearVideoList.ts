@@ -34,12 +34,11 @@ export class ClearVideoListCommand extends Command {
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })!.youtubeData;
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )!.youtubeData;
 
-    if (guildMusicData.videoList.length === 0) {
+    if (guildYoutubeData.videoList.length === 0) {
       interaction.reply({
         content: 'The video list is empty.',
         ephemeral: true
@@ -48,16 +47,16 @@ export class ClearVideoListCommand extends Command {
     }
 
     if (interaction.options.getSubcommand() === 'queue') {
-      guildMusicData.videoList.splice(
-        guildMusicData.videoListIndex + 1,
-        guildMusicData.videoList.length - guildMusicData.videoListIndex - 1
+      guildYoutubeData.videoList.splice(
+        guildYoutubeData.videoListIndex + 1,
+        guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex - 1
       );
 
-      interaction.reply('🗑 | Cleared the queue.');
+      interaction.reply('🗑 | Cleared the video queue.');
     }
     if (interaction.options.getSubcommand() === 'history') {
-      guildMusicData.videoList.splice(0, guildMusicData.videoListIndex);
-      guildMusicData.videoListIndex = 0;
+      guildYoutubeData.videoList.splice(0, guildYoutubeData.videoListIndex);
+      guildYoutubeData.videoListIndex = 0;
 
       interaction.reply('🗑 | Cleared the video history.');
     }

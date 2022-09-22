@@ -36,13 +36,15 @@ export class PreviousVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })?.youtubeData;
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData;
 
-    if (typeof guildMusicData === 'undefined') {
-      interaction.reply('The queue is empty.');
+    if (
+      guildYoutubeData === undefined ||
+      guildYoutubeData.getHistory().length === 0
+    ) {
+      interaction.reply('❓ | The video history is empty.');
       return;
     }
 
@@ -58,14 +60,17 @@ export class PreviousVideoCommand extends Command {
 
     const skipNumber = interaction.options.getInteger('number') ?? 1;
 
-    if (skipNumber < 1 || skipNumber > guildMusicData.videoListIndex) {
-      interaction.reply({ content: '⛔ | Invalid number.', ephemeral: true });
+    if (skipNumber < 1 || skipNumber > guildYoutubeData.videoListIndex) {
+      interaction.reply({
+        content: `⛔ | Invalid number. The number must be between \`1-${guildYoutubeData.videoListIndex}\`.`,
+        ephemeral: true
+      });
       return;
     }
 
-    const skippedVideos = guildMusicData.videoList.slice(
-      guildMusicData.videoListIndex - skipNumber + 1,
-      guildMusicData.videoListIndex + 1
+    const skippedVideos = guildYoutubeData.videoList.slice(
+      guildYoutubeData.videoListIndex - skipNumber + 1,
+      guildYoutubeData.videoListIndex + 1
     );
 
     const embed = new MessageEmbed()
@@ -79,7 +84,7 @@ export class PreviousVideoCommand extends Command {
       embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
     }
 
-    guildMusicData.modifyIndex(-skipNumber);
+    guildYoutubeData.modifyIndex(-skipNumber);
 
     audioPlayer.stop();
     interaction.reply({ embeds: [embed] });

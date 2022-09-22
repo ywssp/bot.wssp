@@ -29,10 +29,9 @@ export class DisplayHistoryCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const history = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })?.youtubeData.getHistory();
+    const history = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData.getHistory();
 
     if (history === undefined || history.length === 0) {
       interaction.reply('❓ | The video history is empty.');

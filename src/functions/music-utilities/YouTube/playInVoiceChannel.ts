@@ -5,8 +5,6 @@ import {
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
-  getVoiceConnection,
-  joinVoiceChannel,
   NoSubscriberBehavior
 } from '@discordjs/voice';
 import { MessageEmbed, TextBasedChannel, VoiceBasedChannel } from 'discord.js';
@@ -18,6 +16,8 @@ import { formatVideoEmbed } from './formatVideoEmbed';
 import { getPlayingType } from '../getPlayingType';
 import { getAudioPlayer } from '../getAudioPlayer';
 import { disconnectRadioWebsocket } from '../LISTEN.moe/disconnectWebsocket';
+import { connectVoiceChannel } from '../connectVoiceChannel';
+import { unsubscribeVoiceConnection } from '../unsubscribeVoiceConnection';
 
 function createNowPlayingMessage(
   video: SimpleVideoInfo,
@@ -29,9 +29,7 @@ function createNowPlayingMessage(
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(video, baseEmbed, {
-      requester: true
-    });
+    const embed = formatVideoEmbed(baseEmbed, video);
 
     if (nextVideo) {
       embed.addFields([
@@ -64,21 +62,18 @@ function createNowPlayingMessage(
 
 export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const guildMusicData = getGuildMusicData({
-    create: false,
-    guildId
-  })!;
+  const guildMusicData = getGuildMusicData(guildId)!;
 
   const youtubeData = guildMusicData.youtubeData;
-
-  const isPlaying = getPlayingType(guildId);
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const textUpdateChannel = client.channels.cache.get(
     guildMusicData.textUpdateChannelId
   ) as TextBasedChannel;
 
-  if (isPlaying === 'radio') {
+  const playingType = getPlayingType(guildId);
+
+  if (playingType === 'radio') {
     textUpdateChannel.send(
       'Disconnecting from the radio to play a YouTube video...'
     );
@@ -87,22 +82,21 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     const audioPlayer = getAudioPlayer(guildId)!;
     audioPlayer.removeAllListeners();
     audioPlayer.stop();
+    unsubscribeVoiceConnection(guildId);
     disconnectRadioWebsocket(guildId);
   }
 
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator
-  });
+  const voiceConnection = connectVoiceChannel(voiceChannel);
 
-  const player = createAudioPlayer({
+  const audioPlayer = createAudioPlayer({
     behaviors: {
       noSubscriber: NoSubscriberBehavior.Play
     }
   });
 
-  player.on('error', (error) => {
+  console.log('Created AudioPlayer for youtube');
+
+  audioPlayer.on('error', (error) => {
     const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
     container.logger.error(
       `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url}\n${error.stack}`
@@ -112,15 +106,14 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
       .setColor(ColorPalette.error)
       .setTitle('Playback Error');
 
-    const embed = formatVideoEmbed(resourceMetadata, baseEmbed).addField(
-      'Error',
-      `${error.name}: ${error.message}`
-    );
+    const embed = formatVideoEmbed(baseEmbed, resourceMetadata);
+
+    embed.addField('Error', `${error.name}: ${error.message}`);
 
     textUpdateChannel.send({ embeds: [embed] });
   });
 
-  player.on(AudioPlayerStatus.Idle, () => {
+  audioPlayer.on(AudioPlayerStatus.Idle, () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const localGuildMusicData = container.guildMusicDataMap.get(
       guildId as string
@@ -136,8 +129,9 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     }
 
     if (localYoutubeData.videoList.length === localYoutubeData.videoListIndex) {
-      player.stop();
-      connection.destroy();
+      audioPlayer.stop();
+      unsubscribeVoiceConnection(guildId);
+      voiceConnection.destroy();
       return;
     }
 
@@ -152,7 +146,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
       }
     );
 
-    player.play(audioResource);
+    audioPlayer.play(audioResource);
 
     const localTextUpdateChannel = client.channels.cache.get(
       guildMusicData.textUpdateChannelId
@@ -173,10 +167,9 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     }
   });
 
+  voiceConnection.subscribe(audioPlayer);
+
   const currentVideo = youtubeData.currentVideo();
-
-  connection.subscribe(player);
-
   const createdResource = createAudioResource(
     ytdl(currentVideo.url, {
       quality: 'highestaudio'
@@ -186,7 +179,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
     }
   );
 
-  player.play(createdResource);
+  audioPlayer.play(createdResource);
 
   if (guildMusicData.musicAnnounceStyle !== 'none') {
     const message = createNowPlayingMessage(

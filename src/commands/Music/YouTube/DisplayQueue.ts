@@ -31,14 +31,16 @@ export class DisplayQueueCommand extends Command {
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })!.youtubeData;
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )!.youtubeData;
 
-    const queue = guildMusicData.getQueue();
+    const queue = guildYoutubeData?.getQueue();
 
-    if (queue.length === 0 && guildMusicData?.loop.type !== 'track') {
+    if (
+      queue === undefined ||
+      (queue.length === 0 && guildYoutubeData?.loop.type !== 'track')
+    ) {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
@@ -48,9 +50,9 @@ export class DisplayQueueCommand extends Command {
       10
     );
 
-    if (guildMusicData.loop.type === 'track') {
+    if (guildYoutubeData.loop.type === 'track') {
       queueChunks[0].unshift(
-        formatVideoField(guildMusicData.currentVideo(), '🔂 ')
+        formatVideoField(guildYoutubeData.currentVideo(), '🔂 ')
       );
     }
 

@@ -34,10 +34,7 @@ export class NowPlayingCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
     if (typeof guildMusicData === 'undefined') {
       interaction.reply({
@@ -54,6 +51,8 @@ export class NowPlayingCommand extends Command {
     } else if (playType === 'radio') {
       interaction.reply(this.getRadioEmbed(guildMusicData));
     }
+
+    return;
   }
 
   public getYoutubeEmbed(
@@ -99,16 +98,12 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(
-      currentVideo,
-      baseEmbed,
-      {
-        requester: true
-      },
-      {
-        duration: durationVisual
-      }
-    );
+    const embed = formatVideoEmbed(baseEmbed, currentVideo);
+
+    embed.spliceFields(2, 1, {
+      name: 'Duration',
+      value: durationVisual
+    });
 
     const playingEmoji = audioPlayer.state.status === 'playing' ? '▶️' : '⏸';
 

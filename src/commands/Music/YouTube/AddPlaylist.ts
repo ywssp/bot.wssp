@@ -5,6 +5,7 @@ import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
 import { play } from '../../../functions/music-utilities/YouTube/playInVoiceChannel';
 
@@ -61,21 +62,13 @@ export class AddPlaylistCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: true,
+    const guildYoutubeData = getGuildMusicData({
       guildId: interaction.guildId as string,
-      textChannelId: interaction.channelId
+      create: true,
+      interaction
     }).youtubeData;
 
-    const link = interaction.options.getString('link');
-
-    if (link === null) {
-      interaction.reply({
-        content: '❓ | No link or query provided.',
-        ephemeral: true
-      });
-      return;
-    }
+    const link = interaction.options.getString('link') as string;
 
     if (!ytpl.validateID(link)) {
       interaction.reply({
@@ -97,7 +90,8 @@ export class AddPlaylistCommand extends Command {
 
     const videos = (
       processedVideos.filter(
-        (result) => result.status === 'fulfilled'
+        (result) =>
+          result.status === 'fulfilled' && !result.value.videoDetails.isPrivate
       ) as PromiseFulfilledResult<ytdl.videoInfo>[]
     ).map((result) => createVideoObject(result.value, interaction.user));
 
@@ -108,19 +102,16 @@ export class AddPlaylistCommand extends Command {
       return;
     }
 
-    const isPlaying = guildMusicData.isPlaying();
-
-    const loop = interaction.options.getBoolean('loop') ?? false;
-    if (loop) {
-      guildMusicData.loop = {
+    if (interaction.options.getBoolean('loop')) {
+      guildYoutubeData.loop = {
         type: 'queue',
         emoji: '🔁'
       };
     }
 
-    const modifier = interaction.options.getString('modifier');
-
-    switch (modifier) {
+    switch (
+      interaction.options.getString('modifier') as 'shuffle' | 'reverse' | null
+    ) {
       case 'shuffle':
         videos.sort(() => Math.random() - 0.5);
         break;
@@ -158,9 +149,9 @@ export class AddPlaylistCommand extends Command {
       embeds: [embed]
     });
 
-    guildMusicData.videoList.push(...videos);
+    guildYoutubeData.videoList.push(...videos);
 
-    if (isPlaying && interaction.guild?.me?.voice.channel) {
+    if (getPlayingType(interaction.guildId as string) === 'youtube') {
       return;
     }
 

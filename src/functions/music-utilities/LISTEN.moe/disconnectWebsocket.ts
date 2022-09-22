@@ -1,10 +1,7 @@
 import { getGuildMusicData } from '../getGuildMusicData';
 
 export function disconnectRadioWebsocket(guildId: string) {
-  const guildMusicData = getGuildMusicData({
-    guildId,
-    create: false
-  });
+  const guildMusicData = getGuildMusicData(guildId);
 
   if (typeof guildMusicData === 'undefined') {
     return;

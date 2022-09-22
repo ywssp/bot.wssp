@@ -2,6 +2,7 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed, GuildMember } from 'discord.js';
 
 import ytdl from 'ytdl-core';
+import { validateID } from 'ytpl';
 import ytsr from 'ytsr';
 
 import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
@@ -43,15 +44,23 @@ export class PlayMusicCommand extends Command {
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData({
-      create: true,
       guildId: interaction.guildId as string,
-      textChannelId: interaction.channelId
+      create: true,
+      interaction
     }).youtubeData;
 
     const linkOrQuery = interaction.options.getString('link-or-query');
 
     if (linkOrQuery === null) {
       interaction.reply('No link or query provided.');
+      return;
+    }
+
+    if (validateID(linkOrQuery)) {
+      interaction.reply({
+        content: 'Playlist detected. Use the `addplaylist` command instead.',
+        ephemeral: true
+      });
       return;
     }
 
@@ -90,7 +99,7 @@ export class PlayMusicCommand extends Command {
       .setColor(ColorPalette.success)
       .setTitle('Added video to queue');
 
-    const embed = formatVideoEmbed(video, baseEmbed);
+    const embed = formatVideoEmbed(baseEmbed, video);
 
     if (video.thumbnail) {
       embed.setThumbnail(video.thumbnail);

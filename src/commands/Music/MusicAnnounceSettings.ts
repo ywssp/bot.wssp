@@ -55,12 +55,9 @@ export class MusicAnnounceSettingsCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (typeof guildMusicData === 'undefined') {
+    if (guildMusicData === undefined) {
       interaction.reply({
         content: '❓ | There is no video playing.',
         ephemeral: true

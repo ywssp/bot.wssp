@@ -7,10 +7,7 @@ import { getGuildMusicData } from '../getGuildMusicData';
 import { formatSongEmbed } from './formatRadioSongEmbed';
 
 export function setupRadioWebsocket(guildId: string, channel: 'jpop' | 'kpop') {
-  const guildMusicData = getGuildMusicData({
-    guildId,
-    create: false
-  });
+  const guildMusicData = getGuildMusicData(guildId);
 
   if (typeof guildMusicData === 'undefined') {
     return;
@@ -19,6 +16,7 @@ export function setupRadioWebsocket(guildId: string, channel: 'jpop' | 'kpop') {
   const websocketUrl =
     'wss://listen.moe' + (channel === 'kpop' ? '/kpop' : '') + '/gateway_v2';
   const websocket = new WebSocket(websocketUrl);
+
   websocket.onmessage = (event) => {
     const data = JSON.parse(event.data as string) as RadioWebsocketUpdate;
 

@@ -37,10 +37,9 @@ export class SetLoopCommand extends Command {
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })!.youtubeData;
+    const guildMusicData = getGuildMusicData(
+      interaction.guildId as string
+    )!.youtubeData;
 
     const mode = interaction.options.getString('mode') as
       | 'off'

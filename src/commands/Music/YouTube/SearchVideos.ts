@@ -10,7 +10,6 @@ import {
 import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
 
-import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
@@ -47,25 +46,23 @@ export class PlayMusicCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: true,
+    const guildYoutubeData = getGuildMusicData({
       guildId: interaction.guildId as string,
-      textChannelId: interaction.channelId
+      create: true,
+      interaction
     }).youtubeData;
 
-    const query = interaction.options.getString('query');
+    const query = interaction.options.getString('query') as string;
 
-    if (query === null) {
+    if (query.length < 3) {
       interaction.reply({
-        content: 'No search query provided.',
+        content: 'The query must be at least 3 characters long.',
         ephemeral: true
       });
       return;
     }
 
     interaction.deferReply();
-
-    let video: SimpleVideoInfo;
 
     const searchFilter = (await ytsr.getFilters(query))
       .get('Type')
@@ -82,26 +79,12 @@ export class PlayMusicCommand extends Command {
 
     const actionRows = [
       new MessageActionRow().addComponents(
-        new MessageButton()
-          .setCustomId('video1')
-          .setLabel('1')
-          .setStyle('SECONDARY'),
-        new MessageButton()
-          .setCustomId('video2')
-          .setLabel('2')
-          .setStyle('SECONDARY'),
-        new MessageButton()
-          .setCustomId('video3')
-          .setLabel('3')
-          .setStyle('SECONDARY'),
-        new MessageButton()
-          .setCustomId('video4')
-          .setLabel('4')
-          .setStyle('SECONDARY'),
-        new MessageButton()
-          .setCustomId('video5')
-          .setLabel('5')
-          .setStyle('SECONDARY')
+        [1, 2, 3, 4, 5].map((number) =>
+          new MessageButton()
+            .setCustomId('video' + number.toString())
+            .setLabel(number.toString())
+            .setStyle('SECONDARY')
+        )
       ),
       new MessageActionRow().addComponents(
         new MessageButton()
@@ -134,8 +117,10 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
+    let collected;
+
     try {
-      const collected = await selectionMessage.awaitMessageComponent({
+      collected = await selectionMessage.awaitMessageComponent({
         filter: (i: MessageComponentInteraction) => {
           i.deferUpdate();
           return i.user.id === interaction.user.id;
@@ -143,43 +128,44 @@ export class PlayMusicCommand extends Command {
         time: 15000,
         componentType: 'BUTTON'
       });
-
-      if (collected.customId === 'cancel') {
-        selectionMessage.delete();
-        interaction.editReply({
-          content: '🛑 | Selection cancelled.'
-        });
-        return;
-      }
-
-      const videoIndex = parseInt(collected.customId.replace('video', ''));
-
-      video = createVideoObject(
-        await ytdl.getInfo(
-          (searchResults.items[videoIndex - 1] as ytsr.Video).url
-        ),
-        interaction.user
-      );
     } catch (e) {
       interaction.editReply('🛑 | No video selected.');
       selectionMessage.delete();
       return;
     }
 
-    const isPlaying = guildMusicData.isPlaying();
-    guildMusicData.videoList.push(video);
+    selectionMessage.delete();
+
+    if (collected.customId === 'cancel') {
+      selectionMessage.delete();
+      interaction.editReply({
+        content: '🛑 | Selection cancelled.'
+      });
+      return;
+    }
+
+    const videoIndex = parseInt(collected.customId.replace('video', ''));
+
+    const video = createVideoObject(
+      await ytdl.getInfo(
+        (searchResults.items[videoIndex - 1] as ytsr.Video).url
+      ),
+      interaction.user
+    );
+
+    const isPlaying = guildYoutubeData.isPlaying();
+    guildYoutubeData.videoList.push(video);
 
     const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.success)
       .setTitle('Added video to queue');
 
-    const replyEmbed = formatVideoEmbed(video, baseEmbed);
+    const replyEmbed = formatVideoEmbed(baseEmbed, video);
 
     if (video.thumbnail) {
       replyEmbed.setThumbnail(video.thumbnail);
     }
 
-    selectionMessage.delete();
     interaction.editReply({ embeds: [replyEmbed] });
 
     if (isPlaying && interaction.guild?.me?.voice.channel) {

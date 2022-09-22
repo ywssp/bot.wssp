@@ -51,13 +51,12 @@ export class RemoveVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })?.youtubeData;
+    const guildMusicData = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData;
 
     if (
-      typeof guildMusicData === 'undefined' ||
+      guildMusicData === undefined ||
       guildMusicData.getQueue().length === 0
     ) {
       interaction.reply('The queue is empty.');
