@@ -29,7 +29,7 @@ export function setupRadioWebsocket(guildId: string, channel: 'jpop' | 'kpop') {
         }, data.d.heartbeat);
 
         guildMusicData.radioData = {
-          channel,
+          station: channel,
           websocket: {
             connection: websocket,
             heartbeat: heartbeat
@@ -81,7 +81,7 @@ export function setupRadioWebsocket(guildId: string, channel: 'jpop' | 'kpop') {
     guildMusicData.radioData.websocket = null;
     guildMusicData.radioData.lastUpdate = null;
     guildMusicData.radioData.currentSong = undefined;
-    guildMusicData.radioData.channel = 'none';
+    guildMusicData.radioData.station = 'none';
   };
 
   websocket.onerror = (error) => {

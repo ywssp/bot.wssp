@@ -44,7 +44,7 @@ export class JoinRadioCommand extends Command {
         .addStringOption((option) =>
           option
             .setName('channel')
-            .setDescription('The radio channel to join.')
+            .setDescription('The radio station to join.')
             .setRequired(true)
             .addChoices(
               {
@@ -165,7 +165,7 @@ export class JoinRadioCommand extends Command {
       .setDescription(
         `Connected to the LISTEN.moe ${
           channel === 'kpop' ? 'K-Pop' : 'J-Pop'
-        } radio channel.`
+        } radio station.`
       );
 
     interaction.reply({

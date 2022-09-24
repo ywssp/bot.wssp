@@ -133,7 +133,7 @@ export class NowPlayingCommand extends Command {
 
     const embed = new MessageEmbed(formatSongEmbed(currentSong));
     embed.setFooter({
-      text: `${radioData.channel === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
+      text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
     });
 
     const startTime = DateTime.fromISO(

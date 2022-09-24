@@ -13,7 +13,7 @@ export function disconnectRadioWebsocket(guildId: string) {
     guildMusicData.radioData.websocket = null;
   }
 
-  guildMusicData.radioData.channel = 'none';
+  guildMusicData.radioData.station = 'none';
   guildMusicData.radioData.lastUpdate = null;
   guildMusicData.radioData.currentSong = undefined;
 }
