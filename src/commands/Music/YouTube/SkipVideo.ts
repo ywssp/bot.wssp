@@ -84,7 +84,10 @@ export class SkipVideoCommand extends Command {
       );
 
     if (skippedVideos.length > 8) {
-      embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
+      embed.addFields({
+        name: '\u200b',
+        value: `And ${skippedVideos.length - 9} more videos.`
+      });
     }
 
     guildYoutubeData.modifyIndex(skipNumber);

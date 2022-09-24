@@ -41,7 +41,7 @@ export class EmbedTestCommand extends Command {
       .setTitle('Bot Information');
 
     if (client.user) {
-      embed.addField('Name', client.user.tag, true);
+      embed.addFields({ name: 'Name', value: client.user.tag, inline: true });
       embed.setThumbnail(client.user.displayAvatarURL());
     }
 
@@ -57,7 +57,11 @@ export class EmbedTestCommand extends Command {
         botReadyTimestamp += `\nUptime: ${uptimeDuration.days}d ${uptimeDuration.hours}h ${uptimeDuration.minutes}m ${uptimeDuration.seconds}s`;
       }
 
-      embed.addField('Started in', botReadyTimestamp, true);
+      embed.addFields({
+        name: 'Started In',
+        value: botReadyTimestamp,
+        inline: true
+      });
     }
 
     return embed;

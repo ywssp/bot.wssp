@@ -113,7 +113,10 @@ export class RemoveVideoCommand extends Command {
       );
 
     if (removedVideos.length > 8) {
-      embed.addField('\u200b', `And ${removedVideos.length - 9} more videos.`);
+      embed.addFields({
+        name: '\u200b',
+        value: `And ${removedVideos.length - 9} more videos.`
+      });
     }
 
     interaction.reply({ embeds: [embed] });

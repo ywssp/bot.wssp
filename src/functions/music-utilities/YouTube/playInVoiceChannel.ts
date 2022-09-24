@@ -108,7 +108,10 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
 
     const embed = formatVideoEmbed(baseEmbed, resourceMetadata);
 
-    embed.addField('Error', `${error.name}: ${error.message}`);
+    embed.addFields({
+      name: 'Error',
+      value: `${error.name}: ${error.message}`
+    });
 
     textUpdateChannel.send({ embeds: [embed] });
   });

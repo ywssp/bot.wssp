@@ -290,7 +290,7 @@ export class TetrioCommand extends Command {
       leagueDescription = 'Never Played';
     }
 
-    embed.addField('TETRA LEAGUE', leagueDescription);
+    embed.addFields({ name: 'TETRA LEAGUE', value: leagueDescription });
     // Single Player Data
     // Blitz
     const blitzData = userRecords.data.records.blitz;
