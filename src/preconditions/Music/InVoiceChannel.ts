@@ -15,19 +15,34 @@ export class InVoiceChannelPrecondition extends Precondition {
       return this.error({ message: 'Failed to get VoiceState data!' });
     }
 
-    const voiceState = member.voice;
+    const memberVoiceChannel = member.voice.channel;
 
-    if (!voiceState.channel || voiceState.channel.type !== 'GUILD_VOICE') {
+    if (!memberVoiceChannel || memberVoiceChannel.type !== 'GUILD_VOICE') {
       return this.error({ message: 'The user is not inside a voice channel!' });
     }
 
-    if (!voiceState.channel.joinable) {
+    if (!memberVoiceChannel.joinable) {
       return this.error({ message: 'Cannot join the voice channel!' });
     }
 
-    if (!voiceState.channel.speakable) {
+    if (!memberVoiceChannel.speakable) {
       return this.error({
         message: 'Cannot play music inside the voice channel!'
+      });
+    }
+
+    if (
+      member.guild.me?.voice.channel === undefined ||
+      member.guild.me?.voice.channel === null
+    ) {
+      this.ok();
+    }
+
+    const clientVoiceChannel = member.guild.me?.voice.channel;
+
+    if (memberVoiceChannel.id !== clientVoiceChannel?.id) {
+      this.error({
+        message: 'The user is not inside the same voice channel as the bot!'
       });
     }
 
