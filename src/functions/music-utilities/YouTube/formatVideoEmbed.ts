@@ -3,10 +3,7 @@ import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 
 export function formatVideoEmbed(
   baseEmbed: MessageEmbed,
-  video: SimpleVideoInfo,
-  include?: {
-    requester?: boolean;
-  }
+  video: SimpleVideoInfo
 ) {
   const embed = new MessageEmbed(baseEmbed).setFields([
     {
