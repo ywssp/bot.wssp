@@ -64,6 +64,8 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
+    interaction.deferReply();
+
     let video: SimpleVideoInfo;
 
     if (ytdl.validateURL(linkOrQuery)) {
@@ -75,9 +77,8 @@ export class PlayMusicCommand extends Command {
       const searchResults = await ytsr(linkOrQuery, { limit: 10 });
 
       if (!searchResults.items.some((item) => item.type === 'video')) {
-        interaction.reply({
-          content: '❓ | No videos found.',
-          ephemeral: true
+        interaction.editReply({
+          content: '❓ | No videos found.'
         });
 
         return;
@@ -101,11 +102,7 @@ export class PlayMusicCommand extends Command {
 
     const embed = formatVideoEmbed(baseEmbed, video);
 
-    if (video.thumbnail) {
-      embed.setThumbnail(video.thumbnail);
-    }
-
-    interaction.reply({ embeds: [embed] });
+    interaction.editReply({ content: null, embeds: [embed] });
 
     if (getPlayingType(interaction.guildId as string) === 'youtube') {
       return;
