@@ -66,10 +66,10 @@ export class JoinRadioCommand extends Command {
       interaction
     });
 
-    const channel = interaction.options.getString('channel') as 'jpop' | 'kpop';
+    const station = interaction.options.getString('channel') as 'jpop' | 'kpop';
 
-    const resourceUrl = `https://listen.moe/${
-      channel === 'kpop' ? '/kpop' : ''
+    const stationURL = `https://listen.moe/${
+      station === 'kpop' ? '/kpop' : ''
     }/stream`;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -90,7 +90,7 @@ export class JoinRadioCommand extends Command {
           ((
             (audioPlayer?.state as AudioPlayerPlayingState)
               .resource as AudioResource<{ url: string }>
-          ).metadata?.url as string) === resourceUrl
+          ).metadata?.url as string) === stationURL
         ) {
           interaction.reply('Already playing from that radio station!');
           return;
@@ -105,7 +105,6 @@ export class JoinRadioCommand extends Command {
       }
 
       audioPlayer.removeAllListeners().stop();
-      // UnsubscribeVoiceConnection(interaction.guildId as string);
     } else {
       audioPlayer = createAudioPlayer({
         behaviors: {
@@ -126,6 +125,7 @@ export class JoinRadioCommand extends Command {
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
         );
 
+      audioPlayer.removeAllListeners().stop();
       voiceConnection.destroy();
       disconnectRadioWebsocket(interaction.guildId as string);
       interaction.channel?.send({
@@ -134,9 +134,11 @@ export class JoinRadioCommand extends Command {
     });
 
     audioPlayer.on(AudioPlayerStatus.Idle, async () => {
-      const radioStream = (await fetch(resourceUrl)).body;
+      const radioStationResource = await this.createRadioStationResource(
+        stationURL
+      );
 
-      if (radioStream === null) {
+      if (radioStationResource === null) {
         const embed = new MessageEmbed()
           .setColor(ColorPalette.error)
           .setTitle('Playback Error')
@@ -144,33 +146,24 @@ export class JoinRadioCommand extends Command {
             'An error occurred while playing music.\nDisconnecting from the voice channel.'
           );
 
+        audioPlayer.removeAllListeners().stop();
         voiceConnection.destroy();
-        disconnectRadioWebsocket(interaction.guildId as string);
         interaction.channel?.send({
           embeds: [embed]
         });
         return;
       }
 
-      const radioResource = createAudioResource(
-        radioStream as unknown as internal.Readable,
-        {
-          metadata: {
-            title: 'LISTEN.moe Radio',
-            url: resourceUrl,
-            type: 'radio'
-          }
-        }
-      );
-
-      audioPlayer.play(radioResource);
+      audioPlayer.play(radioStationResource);
     });
 
     voiceConnection.subscribe(audioPlayer);
 
-    const radioStream = (await fetch(resourceUrl)).body;
+    const radioStationResource = await this.createRadioStationResource(
+      stationURL
+    );
 
-    if (radioStream === null) {
+    if (radioStationResource === null) {
       const embed = new MessageEmbed()
         .setColor(ColorPalette.error)
         .setTitle('Playback Error')
@@ -178,6 +171,7 @@ export class JoinRadioCommand extends Command {
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
         );
 
+      audioPlayer.removeAllListeners().stop();
       voiceConnection.destroy();
       interaction.channel?.send({
         embeds: [embed]
@@ -185,32 +179,37 @@ export class JoinRadioCommand extends Command {
       return;
     }
 
-    const radioResource = createAudioResource(
-      radioStream as unknown as internal.Readable,
-      {
-        metadata: {
-          title: 'LISTEN.moe Radio',
-          url: resourceUrl,
-          type: 'radio'
-        }
-      }
-    );
+    audioPlayer.play(radioStationResource);
 
-    audioPlayer.play(radioResource);
-
-    setupRadioWebsocket(interaction.guildId as string, channel);
+    setupRadioWebsocket(interaction.guildId as string, station);
 
     const embed = new MessageEmbed()
       .setColor(ColorPalette.success)
       .setTitle('Connected')
       .setDescription(
         `Connected to the LISTEN.moe ${
-          channel === 'kpop' ? 'K-Pop' : 'J-Pop'
+          station === 'kpop' ? 'K-Pop' : 'J-Pop'
         } radio station.`
       );
 
     interaction.editReply({
       embeds: [embed]
+    });
+  }
+
+  private async createRadioStationResource(stationURL: string) {
+    const radioStream = (await fetch(stationURL)).body;
+
+    if (radioStream === null) {
+      return null;
+    }
+
+    return createAudioResource(radioStream as unknown as internal.Readable, {
+      metadata: {
+        title: 'LISTEN.moe Radio',
+        url: stationURL,
+        type: 'radio'
+      }
     });
   }
 }
