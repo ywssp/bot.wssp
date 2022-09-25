@@ -20,6 +20,7 @@ import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlaye
 import { disconnectRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
 import { connectVoiceChannel } from '../../../functions/music-utilities/connectVoiceChannel';
 import internal from 'stream';
+import { unsubscribeVoiceConnection } from '../../../functions/music-utilities/unsubscribeVoiceConnection';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -126,6 +127,7 @@ export class JoinRadioCommand extends Command {
         );
 
       audioPlayer.removeAllListeners().stop();
+      unsubscribeVoiceConnection(interaction.guildId as string);
       voiceConnection.destroy();
       disconnectRadioWebsocket(interaction.guildId as string);
       interaction.channel?.send({
@@ -147,6 +149,7 @@ export class JoinRadioCommand extends Command {
           );
 
         audioPlayer.removeAllListeners().stop();
+        unsubscribeVoiceConnection(interaction.guildId as string);
         voiceConnection.destroy();
         interaction.channel?.send({
           embeds: [embed]
@@ -172,6 +175,7 @@ export class JoinRadioCommand extends Command {
         );
 
       audioPlayer.removeAllListeners().stop();
+      unsubscribeVoiceConnection(interaction.guildId as string);
       voiceConnection.destroy();
       interaction.channel?.send({
         embeds: [embed]
