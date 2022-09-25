@@ -8,8 +8,7 @@ import {
   AudioPlayerStatus,
   AudioPlayerPlayingState,
   AudioResource,
-  getVoiceConnection,
-  StreamType
+  AudioPlayer
 } from '@discordjs/voice';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
@@ -20,7 +19,7 @@ import { getPlayingType } from '../../../functions/music-utilities/getPlayingTyp
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 import { disconnectRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
 import { connectVoiceChannel } from '../../../functions/music-utilities/connectVoiceChannel';
-import { unsubscribeVoiceConnection } from '../../../functions/music-utilities/unsubscribeVoiceConnection';
+import internal from 'stream';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -60,7 +59,7 @@ export class JoinRadioCommand extends Command {
     );
   }
 
-  public chatInputRun(interaction: ChatInputCommand.Interaction) {
+  public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData({
       guildId: interaction.guildId as string,
       create: true,
@@ -69,15 +68,22 @@ export class JoinRadioCommand extends Command {
 
     const channel = interaction.options.getString('channel') as 'jpop' | 'kpop';
 
-    const resourceUrl = `https://listen.moe${
+    const resourceUrl = `https://listen.moe/${
       channel === 'kpop' ? '/kpop' : ''
-    }/opus`;
+    }/stream`;
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
+
+    const voiceConnection = connectVoiceChannel(voiceChannel);
+
+    let audioPlayer: AudioPlayer;
 
     const playingType = getPlayingType(interaction.guildId as string);
 
     if (playingType !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const audioPlayer = getAudioPlayer(interaction.guildId as string)!;
+      audioPlayer = getAudioPlayer(interaction.guildId as string)!;
 
       if (playingType === 'radio') {
         if (
@@ -86,11 +92,11 @@ export class JoinRadioCommand extends Command {
               .resource as AudioResource<{ url: string }>
           ).metadata?.url as string) === resourceUrl
         ) {
-          interaction.reply('Already playing that radio channel!');
+          interaction.reply('Already playing from that radio station!');
           return;
         }
 
-        interaction.channel?.send('Switching radio channels...');
+        interaction.channel?.send('Switching radio stations...');
 
         guildMusicData.radioData?.websocket?.connection.close();
         clearTimeout(guildMusicData.radioData?.websocket?.heartbeat);
@@ -99,21 +105,16 @@ export class JoinRadioCommand extends Command {
       }
 
       audioPlayer.removeAllListeners().stop();
-      unsubscribeVoiceConnection(interaction.guildId as string);
+      // UnsubscribeVoiceConnection(interaction.guildId as string);
+    } else {
+      audioPlayer = createAudioPlayer({
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Play
+        }
+      });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
-
-    const voiceConnection = connectVoiceChannel(voiceChannel);
-
-    const audioPlayer = createAudioPlayer({
-      behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play
-      }
-    });
-
-    console.log('Created AudioPlayer for radio.');
+    interaction.deferReply();
 
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);
@@ -132,30 +133,70 @@ export class JoinRadioCommand extends Command {
       });
     });
 
-    audioPlayer.on(AudioPlayerStatus.Idle, () => {
-      const radioStream = createAudioResource(resourceUrl, {
-        inputType: StreamType.OggOpus,
+    audioPlayer.on(AudioPlayerStatus.Idle, async () => {
+      const radioStream = (await fetch(resourceUrl)).body;
+
+      if (radioStream === null) {
+        const embed = new MessageEmbed()
+          .setColor(ColorPalette.error)
+          .setTitle('Playback Error')
+          .setDescription(
+            'An error occurred while playing music.\nDisconnecting from the voice channel.'
+          );
+
+        voiceConnection.destroy();
+        disconnectRadioWebsocket(interaction.guildId as string);
+        interaction.channel?.send({
+          embeds: [embed]
+        });
+        return;
+      }
+
+      const radioResource = createAudioResource(
+        radioStream as unknown as internal.Readable,
+        {
+          metadata: {
+            title: 'LISTEN.moe Radio',
+            url: resourceUrl,
+            type: 'radio'
+          }
+        }
+      );
+
+      audioPlayer.play(radioResource);
+    });
+
+    voiceConnection.subscribe(audioPlayer);
+
+    const radioStream = (await fetch(resourceUrl)).body;
+
+    if (radioStream === null) {
+      const embed = new MessageEmbed()
+        .setColor(ColorPalette.error)
+        .setTitle('Playback Error')
+        .setDescription(
+          'An error occurred while playing music.\nDisconnecting from the voice channel.'
+        );
+
+      voiceConnection.destroy();
+      interaction.channel?.send({
+        embeds: [embed]
+      });
+      return;
+    }
+
+    const radioResource = createAudioResource(
+      radioStream as unknown as internal.Readable,
+      {
         metadata: {
           title: 'LISTEN.moe Radio',
           url: resourceUrl,
           type: 'radio'
         }
-      });
-
-      audioPlayer.play(radioStream);
-    });
-
-    voiceConnection.subscribe(audioPlayer);
-
-    const radioStream = createAudioResource(resourceUrl, {
-      metadata: {
-        type: 'radio',
-        title: 'LISTEN.moe Radio',
-        url: resourceUrl
       }
-    });
+    );
 
-    audioPlayer.play(radioStream);
+    audioPlayer.play(radioResource);
 
     setupRadioWebsocket(interaction.guildId as string, channel);
 
@@ -168,7 +209,7 @@ export class JoinRadioCommand extends Command {
         } radio station.`
       );
 
-    interaction.reply({
+    interaction.editReply({
       embeds: [embed]
     });
   }
