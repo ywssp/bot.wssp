@@ -13,6 +13,7 @@ declare module '@sapphire/framework' {
   interface Preconditions {
     InVoiceChannel: never;
     IsPlaying: never;
+    IsPlayingYoutube: never;
     OwnerOnly: never;
     HasGuildMusicData: never;
   }

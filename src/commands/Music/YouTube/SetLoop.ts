@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 
 export class SetLoopCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -9,7 +9,8 @@ export class SetLoopCommand extends Command {
       name: 'loop',
       aliases: [],
       description: 'Sets the loop mode of the music player.',
-      runIn: 'GUILD_ANY'
+      runIn: 'GUILD_ANY',
+      preconditions: ['InVoiceChannel', 'HasGuildMusicData', 'IsPlayingYoutube']
     });
   }
 
@@ -35,21 +36,15 @@ export class SetLoopCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
-
-    if (typeof guildMusicData === 'undefined') {
-      interaction.reply({
-        content: 'There is no video playing.',
-        ephemeral: true
-      });
-      return;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const mode = interaction.options.getString('mode')!;
+    const guildMusicData = getGuildMusicData(
+      interaction.guildId as string
+    )!.youtubeData;
+
+    const mode = interaction.options.getString('mode') as
+      | 'off'
+      | 'track'
+      | 'queue';
 
     switch (mode) {
       case 'queue':

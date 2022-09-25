@@ -1,19 +1,18 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
-
 import { capitalize } from 'lodash';
-import { Duration } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 
 import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
+import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
+import { formatVideoEmbed } from '../../functions/music-utilities/YouTube/formatVideoEmbed';
+import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
+import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
+import { formatSongEmbed } from '../../functions/music-utilities/LISTEN.moe/formatRadioSongEmbed';
+import { RadioWebsocketUpdate } from '../../interfaces/RadioWebsocketUpdate';
 
 import { ColorPalette } from '../../settings/ColorPalette';
-
 export class NowPlayingCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
@@ -35,12 +34,9 @@ export class NowPlayingCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (typeof guildMusicData === 'undefined' || !guildMusicData.isPlaying()) {
+    if (typeof guildMusicData === 'undefined') {
       interaction.reply({
         content: 'There is no video playing.',
         ephemeral: true
@@ -48,30 +44,41 @@ export class NowPlayingCommand extends Command {
       return;
     }
 
-    const currentVideo = guildMusicData.currentVideo();
-    const voiceConnection = getVoiceConnection(interaction.guildId as string);
+    const playType = getPlayingType(interaction.guildId as string);
 
-    if (voiceConnection === undefined) {
-      interaction.reply({
-        content: 'There is no video playing.',
-        ephemeral: true
-      });
-      return;
+    if (playType === 'youtube') {
+      interaction.reply(this.getYoutubeEmbed(interaction, guildMusicData));
+    } else if (playType === 'radio') {
+      interaction.reply(this.getRadioEmbed(guildMusicData));
     }
 
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
+    return;
+  }
+
+  public getYoutubeEmbed(
+    interaction: ChatInputCommand.Interaction,
+    guildMusicData: GuildMusicData
+  ) {
+    const youtubeData = guildMusicData.youtubeData;
+    const currentVideo = youtubeData.currentVideo();
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
+
+    if (audioPlayer === undefined) {
+      return {
+        content: 'There is no video playing.',
+        ephemeral: true
+      };
+    }
 
     if (
       audioPlayer === undefined ||
       (audioPlayer.state.status !== 'playing' &&
         audioPlayer.state.status !== 'paused')
     ) {
-      interaction.reply({
+      return {
         content: '❓ | There is no video playing.',
         ephemeral: true
-      });
-      return;
+      };
     }
 
     let durationVisual = '';
@@ -82,17 +89,7 @@ export class NowPlayingCommand extends Command {
 
       const totalTime = currentVideo.duration;
 
-      const playBackBarLocation = Math.round(
-        (passedTime.toMillis() / totalTime.toMillis()) * 10
-      );
-
-      let seekbar = '';
-      for (let i = 0; i <= 20; i++) {
-        seekbar += i === playBackBarLocation * 2 ? '●' : '─';
-      }
-      durationVisual = `${passedTime.toFormat('m:ss')} | ${totalTime.toFormat(
-        'm:ss'
-      )}\n${seekbar}`;
+      durationVisual = this.getDurationVisual(passedTime, totalTime);
     } else {
       durationVisual = '🔴 Live Stream';
     }
@@ -101,30 +98,78 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(
-      currentVideo,
-      baseEmbed,
-      {
-        requester: true
-      },
-      {
-        duration: durationVisual
-      }
-    );
+    const embed = formatVideoEmbed(baseEmbed, currentVideo);
+
+    embed.spliceFields(2, 1, {
+      name: 'Duration',
+      value: durationVisual
+    });
 
     const playingEmoji = audioPlayer.state.status === 'playing' ? '▶️' : '⏸';
 
     embed.setFooter({
       text: `${playingEmoji} ${capitalize(audioPlayer.state.status)} | ${
-        guildMusicData.loop.emoji
-      } ${capitalize(guildMusicData.loop.type)}`
+        youtubeData.loop.emoji
+      } ${capitalize(youtubeData.loop.type)}`
     });
 
     if (currentVideo.thumbnail) {
       embed.setThumbnail(currentVideo.thumbnail);
     }
 
-    interaction.reply({ embeds: [embed] });
-    return;
+    return { embeds: [embed] };
+  }
+
+  public getRadioEmbed(guildMusicData: GuildMusicData) {
+    const radioData = guildMusicData.radioData;
+    const currentSong = radioData.currentSong;
+
+    if (currentSong === undefined) {
+      return {
+        content: 'There is no song playing.',
+        ephemeral: true
+      };
+    }
+
+    const embed = new MessageEmbed(formatSongEmbed(currentSong));
+    embed.setFooter({
+      text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
+    });
+
+    const startTime = DateTime.fromISO(
+      (radioData.lastUpdate as Exclude<RadioWebsocketUpdate, { op: 0 }>)?.d
+        .startTime
+    );
+    const currentTime = DateTime.now();
+
+    const passedTime = currentTime.diff(startTime);
+
+    const totalTime = Duration.fromObject({
+      seconds: currentSong.duration
+    });
+
+    const durationVisual = this.getDurationVisual(passedTime, totalTime);
+
+    embed.spliceFields(-1, 1, {
+      name: 'Duration',
+      value: durationVisual
+    });
+
+    return { embeds: [embed] };
+  }
+
+  public getDurationVisual(passedTime: Duration, totalTime: Duration) {
+    const playBackBarLocation = Math.round(
+      (passedTime.toMillis() / totalTime.toMillis()) * 10
+    );
+
+    let seekbar = '';
+    for (let i = 0; i <= 20; i++) {
+      seekbar += i === playBackBarLocation * 2 ? '●' : '─';
+    }
+
+    return `${passedTime.toFormat('m:ss')} | ${totalTime.toFormat(
+      'm:ss'
+    )}\n${seekbar}`;
   }
 }

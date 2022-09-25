@@ -1,24 +1,24 @@
 import {
   Listener,
   UserError,
-  MessageCommandDeniedPayload
+  ChatInputCommandDeniedPayload
 } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
-import { ColorPalette } from '../settings/ColorPalette';
+import { ColorPalette } from '../../settings/ColorPalette';
 
-export class MessageCommandDeniedListener extends Listener {
+export class ChatInputCommandDeniedListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
     super(context, {
       ...options,
-      event: 'messageCommandDenied'
+      event: 'chatInputCommandDenied'
     });
   }
-  public run(error: UserError, { message }: MessageCommandDeniedPayload) {
+  public run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
       .setTitle('Cannot run command')
       .setDescription(error.message);
 
-    message.channel.send({ embeds: [embed] });
+    interaction.reply({ embeds: [embed], ephemeral: true });
   }
 }

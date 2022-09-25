@@ -1,15 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
+import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 
 export class PreviousVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -19,7 +15,7 @@ export class PreviousVideoCommand extends Command {
       aliases: [],
       description: 'Plays a video from the music history.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
     });
   }
 
@@ -40,22 +36,19 @@ export class PreviousVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData;
 
-    if (typeof guildMusicData === 'undefined') {
-      interaction.reply('The queue is empty.');
+    if (
+      guildYoutubeData === undefined ||
+      guildYoutubeData.getHistory().length === 0
+    ) {
+      interaction.reply('❓ | The video history is empty.');
       return;
     }
 
-    // This command can only be run inside a guild.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId!)!;
-
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
       interaction.reply({
@@ -67,14 +60,17 @@ export class PreviousVideoCommand extends Command {
 
     const skipNumber = interaction.options.getInteger('number') ?? 1;
 
-    if (skipNumber < 1 || skipNumber > guildMusicData.videoListIndex) {
-      interaction.reply({ content: '⛔ | Invalid number.', ephemeral: true });
+    if (skipNumber < 1 || skipNumber > guildYoutubeData.videoListIndex) {
+      interaction.reply({
+        content: `⛔ | Invalid number. The number must be between \`1-${guildYoutubeData.videoListIndex}\`.`,
+        ephemeral: true
+      });
       return;
     }
 
-    const skippedVideos = guildMusicData.videoList.slice(
-      guildMusicData.videoListIndex - skipNumber + 1,
-      guildMusicData.videoListIndex + 1
+    const skippedVideos = guildYoutubeData.videoList.slice(
+      guildYoutubeData.videoListIndex - skipNumber + 1,
+      guildYoutubeData.videoListIndex + 1
     );
 
     const embed = new MessageEmbed()
@@ -85,10 +81,13 @@ export class PreviousVideoCommand extends Command {
       );
 
     if (skippedVideos.length > 8) {
-      embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
+      embed.addFields({
+        name: '\u200b',
+        value: `And ${skippedVideos.length - 9} more videos.`
+      });
     }
 
-    guildMusicData.modifyIndex(-skipNumber);
+    guildYoutubeData.modifyIndex(-skipNumber);
 
     audioPlayer.stop();
     interaction.reply({ embeds: [embed] });

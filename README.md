@@ -9,7 +9,7 @@ A Discord bot that uses slash commands.
 
 ## Pre-requisites
 - Node.js 16.6.0 or higher, with Additional Tools for Node.js
-- A Discord bot account 
+- A Discord bot account
 - - Create a Discord bot application [here](https://discord.com/developers/applications) (Instructions [here](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot))
 
 ## Usage

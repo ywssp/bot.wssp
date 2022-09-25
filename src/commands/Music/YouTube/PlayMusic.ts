@@ -2,15 +2,17 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed, GuildMember } from 'discord.js';
 
 import ytdl from 'ytdl-core';
+import { validateID } from 'ytpl';
 import ytsr from 'ytsr';
 
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { createVideoObject } from '../../functions/music-utilities/createVideoObject';
-import { formatVideoEmbed } from '../../functions/music-utilities/formatVideoEmbed';
-import { play } from '../../functions/music-utilities/playInVoiceChannel';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
+import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -42,10 +44,10 @@ export class PlayMusicCommand extends Command {
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData({
-      create: true,
       guildId: interaction.guildId as string,
-      textChannelId: interaction.channelId
-    });
+      create: true,
+      interaction
+    }).youtubeData;
 
     const linkOrQuery = interaction.options.getString('link-or-query');
 
@@ -53,6 +55,16 @@ export class PlayMusicCommand extends Command {
       interaction.reply('No link or query provided.');
       return;
     }
+
+    if (validateID(linkOrQuery)) {
+      interaction.reply({
+        content: 'Playlist detected. Use the `addplaylist` command instead.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    interaction.deferReply();
 
     let video: SimpleVideoInfo;
 
@@ -65,9 +77,8 @@ export class PlayMusicCommand extends Command {
       const searchResults = await ytsr(linkOrQuery, { limit: 10 });
 
       if (!searchResults.items.some((item) => item.type === 'video')) {
-        interaction.reply({
-          content: '❓ | No videos found.',
-          ephemeral: true
+        interaction.editReply({
+          content: '❓ | No videos found.'
         });
 
         return;
@@ -83,23 +94,17 @@ export class PlayMusicCommand extends Command {
       );
     }
 
-    const isPlaying = guildMusicData.isPlaying();
-
     guildMusicData.videoList.push(video);
 
     const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.success)
       .setTitle('Added video to queue');
 
-    const embed = formatVideoEmbed(video, baseEmbed);
+    const embed = formatVideoEmbed(baseEmbed, video);
 
-    if (video.thumbnail) {
-      embed.setThumbnail(video.thumbnail);
-    }
+    interaction.editReply({ content: null, embeds: [embed] });
 
-    interaction.reply({ embeds: [embed] });
-
-    if (isPlaying && interaction.guild?.me?.voice.channel) {
+    if (getPlayingType(interaction.guildId as string) === 'youtube') {
       return;
     }
 

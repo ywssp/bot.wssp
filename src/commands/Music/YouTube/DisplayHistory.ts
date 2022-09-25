@@ -3,11 +3,11 @@ import { MessageEmbed } from 'discord.js';
 
 import { chunk } from 'lodash';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-import { createPagedEmbed } from '../../functions/createPagedEmbed';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class DisplayHistoryCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -29,10 +29,9 @@ export class DisplayHistoryCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const history = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })?.getHistory();
+    const history = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData.getHistory();
 
     if (history === undefined || history.length === 0) {
       interaction.reply('❓ | The video history is empty.');

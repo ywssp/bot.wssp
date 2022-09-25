@@ -59,10 +59,13 @@ export class TetrioCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const username = interaction.options.getString('user');
+    const username = interaction.options.getString('user') as string;
 
-    if (username === null || username.length < 0) {
-      return interaction.reply('No username provided!');
+    if (username.length < 3) {
+      return interaction.reply({
+        content: 'Username must be at least 3 characters long!',
+        ephemeral: true
+      });
     }
 
     const userData = await this.getUserData(username);
@@ -98,49 +101,47 @@ export class TetrioCommand extends Command {
     // Easier to use variable
     const userData = userInfo.data.user;
 
-    // Special cases for some user roles
-    if (userData.role === 'bot') {
-      const embed = new MessageEmbed()
-        .setColor('GREY')
-        .setTitle(userData.username.toUpperCase())
-        .setURL(`https://ch.tetr.io/u/${userData.username}`)
-        .setDescription(
-          `This user is a bot.\n${
-            userData.botmaster ? `Operated by ${userData.botmaster}.` : ''
-          }`
-        );
+    let specialEmbed;
 
-      if (typeof userData.avatar_revision !== 'undefined') {
-        embed.setThumbnail(
-          `https://tetr.io/user-content/avatars/${userData._id}.jpg?rv=${userData.avatar_revision}`
-        );
-      }
+    switch (userData.role) {
+      case 'banned':
+        specialEmbed = new MessageEmbed()
+          .setColor(ColorPalette.error)
+          .setTitle(userData.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setThumbnail('https://tetr.io/res/avatar-banned.png')
+          .setDescription('This user is banned.');
+        break;
 
-      return embed;
+      case 'bot':
+        specialEmbed = new MessageEmbed()
+          .setColor('GREY')
+          .setTitle(userData.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setDescription(
+            `This user is a bot.\n${
+              userData.botmaster ? `Operated by ${userData.botmaster}.` : ''
+            }`
+          );
+        break;
+
+      case 'anon':
+        specialEmbed = new MessageEmbed()
+          .setColor('WHITE')
+          .setTitle(userData.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setThumbnail('https://tetr.io/res/avatar.png')
+          .setDescription(
+            'This user is anonymous. Anonymous accounts have no meaningful statistics and cannot save replays.'
+          );
+        break;
+
+      default:
+        break;
     }
 
-    if (userData.role === 'banned') {
-      const embed = new MessageEmbed()
-        .setColor(ColorPalette.error)
-        .setTitle(userData.username.toUpperCase())
-        .setURL(`https://ch.tetr.io/u/${userData.username}`)
-        .setThumbnail('https://tetr.io/res/avatar-banned.png')
-        .setDescription('This user is banned.');
-
-      return embed;
-    }
-
-    if (userData.role === 'anon') {
-      const embed = new MessageEmbed()
-        .setColor('WHITE')
-        .setTitle(userData.username.toUpperCase())
-        .setURL(`https://ch.tetr.io/u/${userData.username}`)
-        .setThumbnail('https://tetr.io/res/avatar.png')
-        .setDescription(
-          'This user is anonymous. Anonymous accounts have no meaningful statistics and cannot save replays.'
-        );
-
-      return embed;
+    if (specialEmbed) {
+      return specialEmbed;
     }
 
     // Calling TETR.IO API for user records (Sprint, Blitz, Zen)
@@ -178,14 +179,15 @@ export class TetrioCommand extends Command {
     // Basic Data
     let description = '';
 
-    if (typeof userData.bio !== 'undefined') {
+    if (userData.bio !== undefined) {
       description += userData.bio + '\n\n';
     }
 
-    if (typeof userData.country !== 'undefined') {
-      if (isValidCountry(userData.country)) {
-        description += `Country: ${getCountryName(userData.country, 'en')}`;
-      }
+    if (
+      typeof userData.country !== 'undefined' &&
+      isValidCountry(userData.country)
+    ) {
+      description += `Country: ${getCountryName(userData.country, 'en')}`;
     }
 
     description +=
@@ -290,7 +292,7 @@ export class TetrioCommand extends Command {
       leagueDescription = 'Never Played';
     }
 
-    embed.addField('TETRA LEAGUE', leagueDescription);
+    embed.addFields({ name: 'TETRA LEAGUE', value: leagueDescription });
     // Single Player Data
     // Blitz
     const blitzData = userRecords.data.records.blitz;

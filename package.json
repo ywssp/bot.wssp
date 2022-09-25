@@ -15,7 +15,8 @@
   "scripts": {
     "start": "node out/main.js",
     "build": "tsc",
-    "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js"
+    "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js",
+    "check-voice-deps": "node out/Utilities/checkVoiceDependencies.js"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.1",
@@ -36,12 +37,12 @@
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^1.1.0",
-    "@discordjs/voice": "^0.10.0",
+    "@discordjs/voice": "^0.11.0",
     "@sapphire/fetch": "^2.4.1",
     "@sapphire/framework": "^3.1.1",
     "chalk": "^4.1.2",
-    "discord-api-types": "^0.37.10",
-    "discord.js": "^13.8.1",
+    "discord-api-types": "^0.37.5",
+    "discord.js": "^13.11.0",
     "dotenv": "^16.0.2",
     "ffmpeg-static": "^5.1.0",
     "i18n-iso-countries": "^7.5.0",
@@ -50,6 +51,8 @@
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "sodium": "^3.0.2",
+    "sodium-native": "^3.4.1",
+    "ws": "^8.8.1",
     "ytdl-core": "^4.11.2",
     "ytpl": "^2.3.0",
     "ytsr": "^3.8.0"

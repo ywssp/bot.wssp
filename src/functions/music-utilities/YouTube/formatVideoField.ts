@@ -1,4 +1,4 @@
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
+import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 
 export function formatVideoField(video: SimpleVideoInfo, prefix?: string) {
   return {

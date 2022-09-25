@@ -3,11 +3,11 @@ import { MessageEmbed } from 'discord.js';
 
 import { chunk } from 'lodash';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-import { createPagedEmbed } from '../../functions/createPagedEmbed';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class DisplayQueueCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -31,14 +31,16 @@ export class DisplayQueueCommand extends Command {
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    })!;
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )!.youtubeData;
 
-    const queue = guildMusicData.getQueue();
+    const queue = guildYoutubeData?.getQueue();
 
-    if (queue.length === 0 && guildMusicData?.loop.type !== 'track') {
+    if (
+      queue === undefined ||
+      (queue.length === 0 && guildYoutubeData?.loop.type !== 'track')
+    ) {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
@@ -48,9 +50,9 @@ export class DisplayQueueCommand extends Command {
       10
     );
 
-    if (guildMusicData.loop.type === 'track') {
+    if (guildYoutubeData.loop.type === 'track') {
       queueChunks[0].unshift(
-        formatVideoField(guildMusicData.currentVideo(), '🔂 ')
+        formatVideoField(guildYoutubeData.currentVideo(), '🔂 ')
       );
     }
 

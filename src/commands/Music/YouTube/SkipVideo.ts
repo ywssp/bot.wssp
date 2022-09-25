@@ -1,15 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
-import {
-  getVoiceConnection,
-  VoiceConnectionReadyState
-} from '@discordjs/voice';
+import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../functions/music-utilities/formatVideoField';
-
-import { ColorPalette } from '../../settings/ColorPalette';
+import { ColorPalette } from '../../../settings/ColorPalette';
+import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 
 export class SkipVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -19,7 +15,7 @@ export class SkipVideoCommand extends Command {
       aliases: [],
       description: 'Skips an amount of videos.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
     });
   }
 
@@ -40,22 +36,16 @@ export class SkipVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      create: false,
-      guildId: interaction.guildId as string
-    });
+    const guildYoutubeData = getGuildMusicData(
+      interaction.guildId as string
+    )?.youtubeData;
 
-    if (typeof guildMusicData === 'undefined') {
+    if (typeof guildYoutubeData === 'undefined') {
       interaction.reply('The queue is empty.');
       return;
     }
 
-    // This command can only be run inside a guild.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceConnection = getVoiceConnection(interaction.guildId!)!;
-
-    const audioPlayer = (voiceConnection.state as VoiceConnectionReadyState)
-      .subscription?.player;
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
       interaction.reply({
@@ -70,15 +60,20 @@ export class SkipVideoCommand extends Command {
     if (
       skipNumber < 1 ||
       skipNumber >=
-        guildMusicData.videoList.length - guildMusicData.videoListIndex
+        guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex
     ) {
-      interaction.reply({ content: '⛔ | Invalid number.', ephemeral: true });
+      interaction.reply({
+        content: `⛔ | Invalid number. The number must be between \`1-${
+          guildYoutubeData.getQueue().length
+        }\`.`,
+        ephemeral: true
+      });
       return;
     }
 
-    const skippedVideos = guildMusicData.videoList.slice(
-      guildMusicData.videoListIndex,
-      guildMusicData.videoListIndex + skipNumber
+    const skippedVideos = guildYoutubeData.videoList.slice(
+      guildYoutubeData.videoListIndex,
+      guildYoutubeData.videoListIndex + skipNumber
     );
 
     const embed = new MessageEmbed()
@@ -89,10 +84,13 @@ export class SkipVideoCommand extends Command {
       );
 
     if (skippedVideos.length > 8) {
-      embed.addField('\u200b', `And ${skippedVideos.length - 9} more videos.`);
+      embed.addFields({
+        name: '\u200b',
+        value: `And ${skippedVideos.length - 9} more videos.`
+      });
     }
 
-    guildMusicData.modifyIndex(skipNumber);
+    guildYoutubeData.modifyIndex(skipNumber);
 
     audioPlayer.stop();
     interaction.reply({ embeds: [embed] });
