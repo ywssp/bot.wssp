@@ -2,6 +2,7 @@ import { container } from '@sapphire/framework';
 const { client } = container;
 
 import {
+  AudioPlayer,
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
@@ -73,26 +74,28 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
 
   const playingType = getPlayingType(guildId);
 
+  const voiceConnection = connectVoiceChannel(voiceChannel);
+
+  let audioPlayer: AudioPlayer;
+
   if (playingType === 'radio') {
     textUpdateChannel.send(
       'Disconnecting from the radio to play a YouTube video...'
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const audioPlayer = getAudioPlayer(guildId)!;
+    audioPlayer = getAudioPlayer(guildId)!;
     audioPlayer.removeAllListeners();
     audioPlayer.stop();
     unsubscribeVoiceConnection(guildId);
     disconnectRadioWebsocket(guildId);
+  } else {
+    audioPlayer = createAudioPlayer({
+      behaviors: {
+        noSubscriber: NoSubscriberBehavior.Play
+      }
+    });
   }
-
-  const voiceConnection = connectVoiceChannel(voiceChannel);
-
-  const audioPlayer = createAudioPlayer({
-    behaviors: {
-      noSubscriber: NoSubscriberBehavior.Play
-    }
-  });
 
   console.log('Created AudioPlayer for youtube');
 
