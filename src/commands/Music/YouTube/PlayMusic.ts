@@ -9,7 +9,7 @@ import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
-import { play } from '../../../functions/music-utilities/YouTube/playInVoiceChannel';
+import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';

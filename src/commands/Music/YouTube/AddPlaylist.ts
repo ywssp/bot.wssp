@@ -7,7 +7,7 @@ import ytpl from 'ytpl';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
-import { play } from '../../../functions/music-utilities/YouTube/playInVoiceChannel';
+import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
