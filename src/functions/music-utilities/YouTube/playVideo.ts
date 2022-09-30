@@ -116,6 +116,13 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
 
     const embed = formatVideoEmbed(baseEmbed, resourceMetadata);
 
+    if (resourceMetadata.duration !== 'Live Stream') {
+      embed.spliceFields(2, 1, {
+        name: 'Duration',
+        value: `${seek} / ${resourceMetadata.duration.toFormat('m:ss')}`
+      });
+    }
+
     embed.addFields({
       name: 'Error',
       value: `${error.name}: ${error.message}`
