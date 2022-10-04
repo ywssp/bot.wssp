@@ -1,7 +1,7 @@
-import { SimpleVideoInfo } from '../SimpleVideoInfo';
+import { SimpleYTVideoInfo } from '../SimpleYTVideoInfo';
 
 export class YouTubeData {
-  videoList: SimpleVideoInfo[];
+  videoList: SimpleYTVideoInfo[];
   videoListIndex: number;
   loop:
     | { type: 'off'; emoji: '➡️' }

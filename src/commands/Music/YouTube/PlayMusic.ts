@@ -5,9 +5,8 @@ import ytdl from 'ytdl-core';
 import { validateID } from 'ytpl';
 import ytsr from 'ytsr';
 
-import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
@@ -66,10 +65,10 @@ export class PlayMusicCommand extends Command {
 
     interaction.deferReply();
 
-    let video: SimpleVideoInfo;
+    let video: SimpleYTVideoInfo;
 
     if (ytdl.validateURL(linkOrQuery)) {
-      video = createVideoObject(
+      video = new SimpleYTVideoInfo(
         await ytdl.getInfo(linkOrQuery),
         interaction.user
       );
@@ -88,7 +87,7 @@ export class PlayMusicCommand extends Command {
         (item) => item.type === 'video'
       ) as ytsr.Video;
 
-      video = createVideoObject(
+      video = new SimpleYTVideoInfo(
         await ytdl.getInfo(foundVideo.url),
         interaction.user
       );

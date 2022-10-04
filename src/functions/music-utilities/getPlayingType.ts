@@ -1,5 +1,5 @@
 import { AudioResource } from '@discordjs/voice';
-import { SimpleVideoInfo } from '../../interfaces/SimpleVideoInfo';
+import { SimpleYTVideoInfo } from '../../interfaces/SimpleYTVideoInfo';
 import { getAudioPlayer } from './getAudioPlayer';
 
 export function getPlayingType(
@@ -20,7 +20,7 @@ export function getPlayingType(
   }
 
   const resource = audioPlayer.state.resource as AudioResource<
-    | SimpleVideoInfo
+    | SimpleYTVideoInfo
     | {
         type: 'radio';
         title: 'LISTEN.moe Radio';
@@ -28,17 +28,12 @@ export function getPlayingType(
       }
   >;
 
-  if (resource === undefined) {
-    return undefined;
+  switch (resource.metadata.type) {
+    case 'youtube':
+      return 'youtube';
+    case 'radio':
+      return 'radio';
+    default:
+      return undefined;
   }
-
-  if (resource.metadata.type === 'youtube') {
-    return 'youtube';
-  }
-
-  if (resource.metadata.type === 'radio') {
-    return 'radio';
-  }
-
-  return undefined;
 }

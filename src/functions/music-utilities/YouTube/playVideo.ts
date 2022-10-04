@@ -15,7 +15,7 @@ import {
   VoiceBasedChannel
 } from 'discord.js';
 import { getGuildMusicData } from '../getGuildMusicData';
-import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
+import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import ytdl from 'ytdl-core';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
@@ -27,9 +27,9 @@ import { unsubscribeVoiceConnection } from '../unsubscribeVoiceConnection';
 import { Duration } from 'luxon';
 
 function createNowPlayingMessage(
-  video: SimpleVideoInfo,
+  video: SimpleYTVideoInfo,
   style: 'full' | 'minimal',
-  nextVideo?: SimpleVideoInfo
+  nextVideo?: SimpleYTVideoInfo
 ): MessageOptions {
   if (style === 'full') {
     const baseEmbed = new MessageEmbed()
@@ -101,7 +101,7 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
   }
 
   audioPlayer.on('error', (error) => {
-    const resourceMetadata = error.resource.metadata as SimpleVideoInfo;
+    const resourceMetadata = error.resource.metadata as SimpleYTVideoInfo;
     const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
       'm:ss'
     );

@@ -6,7 +6,7 @@ import ytpl from 'ytpl';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
-import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -93,7 +93,7 @@ export class AddPlaylistCommand extends Command {
         (result) =>
           result.status === 'fulfilled' && !result.value.videoDetails.isPrivate
       ) as PromiseFulfilledResult<ytdl.videoInfo>[]
-    ).map((result) => createVideoObject(result.value, interaction.user));
+    ).map((result) => new SimpleYTVideoInfo(result.value, interaction.user));
 
     if (videos.length === 0) {
       interaction.editReply({

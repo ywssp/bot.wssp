@@ -11,7 +11,7 @@ import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { createVideoObject } from '../../../functions/music-utilities/YouTube/createVideoObject';
+import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { play } from '../../../functions/music-utilities/YouTube/playVideo';
 
@@ -146,7 +146,7 @@ export class PlayMusicCommand extends Command {
 
     const videoIndex = parseInt(collected.customId.replace('video', ''));
 
-    const video = createVideoObject(
+    const video = new SimpleYTVideoInfo(
       await ytdl.getInfo(
         (searchResults.items[videoIndex - 1] as ytsr.Video).url
       ),

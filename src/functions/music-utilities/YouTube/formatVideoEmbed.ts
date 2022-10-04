@@ -1,9 +1,9 @@
 import { MessageEmbed } from 'discord.js';
-import { SimpleVideoInfo } from '../../../interfaces/SimpleVideoInfo';
+import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 
 export function formatVideoEmbed(
   baseEmbed: MessageEmbed,
-  video: SimpleVideoInfo
+  video: SimpleYTVideoInfo
 ) {
   const embed = new MessageEmbed(baseEmbed).setFields([
     {
