@@ -18,7 +18,6 @@ export class PlayMusicCommand extends Command {
     super(context, {
       ...options,
       name: 'play',
-      aliases: [],
       description: 'Plays a video from YouTube.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']

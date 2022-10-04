@@ -18,7 +18,6 @@ export class NowPlayingCommand extends Command {
     super(context, {
       ...options,
       name: 'nowplaying',
-      aliases: [],
       description: 'Displays the details of the currently playing video.',
       runIn: 'GUILD_ANY',
       preconditions: ['IsPlaying']

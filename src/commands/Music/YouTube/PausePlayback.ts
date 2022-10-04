@@ -7,7 +7,6 @@ export class PausePlaybackCommand extends Command {
     super(context, {
       ...options,
       name: 'pause',
-      aliases: [],
       description: 'Pauses the video playing.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']

@@ -14,7 +14,6 @@ export class DisplayHistoryCommand extends Command {
     super(context, {
       ...options,
       name: 'history',
-      aliases: [],
       description: 'Displays the music history of the server.',
       runIn: 'GUILD_ANY'
     });

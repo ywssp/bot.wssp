@@ -8,7 +8,6 @@ export class MusicAnnounceSettingsCommand extends Command {
     super(context, {
       ...options,
       name: 'music-announce',
-      aliases: [],
       description: 'Changes the music announce settings.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']

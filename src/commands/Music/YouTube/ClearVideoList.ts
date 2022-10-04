@@ -7,7 +7,6 @@ export class ClearVideoListCommand extends Command {
     super(context, {
       ...options,
       name: 'clear',
-      aliases: [],
       description: 'Clears the video history or queue.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'HasGuildMusicData']

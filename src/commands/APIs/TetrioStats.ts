@@ -20,7 +20,6 @@ export class TetrioCommand extends Command {
     super(context, {
       ...options,
       name: 'tetrio',
-      aliases: [],
       description: 'Shows the stats of a TETR.IO user.'
     });
   }

@@ -12,7 +12,6 @@ export class MoveVCCommand extends Command {
     super(context, {
       ...options,
       name: 'move',
-      aliases: [],
       description: 'Moves song playback to another Voice Channel',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']
@@ -30,7 +29,7 @@ export class MoveVCCommand extends Command {
           option
             .setName('voice-channel')
             .setDescription('The voice channel that the bot will move to.')
-            .addChannelTypes(ChannelType.GuildVoice)
+            .addChannelTypes(ChannelType.GuildVoice as 2)
             .setRequired(false)
         )
     );

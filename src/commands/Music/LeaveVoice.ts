@@ -14,7 +14,6 @@ export class LeaveVCCommand extends Command {
     super(context, {
       ...options,
       name: 'leave',
-      aliases: [],
       description: 'Leaves the voice channel.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']

@@ -7,7 +7,6 @@ export class SetLoopCommand extends Command {
     super(context, {
       ...options,
       name: 'loop',
-      aliases: [],
       description: 'Sets the loop mode of the music player.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'HasGuildMusicData', 'IsPlayingYoutube']

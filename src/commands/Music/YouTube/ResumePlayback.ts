@@ -7,7 +7,6 @@ export class ResumePlaybackCommand extends Command {
     super(context, {
       ...options,
       name: 'resume',
-      aliases: [],
       description: 'Resumes the video.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']

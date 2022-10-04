@@ -12,7 +12,6 @@ export class SkipVideoCommand extends Command {
     super(context, {
       ...options,
       name: 'skip',
-      aliases: [],
       description: 'Skips an amount of videos.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']

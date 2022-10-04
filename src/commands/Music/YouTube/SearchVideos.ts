@@ -23,7 +23,6 @@ export class PlayMusicCommand extends Command {
       ...options,
       name: 'search',
       description: 'Searches for multiple videos on YouTube.',
-      aliases: [],
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });

@@ -10,7 +10,6 @@ export class EmbedTestCommand extends Command {
     super(context, {
       ...options,
       name: 'botinfo',
-      aliases: [],
       description: 'Displays information about the bot'
     });
   }

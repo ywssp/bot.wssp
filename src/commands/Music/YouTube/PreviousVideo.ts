@@ -12,7 +12,6 @@ export class PreviousVideoCommand extends Command {
     super(context, {
       ...options,
       name: 'previous',
-      aliases: [],
       description: 'Plays a video from the music history.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']

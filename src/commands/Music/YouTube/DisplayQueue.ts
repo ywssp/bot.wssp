@@ -14,7 +14,6 @@ export class DisplayQueueCommand extends Command {
     super(context, {
       ...options,
       name: 'queue',
-      aliases: [],
       description: 'Displays the music queue of the server.',
       runIn: 'GUILD_ANY',
       preconditions: ['HasGuildMusicData']

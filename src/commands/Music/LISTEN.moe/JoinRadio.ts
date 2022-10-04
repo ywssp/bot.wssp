@@ -27,7 +27,6 @@ export class JoinRadioCommand extends Command {
     super(context, {
       ...options,
       name: 'radio',
-      aliases: [],
       description: 'Joins a LISTEN.moe radio channel.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']

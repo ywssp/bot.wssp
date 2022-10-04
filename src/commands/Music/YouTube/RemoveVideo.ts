@@ -11,7 +11,6 @@ export class RemoveVideoCommand extends Command {
     super(context, {
       ...options,
       name: 'remove',
-      aliases: [],
       description: 'Removes an amount of videos from the queue.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']

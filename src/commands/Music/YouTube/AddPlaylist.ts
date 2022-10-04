@@ -16,7 +16,6 @@ export class AddPlaylistCommand extends Command {
     super(context, {
       ...options,
       name: 'addplaylist',
-      aliases: [],
       description: 'Adds the contents of a YouTube playlist to the queue.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']

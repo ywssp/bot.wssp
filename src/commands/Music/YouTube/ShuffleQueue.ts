@@ -7,7 +7,6 @@ export class ShuffleQueueCommand extends Command {
     super(context, {
       ...options,
       name: 'shuffle',
-      aliases: [],
       description: 'Shuffles the queue.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']

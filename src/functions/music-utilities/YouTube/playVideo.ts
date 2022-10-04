@@ -152,7 +152,8 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
 
     const audioResource = createAudioResource(
       ytdl(currentVideo.url, {
-        quality: 'highestaudio'
+        quality: 140,
+        dlChunkSize: 0
       }),
       {
         metadata: currentVideo
@@ -177,7 +178,8 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
   const currentVideo = youtubeData.currentVideo();
   const createdResource = createAudioResource(
     ytdl(currentVideo.url, {
-      quality: 'highestaudio'
+      quality: 140,
+      dlChunkSize: 0
     }),
     {
       metadata: currentVideo
