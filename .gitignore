@@ -5,3 +5,4 @@ src/commands/Tests
 .env
 out
 notes.txt
+.data

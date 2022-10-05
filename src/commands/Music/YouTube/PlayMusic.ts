@@ -8,7 +8,7 @@ import ytsr from 'ytsr';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
-import { play } from '../../../functions/music-utilities/YouTube/playVideo';
+import { playVideo } from '../../../functions/music-utilities/YouTube/playVideo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
@@ -109,7 +109,7 @@ export class PlayMusicCommand extends Command {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    play(interaction.guildId as string, voiceChannel);
+    playVideo(interaction.guildId as string, voiceChannel);
     return;
   }
 }

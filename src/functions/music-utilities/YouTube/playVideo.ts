@@ -16,7 +16,7 @@ import {
 } from 'discord.js';
 import { getGuildMusicData } from '../getGuildMusicData';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
-import ytdl from 'ytdl-core';
+import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
 import { getPlayingType } from '../getPlayingType';
@@ -25,6 +25,7 @@ import { disconnectRadioWebsocket } from '../LISTEN.moe/disconnectWebsocket';
 import { connectVoiceChannel } from '../connectVoiceChannel';
 import { unsubscribeVoiceConnection } from '../unsubscribeVoiceConnection';
 import { Duration } from 'luxon';
+import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicData';
 
 function createNowPlayingMessage(
   video: SimpleYTVideoInfo,
@@ -67,7 +68,36 @@ function createNowPlayingMessage(
   return { content: text };
 }
 
-export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
+async function playToVoiceChannel(
+  video: SimpleYTVideoInfo,
+  audioPlayer: AudioPlayer,
+  musicData: GuildMusicData
+) {
+  const streamedVideo = await playdl.stream(video.url);
+
+  const resource = createAudioResource(streamedVideo.stream, {
+    inputType: streamedVideo.type,
+    metadata: video
+  });
+
+  audioPlayer.play(resource);
+
+  if (musicData.musicAnnounceStyle !== 'none') {
+    const message = createNowPlayingMessage(
+      video,
+      musicData.musicAnnounceStyle,
+      musicData.youtubeData.videoList[musicData.youtubeData.videoListIndex + 1]
+    );
+
+    const announceChannel = client.channels.cache.get(
+      musicData.textUpdateChannelId
+    ) as TextBasedChannel;
+
+    announceChannel.send(message);
+  }
+}
+
+export function playVideo(guildId: string, voiceChannel: VoiceBasedChannel) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const guildMusicData = getGuildMusicData(guildId)!;
 
@@ -150,51 +180,12 @@ export function play(guildId: string, voiceChannel: VoiceBasedChannel) {
 
     const currentVideo = youtubeData.currentVideo();
 
-    const audioResource = createAudioResource(
-      ytdl(currentVideo.url, {
-        quality: 140,
-        dlChunkSize: 0
-      }),
-      {
-        metadata: currentVideo
-      }
-    );
-
-    audioPlayer.play(audioResource);
-
-    if (guildMusicData.musicAnnounceStyle !== 'none') {
-      const message = createNowPlayingMessage(
-        currentVideo,
-        guildMusicData.musicAnnounceStyle,
-        youtubeData.videoList[youtubeData.videoListIndex + 1]
-      );
-
-      textUpdateChannel.send(message);
-    }
+    playToVoiceChannel(currentVideo, audioPlayer, guildMusicData);
   });
 
   voiceConnection.subscribe(audioPlayer);
 
   const currentVideo = youtubeData.currentVideo();
-  const createdResource = createAudioResource(
-    ytdl(currentVideo.url, {
-      quality: 140,
-      dlChunkSize: 0
-    }),
-    {
-      metadata: currentVideo
-    }
-  );
 
-  audioPlayer.play(createdResource);
-
-  if (guildMusicData.musicAnnounceStyle !== 'none') {
-    const message = createNowPlayingMessage(
-      currentVideo,
-      guildMusicData.musicAnnounceStyle,
-      youtubeData.videoList[youtubeData.videoListIndex + 1]
-    );
-
-    textUpdateChannel.send(message);
-  }
+  playToVoiceChannel(currentVideo, audioPlayer, guildMusicData);
 }

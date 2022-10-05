@@ -7,7 +7,7 @@ import ytpl from 'ytpl';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
-import { play } from '../../../functions/music-utilities/YouTube/playVideo';
+import { playVideo } from '../../../functions/music-utilities/YouTube/playVideo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -157,7 +157,7 @@ export class AddPlaylistCommand extends Command {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    play(interaction.guildId as string, voiceChannel);
+    playVideo(interaction.guildId as string, voiceChannel);
     return;
   }
 }
