@@ -3,6 +3,7 @@ import { SimpleYTVideoInfo } from '../SimpleYTVideoInfo';
 export class YouTubeData {
   videoList: SimpleYTVideoInfo[];
   videoListIndex: number;
+  skipped: boolean;
   loop:
     | { type: 'off'; emoji: '➡️' }
     | { type: 'track'; emoji: '🔂' }
@@ -11,6 +12,7 @@ export class YouTubeData {
   constructor() {
     this.videoList = [];
     this.videoListIndex = 0;
+    this.skipped = false;
     this.loop = {
       type: 'off',
       emoji: '➡️'

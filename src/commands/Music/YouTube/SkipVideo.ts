@@ -90,6 +90,7 @@ export class SkipVideoCommand extends Command {
     }
 
     guildYoutubeData.modifyIndex(skipNumber);
+    guildYoutubeData.skipped = true;
 
     audioPlayer.stop();
     interaction.reply({ embeds: [embed] });

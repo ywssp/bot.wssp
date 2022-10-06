@@ -5,9 +5,8 @@ import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
-import { playVideo } from '../../../functions/music-utilities/YouTube/playVideo';
+import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -150,14 +149,10 @@ export class AddPlaylistCommand extends Command {
 
     guildYoutubeData.videoList.push(...videos);
 
-    if (getPlayingType(interaction.guildId as string) === 'youtube') {
-      return;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    playVideo(interaction.guildId as string, voiceChannel);
+    startQueuePlayback(interaction.guildId as string, voiceChannel);
     return;
   }
 }

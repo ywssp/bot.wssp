@@ -68,7 +68,7 @@ function createNowPlayingMessage(
   return { content: text };
 }
 
-async function playToVoiceChannel(
+async function playVideo(
   video: SimpleYTVideoInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
@@ -81,6 +81,15 @@ async function playToVoiceChannel(
   });
 
   audioPlayer.play(resource);
+
+  if (
+    !musicData.youtubeData.skipped &&
+    musicData.youtubeData.loop.type === 'track'
+  ) {
+    return;
+  }
+
+  musicData.youtubeData.skipped = false;
 
   if (musicData.musicAnnounceStyle !== 'none') {
     const message = createNowPlayingMessage(
@@ -97,10 +106,12 @@ async function playToVoiceChannel(
   }
 }
 
-export function playVideo(guildId: string, voiceChannel: VoiceBasedChannel) {
+export function startQueuePlayback(
+  guildId: string,
+  voiceChannel: VoiceBasedChannel
+) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const guildMusicData = getGuildMusicData(guildId)!;
-
   const youtubeData = guildMusicData.youtubeData;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -122,6 +133,8 @@ export function playVideo(guildId: string, voiceChannel: VoiceBasedChannel) {
     textUpdateChannel.send(
       'Disconnecting from the radio to play a YouTube video...'
     );
+  } else if (playingType === 'youtube') {
+    return;
   } else {
     audioPlayer = createAudioPlayer({
       behaviors: {
@@ -178,14 +191,10 @@ export function playVideo(guildId: string, voiceChannel: VoiceBasedChannel) {
       return;
     }
 
-    const currentVideo = youtubeData.currentVideo();
-
-    playToVoiceChannel(currentVideo, audioPlayer, guildMusicData);
+    playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
   });
 
   voiceConnection.subscribe(audioPlayer);
 
-  const currentVideo = youtubeData.currentVideo();
-
-  playToVoiceChannel(currentVideo, audioPlayer, guildMusicData);
+  playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
 }

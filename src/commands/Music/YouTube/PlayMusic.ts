@@ -8,10 +8,9 @@ import ytsr from 'ytsr';
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
-import { playVideo } from '../../../functions/music-utilities/YouTube/playVideo';
+import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -102,14 +101,10 @@ export class PlayMusicCommand extends Command {
 
     interaction.editReply({ content: null, embeds: [embed] });
 
-    if (getPlayingType(interaction.guildId as string) === 'youtube') {
-      return;
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    playVideo(interaction.guildId as string, voiceChannel);
+    startQueuePlayback(interaction.guildId as string, voiceChannel);
     return;
   }
 }
