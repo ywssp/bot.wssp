@@ -101,10 +101,7 @@ export class AddPlaylistCommand extends Command {
     }
 
     if (interaction.options.getBoolean('loop')) {
-      guildYoutubeData.loop = {
-        type: 'queue',
-        emoji: '🔁'
-      };
+      guildYoutubeData.setLoopType('queue');
     }
 
     switch (

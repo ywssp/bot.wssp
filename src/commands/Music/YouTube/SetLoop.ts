@@ -45,27 +45,7 @@ export class SetLoopCommand extends Command {
       | 'track'
       | 'queue';
 
-    switch (mode) {
-      case 'queue':
-        guildMusicData.loop = {
-          type: 'queue',
-          emoji: '🔁'
-        };
-        break;
-      case 'track':
-        guildMusicData.loop = {
-          type: 'track',
-          emoji: '🔂'
-        };
-        break;
-
-      default:
-        guildMusicData.loop = {
-          type: 'off',
-          emoji: '➡️'
-        };
-        break;
-    }
+    guildMusicData.setLoopType(mode);
 
     interaction.reply(
       `${guildMusicData.loop.emoji} | Loop mode set to \`${mode}\`.`

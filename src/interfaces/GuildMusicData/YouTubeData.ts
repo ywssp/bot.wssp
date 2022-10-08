@@ -35,6 +35,15 @@ export class YouTubeData {
     return this.videoList.slice(0, this.videoListIndex);
   }
 
+  setLoopType(type: 'off' | 'track' | 'queue') {
+    const data = {
+      type,
+      emoji: ['➡️', '🔂', '🔁'][['off', 'track', 'queue'].indexOf(type)]
+    } as typeof this.loop;
+
+    this.loop = data;
+  }
+
   modifyIndex(amount: number) {
     this.videoListIndex += amount;
 
