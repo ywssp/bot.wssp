@@ -194,7 +194,18 @@ export function startQueuePlayback(
       youtubeData.videoListIndex++;
     }
 
+    if (voiceChannel.members.filter((member) => !member.user.bot).size === 0) {
+      textUpdateChannel.send(
+        'No users are inside the voice channel. Stopping...'
+      );
+      audioPlayer.stop();
+      unsubscribeVoiceConnection(guildId);
+      voiceConnection.destroy();
+      return;
+    }
+
     if (youtubeData.videoList.length === youtubeData.videoListIndex) {
+      textUpdateChannel.send('No more videos in the queue. Stopping...');
       audioPlayer.stop();
       unsubscribeVoiceConnection(guildId);
       voiceConnection.destroy();
