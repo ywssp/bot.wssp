@@ -4,6 +4,7 @@ export class YouTubeData {
   videoList: SimpleYTVideoInfo[];
   videoListIndex: number;
   skipped: boolean;
+  shuffle: boolean;
   loop:
     | { type: 'off'; emoji: '➡️' }
     | { type: 'track'; emoji: '🔂' }
@@ -13,6 +14,7 @@ export class YouTubeData {
     this.videoList = [];
     this.videoListIndex = 0;
     this.skipped = false;
+    this.shuffle = false;
     this.loop = {
       type: 'off',
       emoji: '➡️'
@@ -20,7 +22,7 @@ export class YouTubeData {
   }
 
   isPlaying() {
-    return this.videoList[this.videoListIndex] !== undefined;
+    return this.videoListIndex < this.videoList.length;
   }
 
   currentVideo() {

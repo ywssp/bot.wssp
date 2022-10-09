@@ -44,13 +44,23 @@ export class DisplayQueueCommand extends Command {
       return;
     }
 
-    const queueChunks = chunk(
+    const queuePages = chunk(
       queue.map((video, index) => formatVideoField(video, `${index + 1}. `)),
       10
     );
 
+    if (guildYoutubeData.shuffle) {
+      queuePages.forEach((page) =>
+        page.unshift({
+          name: '🔀 | Shuffle',
+          value:
+            'The queue is shuffled. The queue is displaying the possible videos that can be played next.'
+        })
+      );
+    }
+
     if (guildYoutubeData.loop.type === 'track') {
-      queueChunks[0].unshift(
+      queuePages[0].unshift(
         formatVideoField(guildYoutubeData.currentVideo(), '🔂 ')
       );
     }
@@ -59,14 +69,14 @@ export class DisplayQueueCommand extends Command {
       .setColor(ColorPalette.default)
       .setTitle('Queue');
 
-    if (queueChunks.length === 1) {
-      embed.addFields(queueChunks[0]);
+    if (queuePages.length === 1) {
+      embed.addFields(queuePages[0]);
 
       interaction.reply({ embeds: [embed] });
       return;
     }
 
-    createPagedEmbed(interaction, queueChunks, embed);
+    createPagedEmbed(interaction, queuePages, embed);
     return;
   }
 }

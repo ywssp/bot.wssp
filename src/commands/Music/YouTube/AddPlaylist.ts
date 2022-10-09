@@ -45,16 +45,10 @@ export class AddPlaylistCommand extends Command {
             .setName('modifier')
             .setDescription('The modifier to use when adding the playlist.')
             .setRequired(false)
-            .setChoices(
-              {
-                name: 'Shuffle',
-                value: 'shuffle'
-              },
-              {
-                name: 'Reverse',
-                value: 'reverse'
-              }
-            )
+            .setChoices({
+              name: 'Reverse',
+              value: 'reverse'
+            })
         )
     );
   }
@@ -104,12 +98,7 @@ export class AddPlaylistCommand extends Command {
       guildYoutubeData.setLoopType('queue');
     }
 
-    switch (
-      interaction.options.getString('modifier') as 'shuffle' | 'reverse' | null
-    ) {
-      case 'shuffle':
-        videos.sort(() => Math.random() - 0.5);
-        break;
+    switch (interaction.options.getString('modifier') as 'reverse' | null) {
       case 'reverse':
         videos.reverse();
         break;

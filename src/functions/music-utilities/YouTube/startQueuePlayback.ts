@@ -28,11 +28,14 @@ import { Duration } from 'luxon';
 import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicData';
 
 function createNowPlayingMessage(
-  video: SimpleYTVideoInfo,
-  style: 'full' | 'minimal',
-  nextVideo?: SimpleYTVideoInfo
+  guildMusicData: GuildMusicData
 ): MessageOptions {
-  if (style === 'full') {
+  const video = guildMusicData.youtubeData.currentVideo();
+  const nextVideo = guildMusicData.youtubeData.videoList[
+    guildMusicData.youtubeData.videoListIndex + 1
+  ] as SimpleYTVideoInfo | undefined;
+
+  if (guildMusicData.musicAnnounceStyle === 'full') {
     const baseEmbed = new MessageEmbed()
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
@@ -40,14 +43,21 @@ function createNowPlayingMessage(
     const embed = formatVideoEmbed(baseEmbed, video);
 
     if (nextVideo) {
+      let nextString = '';
+      if (guildMusicData.youtubeData.shuffle) {
+        nextString = '🔀 | The next song is a random song from the queue.';
+      } else {
+        `[${nextVideo.title}](${nextVideo.url}) by [${nextVideo.channel.name}](${nextVideo.channel.url})`;
+      }
+
       embed.addFields([
         {
           name: `\u200B`,
           value: '\u200B'
         },
         {
-          name: 'Next Video',
-          value: `[${nextVideo.title}](${nextVideo.url}) by [${nextVideo.channel.name}](${nextVideo.channel.url})`
+          name: 'Next',
+          value: nextString
         }
       ]);
     }
@@ -62,7 +72,11 @@ function createNowPlayingMessage(
   } | By ${video.channel.name}`;
 
   if (nextVideo) {
-    text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.channel.name}`;
+    if (guildMusicData.youtubeData.shuffle) {
+      text += '\n🔀 | The next song is a random song from the queue.';
+    } else {
+      text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.channel.name}`;
+    }
   }
 
   return { content: text };
@@ -92,11 +106,7 @@ async function playVideo(
   musicData.youtubeData.skipped = false;
 
   if (musicData.musicAnnounceStyle !== 'none') {
-    const message = createNowPlayingMessage(
-      video,
-      musicData.musicAnnounceStyle,
-      musicData.youtubeData.videoList[musicData.youtubeData.videoListIndex + 1]
-    );
+    const message = createNowPlayingMessage(musicData);
 
     const announceChannel = client.channels.cache.get(
       musicData.textUpdateChannelId
@@ -189,6 +199,20 @@ export function startQueuePlayback(
       unsubscribeVoiceConnection(guildId);
       voiceConnection.destroy();
       return;
+    }
+
+    if (youtubeData.shuffle && youtubeData.loop.type !== 'track') {
+      const randomIndex = Math.floor(
+        Math.random() * youtubeData.getQueue().length
+      );
+
+      const selectedVideo = youtubeData.videoList.splice(randomIndex, 1)[0];
+
+      youtubeData.videoList.splice(
+        youtubeData.videoListIndex,
+        0,
+        selectedVideo
+      );
     }
 
     playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);

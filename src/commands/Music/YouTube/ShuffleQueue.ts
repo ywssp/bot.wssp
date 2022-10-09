@@ -7,7 +7,7 @@ export class ShuffleQueueCommand extends Command {
     super(context, {
       ...options,
       name: 'shuffle',
-      description: 'Shuffles the queue.',
+      description: 'Toggles the shuffle mode of the music player.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']
     });
@@ -17,7 +17,15 @@ export class ShuffleQueueCommand extends Command {
     registry: ChatInputCommand.Registry
   ) {
     registry.registerChatInputCommand((builder) =>
-      builder.setName(this.name).setDescription(this.description)
+      builder
+        .setName(this.name)
+        .setDescription(this.description)
+        .addBooleanOption((option) =>
+          option
+            .setName('shuffle')
+            .setDescription('Where to toggle the shuffle mode.')
+            .setRequired(false)
+        )
     );
   }
 
@@ -26,34 +34,22 @@ export class ShuffleQueueCommand extends Command {
       interaction.guildId as string
     )?.youtubeData;
 
-    if (
-      typeof guildYoutubeData === 'undefined' ||
-      guildYoutubeData.getQueue().length === 0
-    ) {
+    if (typeof guildYoutubeData === 'undefined') {
       interaction.reply({
-        content: '❓ | The queue is empty.',
+        content: '❓ | There is no song playing.',
         ephemeral: true
       });
       return;
     }
 
-    const queue = guildYoutubeData.videoList.slice(
-      guildYoutubeData.videoListIndex + 1
+    const mode =
+      interaction.options.getBoolean('shuffle') ?? !guildYoutubeData.shuffle;
+
+    guildYoutubeData.shuffle = mode;
+
+    interaction.reply(
+      `${mode ? '🔀' : '➡️'} | Shuffle mode is now \`${mode ? 'on' : 'off'}\`.`
     );
-
-    // Shuffle the queue
-    for (let i = queue.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [queue[i], queue[j]] = [queue[j], queue[i]];
-    }
-
-    guildYoutubeData.videoList.splice(
-      guildYoutubeData.videoListIndex + 1,
-      guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex - 1,
-      ...queue
-    );
-
-    interaction.reply('🔀 | Shuffled the queue.');
     return;
   }
 }

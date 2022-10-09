@@ -37,7 +37,7 @@ export class DisplayHistoryCommand extends Command {
       return;
     }
 
-    const historyChunks = chunk(
+    const historyPages = chunk(
       history.map((video) => formatVideoField(video)).reverse(),
       10
     );
@@ -46,13 +46,13 @@ export class DisplayHistoryCommand extends Command {
       .setColor(ColorPalette.default)
       .setTitle('History');
 
-    if (historyChunks.length === 1) {
-      embed.addFields(historyChunks[0]);
+    if (historyPages.length === 1) {
+      embed.addFields(historyPages[0]);
 
       interaction.reply({ embeds: [embed] });
       return;
     }
 
-    createPagedEmbed(interaction, historyChunks, embed);
+    createPagedEmbed(interaction, historyPages, embed);
   }
 }
