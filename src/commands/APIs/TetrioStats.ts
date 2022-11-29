@@ -50,11 +50,7 @@ export class TetrioCommand extends Command {
 
     const userData = await this.getUserData(username);
 
-    if (typeof userData === 'string') {
-      return message.channel.send(userData);
-    }
-
-    return message.channel.send({ embeds: [userData] });
+    return message.channel.send(userData);
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
@@ -69,14 +65,12 @@ export class TetrioCommand extends Command {
 
     const userData = await this.getUserData(username);
 
-    if (typeof userData === 'string') {
-      return interaction.reply(userData);
-    }
-
-    return interaction.reply({ embeds: [userData] });
+    return interaction.reply(userData);
   }
 
-  private async getUserData(username: string) {
+  private async getUserData(
+    username: string
+  ): Promise<{ content: string } | { embeds: MessageEmbed[] }> {
     // Calling TETR.IO API for user info (Bio, Country, Level, Tetra League)
     let userInfo: TetrioUserInfo;
 
@@ -87,14 +81,16 @@ export class TetrioCommand extends Command {
       );
     } catch (error) {
       this.container.logger.error(error);
-      return `An error occurred.\n${error}`;
+      return { content: `An error occurred.\n${error}` };
     }
 
     // API error
     if (!userInfo.success) {
-      return `An error occurred while fetching the user info.${
-        userInfo.error ? '\n' + userInfo.error : ''
-      }`;
+      return {
+        content: `An error occurred while fetching the user info.${
+          userInfo.error ? '\n' + userInfo.error : ''
+        }`
+      };
     }
 
     // Easier to use variable
@@ -140,7 +136,7 @@ export class TetrioCommand extends Command {
     }
 
     if (specialEmbed) {
-      return specialEmbed;
+      return { embeds: [specialEmbed] };
     }
 
     // Calling TETR.IO API for user records (Sprint, Blitz, Zen)
@@ -153,14 +149,16 @@ export class TetrioCommand extends Command {
       );
     } catch (error) {
       this.container.logger.error(error);
-      return `An error occurred.\n${error}`;
+      return { content: `An error occurred.\n${error}` };
     }
 
     // API error
     if (!userRecords.success) {
-      return `An error occurred while fetching the user records.${
-        userRecords.error ? '\n' + userRecords.error : ''
-      }`;
+      return {
+        content: `An error occurred while fetching the user records.${
+          userRecords.error ? '\n' + userRecords.error : ''
+        }`
+      };
     }
 
     // Create embed
@@ -354,6 +352,6 @@ export class TetrioCommand extends Command {
       }
     ]);
 
-    return embed;
+    return { embeds: [embed] };
   }
 }

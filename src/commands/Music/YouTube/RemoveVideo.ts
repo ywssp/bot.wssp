@@ -2,7 +2,7 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -28,7 +28,7 @@ export class RemoveVideoCommand extends Command {
           option
             .setName('start')
             .setDescription(
-              'Where the removal should start. Defaults to the last video on the queue'
+              'Where the removal should start. Defaults to the recently added video in the queue'
             )
             .setRequired(false)
         )
@@ -50,28 +50,35 @@ export class RemoveVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData(
+    const guildYoutubeData = getGuildMusicData(
       interaction.guildId as string
     )?.youtubeData;
 
     if (
-      guildMusicData === undefined ||
-      guildMusicData.getQueue().length === 0
+      guildYoutubeData === undefined ||
+      guildYoutubeData.getQueue().length === 0
     ) {
       interaction.reply('The queue is empty.');
       return;
     }
 
-    const removalStart =
-      guildMusicData.videoListIndex +
-      (interaction.options.getInteger('start') ?? 1);
+    let removalStart;
+
+    if (interaction.options.getInteger('start')) {
+      removalStart =
+        guildYoutubeData.videoListIndex +
+        (interaction.options.getInteger('start') as number);
+    } else {
+      removalStart = guildYoutubeData.videoList.length - 1;
+    }
+
     const removalAmount = interaction.options.getInteger('amount') ?? 1;
     const removalEnd =
       removalStart + (interaction.options.getInteger('end') ?? removalAmount);
 
     if (
-      removalStart <= guildMusicData.videoListIndex ||
-      removalStart >= guildMusicData.videoList.length
+      removalStart <= guildYoutubeData.videoListIndex ||
+      removalStart >= guildYoutubeData.videoList.length
     ) {
       interaction.reply({
         content: '⛔ | The start index is out of bounds.',
@@ -90,7 +97,7 @@ export class RemoveVideoCommand extends Command {
 
     if (
       removalEnd < removalStart ||
-      removalEnd > guildMusicData.videoList.length
+      removalEnd > guildYoutubeData.videoList.length
     ) {
       interaction.reply({
         content: '⛔ | The end index is out of bounds.',
@@ -99,26 +106,22 @@ export class RemoveVideoCommand extends Command {
       return;
     }
 
-    const removedVideos = guildMusicData.videoList.splice(
+    const removedVideos = guildYoutubeData.videoList.splice(
       removalStart,
       removalEnd - removalStart
     );
 
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle(`Removed ${removedVideos.length} videos from the queue`)
-      .setFields(
-        removedVideos.slice(0, 9).map((video) => formatVideoField(video))
+      .setTitle(
+        `Removed ${removedVideos.length} video${
+          removedVideos.length > 1 ? 's' : ''
+        } from the queue`
       );
 
-    if (removedVideos.length > 8) {
-      embed.addFields({
-        name: '\u200b',
-        value: `And ${removedVideos.length - 9} more videos.`
-      });
-    }
-
-    interaction.reply({ embeds: [embed] });
+    interaction.reply({
+      embeds: [createMultiVideoEmbed(embed, removedVideos)]
+    });
     return;
   }
 }

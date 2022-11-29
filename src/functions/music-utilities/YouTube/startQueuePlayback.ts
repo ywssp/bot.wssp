@@ -47,7 +47,7 @@ function createNowPlayingMessage(
       if (guildMusicData.youtubeData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
-        `[${nextVideo.title}](${nextVideo.url}) by [${nextVideo.channel.name}](${nextVideo.channel.url})`;
+        nextString = `[${nextVideo.title}](${nextVideo.url}) by [${nextVideo.channel.name}](${nextVideo.channel.url})`;
       }
 
       embed.addFields([

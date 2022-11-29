@@ -2,10 +2,10 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { MessageEmbed } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
+import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
 
 export class PreviousVideoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -74,23 +74,19 @@ export class PreviousVideoCommand extends Command {
 
     const embed = new MessageEmbed()
       .setColor(ColorPalette.error)
-      .setTitle(`Skipped ${skippedVideos.length} videos`)
-      .setFields(
-        skippedVideos.slice(0, 9).map((video) => formatVideoField(video))
+      .setTitle(
+        `Skipped ${skippedVideos.length} video${
+          skippedVideos.length > 1 ? 's' : ''
+        } from the queue`
       );
-
-    if (skippedVideos.length > 8) {
-      embed.addFields({
-        name: '\u200b',
-        value: `And ${skippedVideos.length - 9} more videos.`
-      });
-    }
 
     guildYoutubeData.modifyIndex(-skipNumber);
     guildYoutubeData.skipped = true;
 
     audioPlayer.stop();
-    interaction.reply({ embeds: [embed] });
+    interaction.reply({
+      embeds: [createMultiVideoEmbed(embed, skippedVideos)]
+    });
     return;
   }
 }

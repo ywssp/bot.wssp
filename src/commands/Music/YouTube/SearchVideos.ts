@@ -102,7 +102,7 @@ export class PlayMusicCommand extends Command {
           name: `${index + 1}. ${item.title}`,
           value: `[Link](${item.url}) ${
             item.author ? `| [${item.author.name}](${item.author.url})` : ''
-          } | ${item.duration}`
+          } | ${item.duration ? item.duration : 'Live Stream'}`
         }))
       );
 
