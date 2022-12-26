@@ -1,11 +1,13 @@
-import { Command, Args, ChatInputCommand } from '@sapphire/framework';
+import { Command, ChatInputCommand } from '@sapphire/framework';
 import { fetch, FetchResultTypes } from '@sapphire/fetch';
-import { Message, MessageEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 
 import type {
-  RecordEndContext,
+  TetrioUserInfoAPIResponse,
+  TetrioUserRecordsAPIResponse,
   TetrioUserInfo,
-  TetrioUserRecords
+  TetrioUserRecords,
+  RecordEndContext
 } from '../../interfaces/TetrioAPI';
 
 import {
@@ -20,7 +22,7 @@ export class TetrioCommand extends Command {
     super(context, {
       ...options,
       name: 'tetrio',
-      description: 'Shows the stats of a TETR.IO user.'
+      description: 'Displays the info of a TETR.IO user'
     });
   }
 
@@ -33,28 +35,15 @@ export class TetrioCommand extends Command {
         .setDescription(this.description)
         .addStringOption((option) =>
           option
-            .setName('user')
-            .setDescription('The name of the TETR.IO user to check.')
+            .setName('username')
+            .setDescription('The username of the TETR.IO user.')
             .setRequired(true)
         )
     );
   }
 
-  public async messageRun(message: Message, args: Args) {
-    // Argument Processing
-    const username = (await args.pick('string')).toLowerCase();
-
-    if (username.length < 0) {
-      return message.channel.send('No username provided!');
-    }
-
-    const userData = await this.getUserData(username);
-
-    return message.channel.send(userData);
-  }
-
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const username = interaction.options.getString('user') as string;
+    const username = interaction.options.getString('username') as string;
 
     if (username.length < 3) {
       return interaction.reply({
@@ -63,47 +52,46 @@ export class TetrioCommand extends Command {
       });
     }
 
-    const userData = await this.getUserData(username);
+    const userInfo = await this.getUserInfo(username);
 
-    return interaction.reply(userData);
+    return interaction.reply(userInfo);
   }
 
-  private async getUserData(
+  private async getUserInfo(
     username: string
   ): Promise<{ content: string } | { embeds: MessageEmbed[] }> {
     // Calling TETR.IO API for user info (Bio, Country, Level, Tetra League)
-    let userInfo: TetrioUserInfo;
+    let userInfo: TetrioUserInfo['user'];
 
     try {
-      userInfo = await fetch<TetrioUserInfo>(
+      const userInfoRequest = await fetch<TetrioUserInfoAPIResponse>(
         `https://ch.tetr.io/api/users/${username}`,
         FetchResultTypes.JSON
       );
+
+      // API error
+      if (!userInfoRequest.success) {
+        return {
+          content: `An error occurred while fetching the user info.${
+            userInfoRequest.error ? '\n' + userInfoRequest.error : ''
+          }`
+        };
+      }
+
+      userInfo = userInfoRequest.data.user;
     } catch (error) {
       this.container.logger.error(error);
       return { content: `An error occurred.\n${error}` };
     }
 
-    // API error
-    if (!userInfo.success) {
-      return {
-        content: `An error occurred while fetching the user info.${
-          userInfo.error ? '\n' + userInfo.error : ''
-        }`
-      };
-    }
-
-    // Easier to use variable
-    const userData = userInfo.data.user;
-
     let specialEmbed;
 
-    switch (userData.role) {
+    switch (userInfo.role) {
       case 'banned':
         specialEmbed = new MessageEmbed()
           .setColor(ColorPalette.error)
-          .setTitle(userData.username.toUpperCase())
-          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setTitle(userInfo.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setThumbnail('https://tetr.io/res/avatar-banned.png')
           .setDescription('This user is banned.');
         break;
@@ -111,20 +99,26 @@ export class TetrioCommand extends Command {
       case 'bot':
         specialEmbed = new MessageEmbed()
           .setColor('GREY')
-          .setTitle(userData.username.toUpperCase())
-          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setTitle(userInfo.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setDescription(
             `This user is a bot.\n${
-              userData.botmaster ? `Operated by ${userData.botmaster}.` : ''
+              userInfo.botmaster ? `Operated by ${userInfo.botmaster}.` : ''
             }`
           );
+
+        if (userInfo.avatar_revision !== undefined) {
+          specialEmbed.setThumbnail(
+            `https://tetr.io/user-content/avatars/${userInfo._id}.jpg?rv=${userInfo.avatar_revision}`
+          );
+        }
         break;
 
       case 'anon':
         specialEmbed = new MessageEmbed()
           .setColor('WHITE')
-          .setTitle(userData.username.toUpperCase())
-          .setURL(`https://ch.tetr.io/u/${userData.username}`)
+          .setTitle(userInfo.username.toUpperCase())
+          .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setThumbnail('https://tetr.io/res/avatar.png')
           .setDescription(
             'This user is anonymous. Anonymous accounts have no meaningful statistics and cannot save replays.'
@@ -143,60 +137,60 @@ export class TetrioCommand extends Command {
     let userRecords: TetrioUserRecords;
 
     try {
-      userRecords = await fetch<TetrioUserRecords>(
+      const userRecordsRequest = await fetch<TetrioUserRecordsAPIResponse>(
         `https://ch.tetr.io/api/users/${username}/records`,
         FetchResultTypes.JSON
       );
+
+      // API error
+      if (!userRecordsRequest.success) {
+        return {
+          content: `An error occurred while fetching the user records.${
+            userRecordsRequest.error ? '\n' + userRecordsRequest.error : ''
+          }`
+        };
+      }
+
+      userRecords = userRecordsRequest.data;
     } catch (error) {
       this.container.logger.error(error);
       return { content: `An error occurred.\n${error}` };
     }
 
-    // API error
-    if (!userRecords.success) {
-      return {
-        content: `An error occurred while fetching the user records.${
-          userRecords.error ? '\n' + userRecords.error : ''
-        }`
-      };
-    }
-
     // Create embed
     const embed = new MessageEmbed()
       .setColor(ColorPalette.default)
-      .setTitle(userData.username.toUpperCase())
-      .setURL(`https://ch.tetr.io/u/${userData.username}`);
+      .setTitle(userInfo.username.toUpperCase())
+      .setURL(`https://ch.tetr.io/u/${userInfo.username}`);
 
-    if (typeof userData.avatar_revision !== undefined) {
+    if (typeof userInfo.avatar_revision !== undefined) {
       embed.setThumbnail(
-        `https://tetr.io/user-content/avatars/${userData._id}.jpg?rv=${userData.avatar_revision}`
+        `https://tetr.io/user-content/avatars/${userInfo._id}.jpg?rv=${userInfo.avatar_revision}`
       );
     }
 
     // Basic Data
     let description = '';
 
-    if (userData.bio !== undefined) {
-      description += userData.bio + '\n\n';
+    if (userInfo.bio !== undefined) {
+      description += userInfo.bio + '\n\n';
     }
 
     if (
-      typeof userData.country !== 'undefined' &&
-      isValidCountry(userData.country)
+      typeof userInfo.country !== 'undefined' &&
+      isValidCountry(userInfo.country)
     ) {
-      description += `Country: ${getCountryName(userData.country, 'en')}`;
+      description += `Country: ${getCountryName(userInfo.country, 'en')}`;
     }
 
-    description +=
-      '\nLevel: ' +
-      Math.floor(
-        Math.pow(userData.xp / 500, 0.6) +
-          userData.xp / (5000 + Math.max(0, userData.xp - 4000000) / 5000) +
-          1
-      );
+    description += `\nLevel: ${Math.floor(
+      Math.pow(userInfo.xp / 500, 0.6) +
+        userInfo.xp / (5000 + Math.max(0, userInfo.xp - 4000000) / 5000) +
+        1
+    )} (${userInfo.xp.toLocaleString()} XP)`;
 
     description += '\nPublic Games: ';
-    switch (userData.gamesplayed) {
+    switch (userInfo.gamesplayed) {
       case -1:
         description += 'Data Hidden';
         break;
@@ -206,11 +200,11 @@ export class TetrioCommand extends Command {
 
       default:
         description +=
-          userData.gameswon.toLocaleString() +
+          userInfo.gameswon.toLocaleString() +
           ' W | ' +
-          userData.gamesplayed.toLocaleString() +
+          userInfo.gamesplayed.toLocaleString() +
           ' T [' +
-          +((userData.gameswon / userData.gamesplayed) * 100).toFixed(2) +
+          +((userInfo.gameswon / userInfo.gamesplayed) * 100).toFixed(2) +
           '%]';
         break;
     }
@@ -218,81 +212,85 @@ export class TetrioCommand extends Command {
     embed.setDescription(description);
 
     // Tetra League Data
-    const userLeague = userData.league;
+    const leagueData = userInfo.league;
     let leagueDescription: string;
 
-    if (userLeague.gamesplayed > 0) {
+    if (leagueData.gamesplayed <= 0) {
+      leagueDescription = 'Never Played';
+    } else {
       leagueDescription =
         'Games: ' +
-        userLeague.gameswon.toLocaleString() +
+        leagueData.gameswon.toLocaleString() +
         ' W | ' +
-        userLeague.gamesplayed.toLocaleString() +
+        leagueData.gamesplayed.toLocaleString() +
         ' T [' +
-        +((userLeague.gameswon / userLeague.gamesplayed) * 100).toFixed(2) +
+        ((leagueData.gameswon / leagueData.gamesplayed) * 100).toFixed(2) +
         '%]';
 
       let leagueRank = '';
 
-      if (userLeague.rank !== 'z') {
-        leagueRank = userLeague.rank.toUpperCase();
-        const progressRange = userLeague.next_at - userLeague.prev_at;
-        const relativeRank = userLeague.standing - userLeague.next_at;
+      if (leagueData.rank !== 'z') {
+        leagueRank = leagueData.rank.toUpperCase();
+        const progressRange = leagueData.next_at - leagueData.prev_at;
+        const relativeRank = leagueData.standing - leagueData.next_at;
 
         const progress = Math.floor((relativeRank / progressRange + 1) * 100);
 
-        if (userLeague.rank !== 'x' && userLeague.next_rank !== null) {
+        if (leagueData.rank !== 'x' && leagueData.next_rank !== null) {
           leagueRank +=
             ' (' +
             progress +
             '% towards ' +
-            userLeague.next_rank.toUpperCase() +
+            leagueData.next_rank.toUpperCase() +
             ')';
         }
-      } else if (userLeague.percentile_rank !== 'z') {
-        leagueRank += `Unranked (Probably around ${userLeague.percentile_rank.toUpperCase()})`;
+      } else if (leagueData.percentile_rank !== 'z') {
+        leagueRank += `Unranked (Around ${leagueData.percentile_rank.toUpperCase()})`;
       } else {
         leagueRank += 'Unranked';
       }
 
       leagueDescription += '\nRank: ' + leagueRank;
 
+      leagueDescription += `\nBest Rank: ${leagueData.bestrank.toUpperCase()}`;
+
       if (
-        userLeague.rating > -1 &&
-        typeof userLeague.glicko !== 'undefined' &&
-        typeof userLeague.rd !== 'undefined'
+        leagueData.rating > -1 &&
+        typeof leagueData.glicko !== 'undefined' &&
+        typeof leagueData.rd !== 'undefined'
       ) {
         leagueDescription += `\nRating: ${Math.floor(
-          userLeague.rating
-        )} TR (Glicko: ${Math.round(userLeague.glicko)}±${Math.round(
-          userLeague.rd
+          leagueData.rating
+        )} TR (Glicko: ${Math.round(leagueData.glicko)}±${Math.round(
+          leagueData.rd
         )})`;
       } else {
         leagueDescription += 'Rating: Not yet defined';
       }
 
-      if (userLeague.standing !== -1) {
-        leagueDescription += `\nRanking: [No. ${userLeague.standing.toLocaleString()}](https://ch.tetr.io/players/#${
-          userLeague.rating
-        }:${userLeague.standing})`;
+      if (leagueData.standing !== -1) {
+        leagueDescription += `\nRanking: [No. ${leagueData.standing.toLocaleString()}](https://ch.tetr.io/players/#${
+          leagueData.rating
+        }:${leagueData.standing})`;
 
-        if (userLeague.standing_local !== -1) {
-          leagueDescription += ` | [No. ${userLeague.standing_local.toLocaleString()}](https://ch.tetr.io/players/#${
-            userLeague.rating
-          }:${userLeague.standing_local}:${
-            userData.country
+        if (leagueData.standing_local !== -1) {
+          leagueDescription += ` | [No. ${leagueData.standing_local.toLocaleString()}](https://ch.tetr.io/players/#${
+            leagueData.rating
+          }:${leagueData.standing_local}:${
+            userInfo.country
           }) on Local Leaderboards`;
         }
       } else {
         leagueDescription += '\nRanking: Not on Leaderboards';
       }
-    } else {
-      leagueDescription = 'Never Played';
     }
 
     embed.addFields({ name: 'TETRA LEAGUE', value: leagueDescription });
+
     // Single Player Data
+
     // Blitz
-    const blitzData = userRecords.data.records.blitz;
+    const blitzData = userRecords.records.blitz;
     let blitzDescription = '';
 
     if (blitzData.record !== null) {
@@ -308,11 +306,11 @@ export class TetrioCommand extends Command {
         blitzDescription += '\nNot on leaderboards';
       }
     } else {
-      blitzDescription += 'No Records';
+      blitzDescription += 'No Record';
     }
 
     // Sprint/40 Lines
-    const sprintData = userRecords.data.records['40l'];
+    const sprintData = userRecords.records['40l'];
     let sprintDescription = '';
 
     if (sprintData.record !== null) {
@@ -323,7 +321,7 @@ export class TetrioCommand extends Command {
       );
 
       sprintDescription = `[${recordDuration.toFormat(
-        'm:s:SSS'
+        'm:ss:SSS'
       )}](https://tetr.io/#r:${sprintData.record.replayid})`;
 
       if (sprintData.rank !== null) {
@@ -332,7 +330,7 @@ export class TetrioCommand extends Command {
         sprintDescription += '\nNot on leaderboards';
       }
     } else {
-      sprintDescription += 'No Records';
+      sprintDescription += 'No Record';
     }
 
     embed.addFields([
@@ -347,8 +345,8 @@ export class TetrioCommand extends Command {
       {
         name: 'ZEN',
         value: `Level ${
-          userRecords.data.zen.level
-        }\nScore: ${userRecords.data.zen.score.toLocaleString()}`
+          userRecords.zen.level
+        }\nScore: ${userRecords.zen.score.toLocaleString()}`
       }
     ]);
 
