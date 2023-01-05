@@ -7,6 +7,7 @@ import ytsr from 'ytsr';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
@@ -66,10 +67,9 @@ export class PlayMusicCommand extends Command {
     let video: SimpleYTVideoInfo;
 
     if (ytdl.validateURL(linkOrQuery)) {
-      video = new SimpleYTVideoInfo(
-        await ytdl.getInfo(linkOrQuery),
-        interaction.user
-      );
+      const videoId = ytdl.getURLVideoID(linkOrQuery);
+
+      video = await checkVideoCache(videoId, interaction.user);
     } else {
       const searchResults = await ytsr(linkOrQuery, { limit: 10 });
 
@@ -85,10 +85,7 @@ export class PlayMusicCommand extends Command {
         (item) => item.type === 'video'
       ) as ytsr.Video;
 
-      video = new SimpleYTVideoInfo(
-        await ytdl.getInfo(foundVideo.url),
-        interaction.user
-      );
+      video = await checkVideoCache(foundVideo.id, interaction.user);
     }
 
     guildMusicData.videoList.push(video);

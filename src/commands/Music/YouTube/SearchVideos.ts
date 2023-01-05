@@ -7,11 +7,10 @@ import {
   MessageEmbed
 } from 'discord.js';
 
-import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
@@ -145,10 +144,8 @@ export class PlayMusicCommand extends Command {
 
     const videoIndex = parseInt(collected.customId.replace('video', ''));
 
-    const video = new SimpleYTVideoInfo(
-      await ytdl.getInfo(
-        (searchResults.items[videoIndex - 1] as ytsr.Video).url
-      ),
+    const video = await checkVideoCache(
+      (searchResults.items[videoIndex - 1] as ytsr.Video).id,
       interaction.user
     );
 

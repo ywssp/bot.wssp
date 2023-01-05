@@ -162,10 +162,9 @@ export class NowPlayingCommand extends Command {
       (passedTime.toMillis() / totalTime.toMillis()) * 10
     );
 
-    let seekbar = '';
-    for (let i = 0; i <= 20; i++) {
-      seekbar += i === playBackBarLocation * 2 ? '●' : '─';
-    }
+    const seekbarArr = Array(20).fill('─');
+    seekbarArr[playBackBarLocation * 2] = '●';
+    const seekbar = seekbarArr.join('');
 
     return `${passedTime.toFormat('m:ss')} | ${totalTime.toFormat(
       'm:ss'

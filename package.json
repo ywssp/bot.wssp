@@ -50,6 +50,7 @@
     "inquirer": "^8.2.4",
     "libsodium-wrappers": "^0.7.10",
     "lodash": "^4.17.21",
+    "lru-cache": "^7.14.1",
     "luxon": "^3.0.4",
     "play-dl": "^1.9.5",
     "sodium": "^3.0.2",
