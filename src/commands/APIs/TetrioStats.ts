@@ -64,21 +64,34 @@ export class TetrioCommand extends Command {
     let userInfo: TetrioUserInfo['user'];
 
     try {
-      const userInfoRequest = await fetch<TetrioUserInfoAPIResponse>(
-        `https://ch.tetr.io/api/users/${username}`,
-        FetchResultTypes.JSON
-      );
+      // Check cache
+      if (this.container.tetrioUserInfoCache.has(username)) {
+        userInfo = (
+          this.container.tetrioUserInfoCache.get(username) as TetrioUserInfo
+        ).user;
+      } else {
+        const userInfoRequest = await fetch<TetrioUserInfoAPIResponse>(
+          `https://ch.tetr.io/api/users/${username}`,
+          FetchResultTypes.JSON
+        );
 
-      // API error
-      if (!userInfoRequest.success) {
-        return {
-          content: `An error occurred while fetching the user info.${
-            userInfoRequest.error ? '\n' + userInfoRequest.error : ''
-          }`
-        };
+        // API error
+        if (!userInfoRequest.success) {
+          return {
+            content: `An error occurred while fetching the user info.${
+              userInfoRequest.error ? '\n' + userInfoRequest.error : ''
+            }`
+          };
+        }
+
+        this.container.tetrioUserInfoCache.set(username, userInfoRequest.data, {
+          start: userInfoRequest.cache.cached_at,
+          ttl:
+            userInfoRequest.cache.cached_until - userInfoRequest.cache.cached_at
+        });
+
+        userInfo = userInfoRequest.data.user;
       }
-
-      userInfo = userInfoRequest.data.user;
     } catch (error) {
       this.container.logger.error(error);
       return { content: `An error occurred.\n${error}` };
@@ -137,21 +150,39 @@ export class TetrioCommand extends Command {
     let userRecords: TetrioUserRecords;
 
     try {
-      const userRecordsRequest = await fetch<TetrioUserRecordsAPIResponse>(
-        `https://ch.tetr.io/api/users/${username}/records`,
-        FetchResultTypes.JSON
-      );
+      // Check cache
+      if (this.container.tetrioUserRecordCache.has(username)) {
+        userRecords = this.container.tetrioUserRecordCache.get(
+          username
+        ) as TetrioUserRecords;
+      } else {
+        const userRecordsRequest = await fetch<TetrioUserRecordsAPIResponse>(
+          `https://ch.tetr.io/api/users/${username}/records`,
+          FetchResultTypes.JSON
+        );
 
-      // API error
-      if (!userRecordsRequest.success) {
-        return {
-          content: `An error occurred while fetching the user records.${
-            userRecordsRequest.error ? '\n' + userRecordsRequest.error : ''
-          }`
-        };
+        // API error
+        if (!userRecordsRequest.success) {
+          return {
+            content: `An error occurred while fetching the user records.${
+              userRecordsRequest.error ? '\n' + userRecordsRequest.error : ''
+            }`
+          };
+        }
+
+        this.container.tetrioUserRecordCache.set(
+          username,
+          userRecordsRequest.data,
+          {
+            start: userRecordsRequest.cache.cached_at,
+            ttl:
+              userRecordsRequest.cache.cached_until -
+              userRecordsRequest.cache.cached_at
+          }
+        );
+
+        userRecords = userRecordsRequest.data;
       }
-
-      userRecords = userRecordsRequest.data;
     } catch (error) {
       this.container.logger.error(error);
       return { content: `An error occurred.\n${error}` };
