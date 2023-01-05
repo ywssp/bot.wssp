@@ -54,12 +54,14 @@ export class SkipVideoCommand extends Command {
       return;
     }
 
-    const skipNumber = interaction.options.getInteger('number') ?? 1;
+    let skipNumber = interaction.options.getInteger('number') ?? 1;
 
     if (
       skipNumber < 1 ||
-      skipNumber >=
-        guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex
+      (guildYoutubeData.videoList.length - 1 - guildYoutubeData.videoListIndex >
+        0 &&
+        skipNumber >=
+          guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex)
     ) {
       interaction.reply({
         content: `⛔ | Invalid number. The number must be between \`1-${
@@ -68,6 +70,10 @@ export class SkipVideoCommand extends Command {
         ephemeral: true
       });
       return;
+    }
+
+    if (guildYoutubeData.videoList.length === 0) {
+      skipNumber = 1;
     }
 
     const skippedVideos = guildYoutubeData.videoList.slice(
