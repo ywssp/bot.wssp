@@ -46,7 +46,7 @@ export class DisplayQueueCommand extends Command {
       formatVideoField(video, `${index + 1}. `)
     );
 
-    let description = '';
+    let description = null;
 
     if (guildYoutubeData.shuffle) {
       description =
@@ -54,7 +54,12 @@ export class DisplayQueueCommand extends Command {
     }
 
     if (guildYoutubeData.loop.type === 'track') {
-      description === '' ? (description = '') : (description += '\n');
+      if (description === null) {
+        description = '';
+      } else {
+        description += '\n';
+      }
+
       const currentVideo = guildYoutubeData.currentVideo();
       description += `🔂 | ${inlineCode(currentVideo.title)} by ${inlineCode(
         currentVideo.channel.name
