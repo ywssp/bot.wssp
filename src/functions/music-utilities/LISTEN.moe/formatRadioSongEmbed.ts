@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import { Duration } from 'luxon';
 
@@ -9,7 +9,7 @@ import { RadioSongInfo } from '../../../interfaces/RadioSongInfo';
 import { ColorPalette } from '../../../settings/ColorPalette';
 
 export function formatSongEmbed(song: RadioSongInfo) {
-  const embed = new MessageEmbed()
+  const embed = new EmbedBuilder()
     .setColor(ColorPalette.info)
     .setTitle('Now Playing')
     .addFields([

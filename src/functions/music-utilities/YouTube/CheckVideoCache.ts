@@ -1,21 +1,50 @@
 import { container } from '@sapphire/framework';
-import { User } from 'discord.js';
 
 import { getBasicInfo } from 'ytdl-core';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import {
+  SimpleYTVideoInfo,
+  CachedYTVideoInfo
+} from '../../../interfaces/YTVideoInfo';
+
+export type VideoCacheResult = {
+  data: SimpleYTVideoInfo;
+  cacheData: {
+    status: 'hit' | 'miss';
+    cachedAt: Date;
+  };
+};
 
 export async function checkVideoCache(
-  videoId: string,
-  user: User
-): Promise<SimpleYTVideoInfo> {
+  videoId: string
+): Promise<VideoCacheResult> {
   let video: SimpleYTVideoInfo;
+  let cacheData: {
+    status: 'hit' | 'miss';
+    cachedAt: Date;
+  };
 
   if (container.videoCache.has(videoId)) {
-    video = container.videoCache.get(videoId) as SimpleYTVideoInfo;
+    const fetchedVideo = container.videoCache.get(videoId) as CachedYTVideoInfo;
+    cacheData = {
+      status: 'hit',
+      cachedAt: fetchedVideo.cachedAt
+    };
+    video = new SimpleYTVideoInfo(fetchedVideo);
   } else {
     // TODO: Add a try catch here to catch errors when the video is not found
-    video = new SimpleYTVideoInfo(await getBasicInfo(videoId), user);
-    container.videoCache.set(videoId, video);
+    cacheData = {
+      status: 'miss',
+      cachedAt: new Date()
+    };
+    video = new SimpleYTVideoInfo(await getBasicInfo(videoId));
+
+    container.videoCache.set(
+      videoId,
+      new CachedYTVideoInfo(video, cacheData.cachedAt)
+    );
   }
-  return video;
+  return {
+    data: video,
+    cacheData
+  };
 }

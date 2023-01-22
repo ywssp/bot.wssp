@@ -9,13 +9,13 @@ import {
   NoSubscriberBehavior
 } from '@discordjs/voice';
 import {
-  MessageEmbed,
-  MessageOptions,
+  EmbedBuilder,
+  BaseMessageOptions,
   TextBasedChannel,
   VoiceBasedChannel
 } from 'discord.js';
 import { getGuildMusicData } from '../getGuildMusicData';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
@@ -29,18 +29,18 @@ import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicDat
 
 function createNowPlayingMessage(
   guildMusicData: GuildMusicData
-): MessageOptions {
+): BaseMessageOptions {
   const video = guildMusicData.youtubeData.currentVideo();
   const nextVideo = guildMusicData.youtubeData.videoList[
     guildMusicData.youtubeData.videoListIndex + 1
-  ] as SimpleYTVideoInfo | undefined;
+  ] as QueuedYTVideoInfo | undefined;
 
   if (guildMusicData.musicAnnounceStyle === 'full') {
-    const baseEmbed = new MessageEmbed()
+    const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(baseEmbed, video);
+    const embed = formatVideoEmbed(baseEmbed.data, video);
 
     if (nextVideo) {
       let nextString = '';
@@ -83,7 +83,7 @@ function createNowPlayingMessage(
 }
 
 async function playVideo(
-  video: SimpleYTVideoInfo,
+  video: QueuedYTVideoInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
@@ -154,7 +154,7 @@ export function startQueuePlayback(
   }
 
   audioPlayer.on('error', (error) => {
-    const resourceMetadata = error.resource.metadata as SimpleYTVideoInfo;
+    const resourceMetadata = error.resource.metadata as QueuedYTVideoInfo;
     const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
       'm:ss'
     );
@@ -163,11 +163,11 @@ export function startQueuePlayback(
       `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url} in the ${seek} mark\n${error.stack}`
     );
 
-    const baseEmbed = new MessageEmbed()
+    const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.error)
       .setTitle('Playback Error');
 
-    const embed = formatVideoEmbed(baseEmbed, resourceMetadata);
+    const embed = formatVideoEmbed(baseEmbed.data, resourceMetadata);
 
     if (resourceMetadata.duration !== 'Live Stream') {
       embed.spliceFields(2, 1, {

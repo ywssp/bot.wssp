@@ -1,11 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed, GuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember } from 'discord.js';
 
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -85,7 +85,7 @@ export class AddPlaylistCommand extends Command {
         (result) =>
           result.status === 'fulfilled' && !result.value.videoDetails.isPrivate
       ) as PromiseFulfilledResult<ytdl.videoInfo>[]
-    ).map((result) => new SimpleYTVideoInfo(result.value, interaction.user));
+    ).map((result) => new QueuedYTVideoInfo(result.value, interaction.user));
 
     if (videos.length === 0) {
       interaction.editReply({
@@ -106,7 +106,7 @@ export class AddPlaylistCommand extends Command {
         break;
     }
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.success)
       .setTitle('Playlist Added to queue')
       .addFields([

@@ -1,10 +1,12 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
   GuildMember,
-  MessageActionRow,
-  MessageButton,
+  ActionRowBuilder,
+  ButtonBuilder,
   MessageComponentInteraction,
-  MessageEmbed
+  EmbedBuilder,
+  ButtonStyle,
+  ComponentType
 } from 'discord.js';
 
 import ytsr from 'ytsr';
@@ -13,6 +15,7 @@ import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMu
 import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
+import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -76,24 +79,24 @@ export class PlayMusicCommand extends Command {
     }
 
     const actionRows = [
-      new MessageActionRow().addComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
         [1, 2, 3, 4, 5].map((number) =>
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId('video' + number.toString())
             .setLabel(number.toString())
-            .setStyle('SECONDARY')
+            .setStyle(ButtonStyle.Secondary)
         )
       ),
-      new MessageActionRow().addComponents(
-        new MessageButton()
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
           .setCustomId('cancel')
           .setLabel('Cancel')
-          .setStyle('DANGER')
+          .setStyle(ButtonStyle.Danger)
           .setEmoji('🛑')
       )
     ];
 
-    const selectionEmbed = new MessageEmbed()
+    const selectionEmbed = new EmbedBuilder()
       .setColor(ColorPalette.selection)
       .setTitle('Select a video')
       .addFields(
@@ -124,7 +127,7 @@ export class PlayMusicCommand extends Command {
           return i.user.id === interaction.user.id;
         },
         time: 15000,
-        componentType: 'BUTTON'
+        componentType: ComponentType.Button
       });
     } catch (e) {
       interaction.editReply('🛑 | No video selected.');
@@ -144,18 +147,25 @@ export class PlayMusicCommand extends Command {
 
     const videoIndex = parseInt(collected.customId.replace('video', ''));
 
-    const video = await checkVideoCache(
-      (searchResults.items[videoIndex - 1] as ytsr.Video).id,
-      interaction.user
+    const videoCacheResult = await checkVideoCache(
+      (searchResults.items[videoIndex - 1] as ytsr.Video).id
     );
+    const video = videoCacheResult.data;
+    const cacheStatus = videoCacheResult.cacheData;
 
-    guildYoutubeData.videoList.push(video);
+    const queuedVideo = new QueuedYTVideoInfo(video, interaction.user);
+    guildYoutubeData.videoList.push(queuedVideo);
 
-    const baseEmbed = new MessageEmbed()
+    const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.success)
-      .setTitle('Added video to queue');
+      .setTitle('Added video to queue')
+      .setFooter({
+        text: `Cache ${
+          cacheStatus.status
+        }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
+      });
 
-    const replyEmbed = formatVideoEmbed(baseEmbed, video);
+    const replyEmbed = formatVideoEmbed(baseEmbed.data, queuedVideo);
 
     if (video.thumbnail) {
       replyEmbed.setThumbnail(video.thumbnail);

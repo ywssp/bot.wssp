@@ -1,6 +1,6 @@
 import { Command, ChatInputCommand } from '@sapphire/framework';
 import { fetch, FetchResultTypes } from '@sapphire/fetch';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import type {
   TetrioUserInfoAPIResponse,
@@ -59,7 +59,7 @@ export class TetrioCommand extends Command {
 
   private async getUserInfo(
     username: string
-  ): Promise<{ content: string } | { embeds: MessageEmbed[] }> {
+  ): Promise<{ content: string } | { embeds: EmbedBuilder[] }> {
     // Calling TETR.IO API for user info (Bio, Country, Level, Tetra League)
     let userInfo: TetrioUserInfo['user'];
 
@@ -101,7 +101,7 @@ export class TetrioCommand extends Command {
 
     switch (userInfo.role) {
       case 'banned':
-        specialEmbed = new MessageEmbed()
+        specialEmbed = new EmbedBuilder()
           .setColor(ColorPalette.error)
           .setTitle(userInfo.username.toUpperCase())
           .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
@@ -110,8 +110,8 @@ export class TetrioCommand extends Command {
         break;
 
       case 'bot':
-        specialEmbed = new MessageEmbed()
-          .setColor('GREY')
+        specialEmbed = new EmbedBuilder()
+          .setColor('Grey')
           .setTitle(userInfo.username.toUpperCase())
           .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setDescription(
@@ -128,8 +128,8 @@ export class TetrioCommand extends Command {
         break;
 
       case 'anon':
-        specialEmbed = new MessageEmbed()
-          .setColor('WHITE')
+        specialEmbed = new EmbedBuilder()
+          .setColor('White')
           .setTitle(userInfo.username.toUpperCase())
           .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setThumbnail('https://tetr.io/res/avatar.png')
@@ -189,7 +189,7 @@ export class TetrioCommand extends Command {
     }
 
     // Create embed
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.default)
       .setTitle(userInfo.username.toUpperCase())
       .setURL(`https://ch.tetr.io/u/${userInfo.username}`);

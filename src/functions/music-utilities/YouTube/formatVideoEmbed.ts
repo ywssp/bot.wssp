@@ -1,11 +1,11 @@
-import { MessageEmbed } from 'discord.js';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
+import { APIEmbed, EmbedBuilder } from 'discord.js';
+import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 
 export function formatVideoEmbed(
-  baseEmbed: MessageEmbed,
-  video: SimpleYTVideoInfo
+  baseEmbed: APIEmbed,
+  video: QueuedYTVideoInfo
 ) {
-  const embed = new MessageEmbed(baseEmbed).setFields([
+  const embed = new EmbedBuilder(baseEmbed).setFields([
     {
       name: 'Title',
       value: `[${video.title}](${video.url})`
@@ -23,7 +23,7 @@ export function formatVideoEmbed(
     },
     {
       name: 'Requested by',
-      value: video.requester
+      value: video.requestedBy
     }
   ]);
 

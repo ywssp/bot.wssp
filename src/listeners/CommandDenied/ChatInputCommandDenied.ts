@@ -3,7 +3,7 @@ import {
   UserError,
   ChatInputCommandDeniedPayload
 } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class ChatInputCommandDeniedListener extends Listener {
@@ -14,7 +14,7 @@ export class ChatInputCommandDeniedListener extends Listener {
     });
   }
   public run(error: UserError, { interaction }: ChatInputCommandDeniedPayload) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.error)
       .setTitle('Cannot run command')
       .setDescription(error.message);

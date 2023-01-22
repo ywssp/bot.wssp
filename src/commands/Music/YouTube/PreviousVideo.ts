@@ -1,5 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 
@@ -72,7 +72,7 @@ export class PreviousVideoCommand extends Command {
       guildYoutubeData.videoListIndex + 1
     );
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.error)
       .setTitle(
         `Skipped ${skippedVideos.length} video${

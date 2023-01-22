@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import type { Client, Message } from 'discord.js';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import { DateTime, Duration } from 'luxon';
 import { ColorPalette } from '../../settings/ColorPalette';
@@ -35,7 +35,7 @@ export class EmbedTestCommand extends Command {
   }
 
   private createEmbed(client: Client) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.default)
       .setTitle('Bot Information');
 

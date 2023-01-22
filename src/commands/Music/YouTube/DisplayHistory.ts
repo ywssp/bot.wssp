@@ -1,7 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
-
-import { chunk } from 'lodash';
+import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
@@ -37,22 +35,14 @@ export class DisplayHistoryCommand extends Command {
       return;
     }
 
-    const historyPages = chunk(
-      history.map((video) => formatVideoField(video)).reverse(),
-      10
-    );
+    const historyFields = history
+      .map((video) => formatVideoField(video))
+      .reverse();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.default)
       .setTitle('History');
 
-    if (historyPages.length === 1) {
-      embed.addFields(historyPages[0]);
-
-      interaction.reply({ embeds: [embed] });
-      return;
-    }
-
-    createPagedEmbed(interaction, historyPages, embed);
+    createPagedEmbed(interaction, historyFields, embed);
   }
 }

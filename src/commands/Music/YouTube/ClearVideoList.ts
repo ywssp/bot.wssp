@@ -46,10 +46,7 @@ export class ClearVideoListCommand extends Command {
     }
 
     if (interaction.options.getSubcommand() === 'queue') {
-      guildYoutubeData.videoList.splice(
-        guildYoutubeData.videoListIndex + 1,
-        guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex - 1
-      );
+      guildYoutubeData.videoList.splice(guildYoutubeData.videoListIndex + 1);
 
       interaction.reply('🗑 | Cleared the video queue.');
     }

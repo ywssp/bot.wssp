@@ -1,5 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed, GuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember } from 'discord.js';
 
 import {
   createAudioPlayer,
@@ -118,7 +118,7 @@ export class JoinRadioCommand extends Command {
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);
 
-      const embed = new MessageEmbed()
+      const embed = new EmbedBuilder()
         .setColor(ColorPalette.error)
         .setTitle('Playback Error')
         .setDescription(
@@ -140,7 +140,7 @@ export class JoinRadioCommand extends Command {
       );
 
       if (radioStationResource === null) {
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
           .setColor(ColorPalette.error)
           .setTitle('Playback Error')
           .setDescription(
@@ -166,7 +166,7 @@ export class JoinRadioCommand extends Command {
     );
 
     if (radioStationResource === null) {
-      const embed = new MessageEmbed()
+      const embed = new EmbedBuilder()
         .setColor(ColorPalette.error)
         .setTitle('Playback Error')
         .setDescription(
@@ -186,7 +186,7 @@ export class JoinRadioCommand extends Command {
 
     setupRadioWebsocket(interaction.guildId as string, station);
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.success)
       .setTitle('Connected')
       .setDescription(

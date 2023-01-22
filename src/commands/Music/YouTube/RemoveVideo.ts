@@ -1,5 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
@@ -111,7 +111,7 @@ export class RemoveVideoCommand extends Command {
       removalEnd - removalStart
     );
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.error)
       .setTitle(
         `Removed ${removedVideos.length} video${

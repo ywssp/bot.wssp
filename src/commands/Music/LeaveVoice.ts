@@ -74,7 +74,7 @@ export class LeaveVCCommand extends Command {
         break;
     }
 
-    const voiceChannelName = interaction.guild?.me?.voice.channel?.name;
+    const voiceChannelName = interaction.guild?.members.me?.voice.channel?.name;
 
     audioPlayer.removeAllListeners();
     audioPlayer.stop();

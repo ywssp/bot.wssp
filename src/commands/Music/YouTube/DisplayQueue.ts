@@ -1,7 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
-
-import { chunk } from 'lodash';
+import { EmbedBuilder, inlineCode } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
 import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
@@ -44,39 +42,31 @@ export class DisplayQueueCommand extends Command {
       return;
     }
 
-    const queuePages = chunk(
-      queue.map((video, index) => formatVideoField(video, `${index + 1}. `)),
-      10
+    const queueFields = queue.map((video, index) =>
+      formatVideoField(video, `${index + 1}. `)
     );
 
+    let description = '';
+
     if (guildYoutubeData.shuffle) {
-      queuePages.forEach((page) =>
-        page.unshift({
-          name: '🔀 | Shuffle',
-          value:
-            'The queue is shuffled. The queue is displaying the possible videos that can be played next.'
-        })
-      );
+      description =
+        '🔀 | The queue is shuffled. Songs will be played in a random order.';
     }
 
     if (guildYoutubeData.loop.type === 'track') {
-      queuePages[0].unshift(
-        formatVideoField(guildYoutubeData.currentVideo(), '🔂 ')
-      );
+      description === '' ? (description = '') : (description += '\n');
+      const currentVideo = guildYoutubeData.currentVideo();
+      description += `🔂 | ${inlineCode(currentVideo.title)} by ${inlineCode(
+        currentVideo.channel.name
+      )} is looping.`;
     }
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setColor(ColorPalette.default)
-      .setTitle('Queue');
+      .setTitle('Queue')
+      .setDescription(description);
 
-    if (queuePages.length === 1) {
-      embed.addFields(queuePages[0]);
-
-      interaction.reply({ embeds: [embed] });
-      return;
-    }
-
-    createPagedEmbed(interaction, queuePages, embed);
+    createPagedEmbed(interaction, queueFields, embed);
     return;
   }
 }

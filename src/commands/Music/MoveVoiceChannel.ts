@@ -45,7 +45,7 @@ export class MoveVCCommand extends Command {
         .channel as VoiceChannel;
     }
 
-    if (voiceChannel === interaction.guild?.me?.voice.channel) {
+    if (voiceChannel === interaction.guild?.members.me?.voice.channel) {
       interaction.reply({
         content: 'I am already in that voice channel!',
         ephemeral: true

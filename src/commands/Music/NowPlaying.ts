@@ -1,5 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 import { capitalize } from 'lodash';
 import { DateTime, Duration } from 'luxon';
@@ -93,11 +93,11 @@ export class NowPlayingCommand extends Command {
       durationVisual = '🔴 Live Stream';
     }
 
-    const baseEmbed = new MessageEmbed()
+    const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(baseEmbed, currentVideo);
+    const embed = formatVideoEmbed(baseEmbed.data, currentVideo);
 
     embed.spliceFields(2, 1, {
       name: 'Duration',
@@ -130,7 +130,7 @@ export class NowPlayingCommand extends Command {
       };
     }
 
-    const embed = new MessageEmbed(formatSongEmbed(currentSong));
+    const embed = formatSongEmbed(currentSong);
     embed.setFooter({
       text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
     });

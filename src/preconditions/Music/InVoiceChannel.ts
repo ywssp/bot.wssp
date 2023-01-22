@@ -1,5 +1,5 @@
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
-import type { GuildMember, Message } from 'discord.js';
+import { ChannelType, GuildMember, Message } from 'discord.js';
 
 export class InVoiceChannelPrecondition extends Precondition {
   public override messageRun(message: Message) {
@@ -17,7 +17,10 @@ export class InVoiceChannelPrecondition extends Precondition {
 
     const memberVoiceChannel = member.voice.channel;
 
-    if (!memberVoiceChannel || memberVoiceChannel.type !== 'GUILD_VOICE') {
+    if (
+      !memberVoiceChannel ||
+      memberVoiceChannel.type !== ChannelType.GuildVoice
+    ) {
       return this.error({ message: 'The user is not inside a voice channel!' });
     }
 
@@ -32,13 +35,13 @@ export class InVoiceChannelPrecondition extends Precondition {
     }
 
     if (
-      member.guild.me?.voice.channel === undefined ||
-      member.guild.me?.voice.channel === null
+      member.guild.members.me?.voice.channel === undefined ||
+      member.guild.members.me?.voice.channel === null
     ) {
       this.ok();
     }
 
-    const clientVoiceChannel = member.guild.me?.voice.channel;
+    const clientVoiceChannel = member.guild.members.me?.voice.channel;
 
     if (memberVoiceChannel.id !== clientVoiceChannel?.id) {
       this.error({

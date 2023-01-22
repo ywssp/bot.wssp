@@ -1,13 +1,16 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { MessageEmbed, GuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember } from 'discord.js';
 
 import ytdl from 'ytdl-core';
 import { validateID } from 'ytpl';
 import ytsr from 'ytsr';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { SimpleYTVideoInfo } from '../../../interfaces/SimpleYTVideoInfo';
-import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
+import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import {
+  checkVideoCache,
+  VideoCacheResult
+} from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
@@ -62,14 +65,14 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    interaction.deferReply();
+    await interaction.deferReply();
 
-    let video: SimpleYTVideoInfo;
+    let videoCacheResult: VideoCacheResult;
 
     if (ytdl.validateURL(linkOrQuery)) {
       const videoId = ytdl.getURLVideoID(linkOrQuery);
 
-      video = await checkVideoCache(videoId, interaction.user);
+      videoCacheResult = await checkVideoCache(videoId);
     } else {
       const searchResults = await ytsr(linkOrQuery, { limit: 10 });
 
@@ -85,16 +88,25 @@ export class PlayMusicCommand extends Command {
         (item) => item.type === 'video'
       ) as ytsr.Video;
 
-      video = await checkVideoCache(foundVideo.id, interaction.user);
+      videoCacheResult = await checkVideoCache(foundVideo.id);
     }
 
-    guildMusicData.videoList.push(video);
+    const video = videoCacheResult.data;
+    const cacheStatus = videoCacheResult.cacheData;
 
-    const baseEmbed = new MessageEmbed()
+    const queuedVideo = new QueuedYTVideoInfo(video, interaction.user);
+    guildMusicData.videoList.push(queuedVideo);
+
+    const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.success)
-      .setTitle('Added video to queue');
+      .setTitle('Added video to queue')
+      .setFooter({
+        text: `Cache ${
+          cacheStatus.status
+        }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
+      });
 
-    const embed = formatVideoEmbed(baseEmbed, video);
+    const embed = formatVideoEmbed(baseEmbed.data, queuedVideo);
 
     interaction.editReply({ content: null, embeds: [embed] });
 

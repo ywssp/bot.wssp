@@ -1,8 +1,14 @@
 import { SapphireClient } from '@sapphire/framework';
+import { GatewayIntentBits } from 'discord.js';
 import 'dotenv/config';
 
 const client = new SapphireClient({
-  intents: ['GUILDS', 'GUILD_MESSAGES', 'GUILD_VOICE_STATES'],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.MessageContent
+  ],
   loadMessageCommandListeners: true,
   defaultPrefix: process.env.PREFIX?.split('|')
 });

@@ -1,5 +1,5 @@
 import { AudioResource } from '@discordjs/voice';
-import { SimpleYTVideoInfo } from '../../interfaces/SimpleYTVideoInfo';
+import { QueuedYTVideoInfo } from '../../interfaces/YTVideoInfo';
 import { getAudioPlayer } from './getAudioPlayer';
 
 export function getPlayingType(
@@ -20,7 +20,7 @@ export function getPlayingType(
   }
 
   const resource = audioPlayer.state.resource as AudioResource<
-    | SimpleYTVideoInfo
+    | QueuedYTVideoInfo
     | {
         type: 'radio';
         title: 'LISTEN.moe Radio';

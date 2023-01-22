@@ -1,7 +1,7 @@
-import { SimpleYTVideoInfo } from '../SimpleYTVideoInfo';
+import { QueuedYTVideoInfo } from '../YTVideoInfo';
 
 export class YouTubeData {
-  videoList: SimpleYTVideoInfo[];
+  videoList: QueuedYTVideoInfo[];
   videoListIndex: number;
   skipped: boolean;
   shuffle: boolean;
