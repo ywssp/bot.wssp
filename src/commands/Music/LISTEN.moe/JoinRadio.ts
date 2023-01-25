@@ -7,20 +7,25 @@ import {
   createAudioResource,
   AudioPlayerStatus,
   AudioPlayerPlayingState,
-  AudioResource,
-  AudioPlayer
+  AudioResource
 } from '@discordjs/voice';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
-import { setupRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/setupWebsocket';
+import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
+import { setupRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/setupRadioWebsocket';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
-import { disconnectRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
+import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/disconnectGuildFromWebsocket';
 import { connectVoiceChannel } from '../../../functions/music-utilities/connectVoiceChannel';
 import internal from 'stream';
-import { unsubscribeVoiceConnection } from '../../../functions/music-utilities/unsubscribeVoiceConnection';
+import { unsubscribeVCFromAudioPlayer } from '../../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
+import {
+  RadioStationNames,
+  RadioStations
+} from '../../../interfaces/AvailableRadioStations';
+import { sendRadioUpdate } from '../../../functions/music-utilities/LISTEN.moe/sendRadioUpdate';
+import { RadioWebsocketUpdateData } from '../../../interfaces/RadioWebsocketUpdate';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -60,35 +65,48 @@ export class JoinRadioCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      guildId: interaction.guildId as string,
-      create: true,
-      interaction
-    });
+    const guildMusicData = createGuildMusicData(
+      interaction.guildId as string,
+      interaction.channelId
+    );
 
     const station = interaction.options.getString('channel') as 'jpop' | 'kpop';
 
-    const stationURL = `https://listen.moe/${
-      station === 'kpop' ? '/kpop' : ''
-    }/stream`;
+    let stationURL: RadioStations[RadioStationNames]['url'];
+
+    switch (station) {
+      case 'jpop':
+        stationURL = 'https://listen.moe/stream';
+        break;
+      case 'kpop':
+        stationURL = 'https://listen.moe/kpop/stream';
+        break;
+      default:
+        stationURL = 'https://listen.moe/stream';
+        break;
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
     const voiceConnection = connectVoiceChannel(voiceChannel);
 
-    let audioPlayer: AudioPlayer;
+    const audioPlayer = createAudioPlayer({
+      behaviors: {
+        noSubscriber: NoSubscriberBehavior.Play
+      }
+    });
 
     const playingType = getPlayingType(interaction.guildId as string);
 
     if (playingType !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      audioPlayer = getAudioPlayer(interaction.guildId as string)!;
+      const oldAudioPlayer = getAudioPlayer(interaction.guildId as string)!;
 
       if (playingType === 'radio') {
         if (
           ((
-            (audioPlayer?.state as AudioPlayerPlayingState)
+            (oldAudioPlayer?.state as AudioPlayerPlayingState)
               .resource as AudioResource<{ url: string }>
           ).metadata?.url as string) === stationURL
         ) {
@@ -97,20 +115,16 @@ export class JoinRadioCommand extends Command {
         }
 
         interaction.channel?.send('Switching radio stations...');
-
-        guildMusicData.radioData?.websocket?.connection.close();
-        clearTimeout(guildMusicData.radioData?.websocket?.heartbeat);
       } else {
         interaction.channel?.send('Switching to radio...');
+
+        if (guildMusicData.youtubeData.loop.type !== 'track') {
+          guildMusicData.youtubeData.modifyIndex(2);
+        }
       }
 
-      audioPlayer.removeAllListeners().stop();
-    } else {
-      audioPlayer = createAudioPlayer({
-        behaviors: {
-          noSubscriber: NoSubscriberBehavior.Play
-        }
-      });
+      oldAudioPlayer.removeAllListeners().stop();
+      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
     }
 
     interaction.deferReply();
@@ -126,9 +140,9 @@ export class JoinRadioCommand extends Command {
         );
 
       audioPlayer.removeAllListeners().stop();
-      unsubscribeVoiceConnection(interaction.guildId as string);
+      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
       voiceConnection.destroy();
-      disconnectRadioWebsocket(interaction.guildId as string);
+      disconnectGuildFromRadioWebsocket(interaction.guildId as string);
       interaction.channel?.send({
         embeds: [embed]
       });
@@ -148,7 +162,7 @@ export class JoinRadioCommand extends Command {
           );
 
         audioPlayer.removeAllListeners().stop();
-        unsubscribeVoiceConnection(interaction.guildId as string);
+        unsubscribeVCFromAudioPlayer(interaction.guildId as string);
         voiceConnection.destroy();
         interaction.channel?.send({
           embeds: [embed]
@@ -174,7 +188,7 @@ export class JoinRadioCommand extends Command {
         );
 
       audioPlayer.removeAllListeners().stop();
-      unsubscribeVoiceConnection(interaction.guildId as string);
+      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
       voiceConnection.destroy();
       interaction.channel?.send({
         embeds: [embed]
@@ -184,7 +198,24 @@ export class JoinRadioCommand extends Command {
 
     audioPlayer.play(radioStationResource);
 
-    setupRadioWebsocket(interaction.guildId as string, station);
+    const radioData = guildMusicData.radioData;
+
+    radioData.station = station;
+    radioData.url = stationURL;
+
+    this.container.radioWebsockets[station].guildIdSet.add(
+      interaction.guildId as string
+    );
+
+    if (this.container.radioWebsockets[station].connection === null) {
+      setupRadioWebsocket(station);
+    } else {
+      sendRadioUpdate(
+        interaction.guildId as string,
+        this.container.radioWebsockets[station]
+          .lastUpdate as RadioWebsocketUpdateData
+      );
+    }
 
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.success)
@@ -209,9 +240,11 @@ export class JoinRadioCommand extends Command {
 
     return createAudioResource(radioStream as unknown as internal.Readable, {
       metadata: {
-        title: 'LISTEN.moe Radio',
-        url: stationURL,
-        type: 'radio'
+        type: 'radio',
+        data: {
+          title: 'LISTEN.moe Radio',
+          url: stationURL
+        }
       }
     });
   }

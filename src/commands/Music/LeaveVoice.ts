@@ -2,12 +2,12 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 
 import { getVoiceConnection } from '@discordjs/voice';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
-import { disconnectRadioWebsocket } from '../../functions/music-utilities/LISTEN.moe/disconnectWebsocket';
-import { unsubscribeVoiceConnection } from '../../functions/music-utilities/unsubscribeVoiceConnection';
+import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/LISTEN.moe/disconnectGuildFromWebsocket';
+import { unsubscribeVCFromAudioPlayer } from '../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -53,8 +53,16 @@ export class LeaveVCCommand extends Command {
       interaction.guildId as string
     ) as GuildMusicData;
 
-    if (getPlayingType(interaction.guildId as string) === 'radio') {
-      disconnectRadioWebsocket(interaction.guildId as string);
+    const playingType = getPlayingType(interaction.guildId as string);
+
+    if (playingType === 'radio') {
+      disconnectGuildFromRadioWebsocket(interaction.guildId as string);
+    } else if (playingType === 'youtube') {
+      const youtubeData = guildMusicData.youtubeData;
+
+      if (youtubeData.loop.type !== 'track') {
+        youtubeData.modifyIndex(2);
+      }
     }
 
     switch (interaction.options.getString('clear') as 'queue' | 'data' | null) {
@@ -78,7 +86,7 @@ export class LeaveVCCommand extends Command {
 
     audioPlayer.removeAllListeners();
     audioPlayer.stop();
-    unsubscribeVoiceConnection(interaction.guildId as string);
+    unsubscribeVCFromAudioPlayer(interaction.guildId as string);
     voiceConnection.destroy();
     interaction.reply(`🛑 | Left the voice channel \`${voiceChannelName}\``);
     return;

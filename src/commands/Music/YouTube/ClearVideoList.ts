@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 
 export class ClearVideoListCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -32,18 +32,20 @@ export class ClearVideoListCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildYoutubeData = getGuildMusicData(
-      interaction.guildId as string
-    )!.youtubeData;
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (guildYoutubeData.videoList.length === 0) {
+    if (
+      guildMusicData === undefined ||
+      guildMusicData.youtubeData.videoList.length === 0
+    ) {
       interaction.reply({
         content: 'The video list is empty.',
         ephemeral: true
       });
       return;
     }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
 
     if (interaction.options.getSubcommand() === 'queue') {
       guildYoutubeData.videoList.splice(guildYoutubeData.videoListIndex + 1);

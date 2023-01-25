@@ -1,4 +1,4 @@
-interface basicInfo {
+export interface basicInfo {
   id: number;
   name: string;
   nameRomaji: string | null;
@@ -6,7 +6,6 @@ interface basicInfo {
 }
 
 export interface RadioSongInfo {
-  type: 'radio';
   id: number;
   title: string;
   artists: (basicInfo & { characters: { id: number }[] })[];

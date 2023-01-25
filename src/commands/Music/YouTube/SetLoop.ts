@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 
 export class SetLoopCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -35,20 +35,27 @@ export class SetLoopCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildMusicData = getGuildMusicData(
-      interaction.guildId as string
-    )!.youtubeData;
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
+
+    if (guildMusicData === undefined) {
+      interaction.reply({
+        content: 'There is no music data for this guild.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
 
     const mode = interaction.options.getString('mode') as
       | 'off'
       | 'track'
       | 'queue';
 
-    guildMusicData.setLoopType(mode);
+    guildYoutubeData.setLoopType(mode);
 
     interaction.reply(
-      `${guildMusicData.loop.emoji} | Loop mode set to \`${mode}\`.`
+      `${guildYoutubeData.loop.emoji} | Loop mode set to \`${mode}\`.`
     );
     return;
   }

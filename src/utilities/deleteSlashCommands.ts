@@ -1,23 +1,17 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import 'dotenv/config';
 
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
+import { REST, Routes } from 'discord.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 
 const token = process.env.TOKEN;
 const clientId = process.env.CLIENT_ID;
 
-if (typeof token === 'undefined') {
+if (token === undefined) {
   throw new Error('Please provide a token in the .env file.');
 }
 
-if (typeof clientId === 'undefined') {
-  throw new Error('Please provide a client id in the .env file.');
-}
-
-const rest = new REST({ version: '9' }).setToken(token!);
+const rest = new REST({ version: '9' }).setToken(token);
 
 type Command = {
   id: string;
@@ -29,10 +23,6 @@ type Command = {
   description: string;
   dm_permission: boolean;
 };
-
-function getCommands() {
-  return rest.get(Routes.applicationCommands(clientId!));
-}
 
 async function prompt() {
   const method = await inquirer.prompt([
@@ -53,9 +43,13 @@ async function prompt() {
     }
   ]);
 
+  if (clientId === undefined) {
+    throw new Error('Please provide a client id in the .env file.');
+  }
+
   if (method.delete === 'all') {
     try {
-      await rest.put(Routes.applicationCommands(clientId!), { body: [] });
+      await rest.put(Routes.applicationCommands(clientId), { body: [] });
       console.log(chalk.green('Successfully deleted all commands.'));
     } catch (e) {
       console.log(chalk.red('Failed to delete all commands.'));
@@ -64,7 +58,9 @@ async function prompt() {
     return;
   }
 
-  const commands = (await getCommands()) as Command[];
+  const commands = (await rest.get(
+    Routes.applicationCommands(clientId)
+  )) as Command[];
 
   const selectedCommands = await inquirer.prompt([
     {
@@ -80,7 +76,7 @@ async function prompt() {
 
   Promise.allSettled(
     selectedCommands.commands.map((commandId: string) =>
-      rest.delete(Routes.applicationCommand(clientId!, commandId))
+      rest.delete(Routes.applicationCommand(clientId, commandId))
     )
   ).then((deletedCommands) => {
     const failed = deletedCommands.filter(

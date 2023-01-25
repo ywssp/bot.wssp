@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -50,17 +50,17 @@ export class RemoveVideoCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = getGuildMusicData(
-      interaction.guildId as string
-    )?.youtubeData;
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
     if (
-      guildYoutubeData === undefined ||
-      guildYoutubeData.getQueue().length === 0
+      guildMusicData === undefined ||
+      guildMusicData.youtubeData.getQueue().length === 0
     ) {
       interaction.reply('The queue is empty.');
       return;
     }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
 
     let removalStart;
 

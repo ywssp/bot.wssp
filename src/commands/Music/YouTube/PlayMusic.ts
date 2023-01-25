@@ -5,7 +5,7 @@ import ytdl from 'ytdl-core';
 import { validateID } from 'ytpl';
 import ytsr from 'ytsr';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 import {
   checkVideoCache,
@@ -15,6 +15,7 @@ import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/for
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -44,11 +45,10 @@ export class PlayMusicCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildMusicData = getGuildMusicData({
-      guildId: interaction.guildId as string,
-      create: true,
-      interaction
-    }).youtubeData;
+    const guildYoutubeData = createGuildMusicData(
+      interaction.guildId as string,
+      interaction.channelId
+    ).youtubeData;
 
     const linkOrQuery = interaction.options.getString('link-or-query');
 
@@ -95,7 +95,7 @@ export class PlayMusicCommand extends Command {
     const cacheStatus = videoCacheResult.cacheData;
 
     const queuedVideo = new QueuedYTVideoInfo(video, interaction.user);
-    guildMusicData.videoList.push(queuedVideo);
+    guildYoutubeData.videoList.push(queuedVideo);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.success)
@@ -110,10 +110,11 @@ export class PlayMusicCommand extends Command {
 
     interaction.editReply({ content: null, embeds: [embed] });
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
+    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    startQueuePlayback(interaction.guildId as string, voiceChannel);
-    return;
+      startQueuePlayback(interaction.guildId as string, voiceChannel);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { TextChannel } from 'discord.js';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
 export class MusicAnnounceSettingsCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

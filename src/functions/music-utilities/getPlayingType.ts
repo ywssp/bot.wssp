@@ -1,5 +1,5 @@
 import { AudioResource } from '@discordjs/voice';
-import { QueuedYTVideoInfo } from '../../interfaces/YTVideoInfo';
+import { MusicResourceMetadata } from '../../interfaces/MusicResourceMetadata';
 import { getAudioPlayer } from './getAudioPlayer';
 
 export function getPlayingType(
@@ -12,28 +12,15 @@ export function getPlayingType(
   }
 
   if (
-    audioPlayer?.state.status !== 'playing' &&
-    audioPlayer?.state.status !== 'paused' &&
-    audioPlayer?.state.status !== 'buffering'
+    audioPlayer.state.status !== 'playing' &&
+    audioPlayer.state.status !== 'paused' &&
+    audioPlayer.state.status !== 'buffering'
   ) {
     return undefined;
   }
 
-  const resource = audioPlayer.state.resource as AudioResource<
-    | QueuedYTVideoInfo
-    | {
-        type: 'radio';
-        title: 'LISTEN.moe Radio';
-        url: string;
-      }
-  >;
+  const resource = audioPlayer.state
+    .resource as AudioResource<MusicResourceMetadata>;
 
-  switch (resource.metadata.type) {
-    case 'youtube':
-      return 'youtube';
-    case 'radio':
-      return 'radio';
-    default:
-      return undefined;
-  }
+  return resource.metadata.type;
 }

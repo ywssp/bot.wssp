@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, inlineCode } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
@@ -27,20 +27,18 @@ export class DisplayQueueCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const guildYoutubeData = getGuildMusicData(
-      interaction.guildId as string
-    )!.youtubeData;
-
-    const queue = guildYoutubeData?.getQueue();
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
     if (
-      queue === undefined ||
-      (queue.length === 0 && guildYoutubeData?.loop.type !== 'track')
+      guildMusicData === undefined ||
+      guildMusicData.youtubeData.getQueue().length === 0
     ) {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
+    const queue = guildYoutubeData.getQueue();
 
     const queueFields = queue.map((video, index) =>
       formatVideoField(video, `${index + 1}. `)

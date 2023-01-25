@@ -4,11 +4,12 @@ import { EmbedBuilder, GuildMember } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -54,11 +55,10 @@ export class AddPlaylistCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = getGuildMusicData({
-      guildId: interaction.guildId as string,
-      create: true,
-      interaction
-    }).youtubeData;
+    const guildYoutubeData = createGuildMusicData(
+      interaction.guildId as string,
+      interaction.channelId
+    ).youtubeData;
 
     const link = interaction.options.getString('link') as string;
 
@@ -135,10 +135,11 @@ export class AddPlaylistCommand extends Command {
 
     guildYoutubeData.videoList.push(...videos);
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
+    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    startQueuePlayback(interaction.guildId as string, voiceChannel);
-    return;
+      startQueuePlayback(interaction.guildId as string, voiceChannel);
+    }
   }
 }

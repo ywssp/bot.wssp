@@ -8,7 +8,7 @@ import { RadioSongInfo } from '../../../interfaces/RadioSongInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
-export function formatSongEmbed(song: RadioSongInfo) {
+export function createRadioSongEmbed(song: RadioSongInfo) {
   const embed = new EmbedBuilder()
     .setColor(ColorPalette.info)
     .setTitle('Now Playing')
@@ -23,6 +23,7 @@ export function formatSongEmbed(song: RadioSongInfo) {
         value: parseArtists(song).join(',\n')
       }
     ]);
+
   if (song.albums.length > 0) {
     const album = song.albums[0];
     embed.addFields({

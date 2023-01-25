@@ -1,26 +1,24 @@
 import { RadioSongInfo } from './RadioSongInfo';
 
+export type RadioWebsocketUpdateData = {
+  song: RadioSongInfo;
+  startTime: string;
+  lastPlayed: RadioSongInfo[];
+  requester: {
+    name: string;
+  } | null;
+  event: {
+    name: string;
+    image: string;
+  } | null;
+  listeners: number;
+};
+
 export type RadioWebsocketUpdate =
   | {
       op: 1;
-      d: {
-        song: RadioSongInfo;
-        startTime: string;
-        lastPlayed: RadioSongInfo[];
-        requester: {
-          name: string;
-        } | null;
-        event: {
-          name: string;
-          image: string;
-        } | null;
-        listeners: number;
-      };
-      t:
-        | 'TRACK_UPDATE'
-        | 'TRACK_UPDATE_REQUEST'
-        | 'QUEUE_UPDATE'
-        | 'NOTIFICATION';
+      d: RadioWebsocketUpdateData;
+      t: 'TRACK_UPDATE' | 'TRACK_UPDATE_REQUEST';
     }
   | {
       op: 0;
@@ -28,4 +26,7 @@ export type RadioWebsocketUpdate =
         message: string;
         heartbeat: number;
       };
+    }
+  | {
+      op: 10;
     };

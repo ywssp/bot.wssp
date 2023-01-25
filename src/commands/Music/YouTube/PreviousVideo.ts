@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
@@ -29,23 +29,24 @@ export class PreviousVideoCommand extends Command {
           option
             .setName('number')
             .setDescription('The number of videos to skip. Defaults to 1')
+            .setMinValue(1)
             .setRequired(false)
         )
     );
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = getGuildMusicData(
-      interaction.guildId as string
-    )?.youtubeData;
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
     if (
-      guildYoutubeData === undefined ||
-      guildYoutubeData.getHistory().length === 0
+      guildMusicData === undefined ||
+      guildMusicData.youtubeData.getHistory().length === 0
     ) {
       interaction.reply('❓ | The video history is empty.');
       return;
     }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
 
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 

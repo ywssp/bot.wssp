@@ -4,13 +4,12 @@ import { EmbedBuilder } from 'discord.js';
 import { capitalize } from 'lodash';
 import { DateTime, Duration } from 'luxon';
 
-import { getGuildMusicData } from '../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
 import { formatVideoEmbed } from '../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
-import { formatSongEmbed } from '../../functions/music-utilities/LISTEN.moe/formatRadioSongEmbed';
-import { RadioWebsocketUpdate } from '../../interfaces/RadioWebsocketUpdate';
+import { createRadioSongEmbed } from '../../functions/music-utilities/LISTEN.moe/createRadioSongEmbed';
 
 import { ColorPalette } from '../../settings/ColorPalette';
 export class NowPlayingCommand extends Command {
@@ -121,24 +120,26 @@ export class NowPlayingCommand extends Command {
 
   public getRadioEmbed(guildMusicData: GuildMusicData) {
     const radioData = guildMusicData.radioData;
-    const currentSong = radioData.currentSong;
+    const lastUpdate =
+      this.container.radioWebsockets[
+        radioData.station as Exclude<typeof radioData.station, 'none'>
+      ].lastUpdate;
 
-    if (currentSong === undefined) {
+    if (lastUpdate === null) {
       return {
         content: 'There is no song playing.',
         ephemeral: true
       };
     }
 
-    const embed = formatSongEmbed(currentSong);
+    const currentSong = lastUpdate.song;
+
+    const embed = createRadioSongEmbed(currentSong);
     embed.setFooter({
       text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
     });
 
-    const startTime = DateTime.fromISO(
-      (radioData.lastUpdate as Exclude<RadioWebsocketUpdate, { op: 0 }>)?.d
-        .startTime
-    );
+    const startTime = DateTime.fromISO(lastUpdate.startTime);
     const currentTime = DateTime.now();
 
     const passedTime = currentTime.diff(startTime);

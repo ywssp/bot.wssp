@@ -10,8 +10,9 @@ import {
 } from 'discord.js';
 
 import ytsr from 'ytsr';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
@@ -19,7 +20,7 @@ import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
-export class PlayMusicCommand extends Command {
+export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
@@ -47,11 +48,10 @@ export class PlayMusicCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = getGuildMusicData({
-      guildId: interaction.guildId as string,
-      create: true,
-      interaction
-    }).youtubeData;
+    const guildYoutubeData = createGuildMusicData(
+      interaction.guildId as string,
+      interaction.channelId
+    ).youtubeData;
 
     const query = interaction.options.getString('query') as string;
 
@@ -173,9 +173,11 @@ export class PlayMusicCommand extends Command {
 
     interaction.editReply({ embeds: [replyEmbed] });
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
+    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    startQueuePlayback(interaction.guildId as string, voiceChannel);
+      startQueuePlayback(interaction.guildId as string, voiceChannel);
+    }
   }
 }

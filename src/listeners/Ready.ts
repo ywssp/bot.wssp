@@ -6,6 +6,9 @@ import LRU from 'lru-cache';
 import { Duration } from 'luxon';
 import { TetrioUserInfo, TetrioUserRecords } from '../interfaces/TetrioAPI';
 import { CachedYTVideoInfo } from '../interfaces/YTVideoInfo';
+import { WebSocket } from 'ws';
+import { RadioWebsocketUpdate } from '../interfaces/RadioWebsocketUpdate';
+import { RadioStationNames } from '../interfaces/AvailableRadioStations';
 
 export class ReadyListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
@@ -27,27 +30,51 @@ export class ReadyListener extends Listener {
 
     const ttlDuration = Duration.fromObject({ days: 7 }).as('milliseconds');
 
-    this.container.videoCache = new LRU({
-      max: 100,
-      ttl: ttlDuration,
-      ttlResolution: ttlDuration / 7
-    });
+    this.container.caches = {
+      videos: new LRU({
+        max: 100,
+        ttl: ttlDuration,
+        ttlResolution: ttlDuration / 7
+      }),
+      tetrioUserInfos: new LRU({
+        max: 50
+      }),
+      tetrioUserRecords: new LRU({
+        max: 50
+      })
+    };
 
-    this.container.tetrioUserInfoCache = new LRU({
-      max: 50
-    });
-
-    this.container.tetrioUserRecordCache = new LRU({
-      max: 50
-    });
+    this.container.radioWebsockets = {
+      kpop: {
+        connection: null,
+        heartbeat: null,
+        lastUpdate: null,
+        guildIdSet: new Set()
+      },
+      jpop: {
+        connection: null,
+        heartbeat: null,
+        lastUpdate: null,
+        guildIdSet: new Set()
+      }
+    };
   }
 }
 
+type radioWebsocket = {
+  connection: WebSocket | null;
+  heartbeat: NodeJS.Timeout | null;
+  lastUpdate: Exclude<RadioWebsocketUpdate, { op: 0 | 10 }>['d'] | null;
+  guildIdSet: Set<string>;
+};
 declare module '@sapphire/pieces' {
   interface Container {
     guildMusicDataMap: Map<string, GuildMusicData>;
-    videoCache: LRU<string, CachedYTVideoInfo>;
-    tetrioUserInfoCache: LRU<string, TetrioUserInfo>;
-    tetrioUserRecordCache: LRU<string, TetrioUserRecords>;
+    caches: {
+      videos: LRU<string, CachedYTVideoInfo>;
+      tetrioUserInfos: LRU<string, TetrioUserInfo>;
+      tetrioUserRecords: LRU<string, TetrioUserRecords>;
+    };
+    radioWebsockets: Record<RadioStationNames, radioWebsocket>;
   }
 }

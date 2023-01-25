@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
 import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
@@ -26,14 +26,17 @@ export class DisplayHistoryCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const history = getGuildMusicData(
-      interaction.guildId as string
-    )?.youtubeData.getHistory();
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (history === undefined || history.length === 0) {
+    if (
+      guildMusicData === undefined ||
+      guildMusicData.youtubeData.getHistory().length === 0
+    ) {
       interaction.reply('❓ | The video history is empty.');
       return;
     }
+
+    const history = guildMusicData.youtubeData.getHistory();
 
     const historyFields = history
       .map((video) => formatVideoField(video))

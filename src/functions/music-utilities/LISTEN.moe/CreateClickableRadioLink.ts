@@ -1,20 +1,17 @@
-import { RadioSongInfo } from '../../../interfaces/RadioSongInfo';
+import { hyperlink } from 'discord.js';
+import type { basicInfo } from '../../../interfaces/RadioSongInfo';
 
 export function createClickableRadioLink(
-  basicInfo:
-    | RadioSongInfo['artists'][number]
-    | Exclude<RadioSongInfo['characters'], undefined>[number]
-    | RadioSongInfo['albums'][number],
+  info: basicInfo,
   directory: 'artists' | 'albums' | 'characters'
 ) {
-  basicInfo;
-  let text = basicInfo.name;
+  let text = info.name;
 
-  if (typeof basicInfo.nameRomaji === 'string') {
-    text += ` (${basicInfo.nameRomaji})`;
+  if (info.nameRomaji !== null) {
+    text += ` (${info.nameRomaji})`;
   }
 
-  const url = `https://listen.moe/${directory}/${basicInfo.id}`;
+  const url = `https://listen.moe/${directory}/${info.id}`;
 
-  return `[${text}](${url})`;
+  return hyperlink(text, url);
 }

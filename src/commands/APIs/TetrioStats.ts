@@ -1,6 +1,6 @@
 import { Command, ChatInputCommand } from '@sapphire/framework';
 import { fetch, FetchResultTypes } from '@sapphire/fetch';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, hyperlink, InteractionReplyOptions } from 'discord.js';
 
 import type {
   TetrioUserInfoAPIResponse,
@@ -37,6 +37,7 @@ export class TetrioCommand extends Command {
           option
             .setName('username')
             .setDescription('The username of the TETR.IO user.')
+            .setMinLength(3)
             .setRequired(true)
         )
     );
@@ -45,13 +46,6 @@ export class TetrioCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     const username = interaction.options.getString('username') as string;
 
-    if (username.length < 3) {
-      return interaction.reply({
-        content: 'Username must be at least 3 characters long!',
-        ephemeral: true
-      });
-    }
-
     const userInfo = await this.getUserInfo(username);
 
     return interaction.reply(userInfo);
@@ -59,15 +53,15 @@ export class TetrioCommand extends Command {
 
   private async getUserInfo(
     username: string
-  ): Promise<{ content: string } | { embeds: EmbedBuilder[] }> {
+  ): Promise<InteractionReplyOptions> {
     // Calling TETR.IO API for user info (Bio, Country, Level, Tetra League)
     let userInfo: TetrioUserInfo['user'];
 
     try {
       // Check cache
-      if (this.container.tetrioUserInfoCache.has(username)) {
+      if (this.container.caches.tetrioUserInfos.has(username)) {
         userInfo = (
-          this.container.tetrioUserInfoCache.get(username) as TetrioUserInfo
+          this.container.caches.tetrioUserInfos.get(username) as TetrioUserInfo
         ).user;
       } else {
         const userInfoRequest = await fetch<TetrioUserInfoAPIResponse>(
@@ -84,11 +78,16 @@ export class TetrioCommand extends Command {
           };
         }
 
-        this.container.tetrioUserInfoCache.set(username, userInfoRequest.data, {
-          start: userInfoRequest.cache.cached_at,
-          ttl:
-            userInfoRequest.cache.cached_until - userInfoRequest.cache.cached_at
-        });
+        this.container.caches.tetrioUserInfos.set(
+          username,
+          userInfoRequest.data,
+          {
+            start: userInfoRequest.cache.cached_at,
+            ttl:
+              userInfoRequest.cache.cached_until -
+              userInfoRequest.cache.cached_at
+          }
+        );
 
         userInfo = userInfoRequest.data.user;
       }
@@ -151,8 +150,8 @@ export class TetrioCommand extends Command {
 
     try {
       // Check cache
-      if (this.container.tetrioUserRecordCache.has(username)) {
-        userRecords = this.container.tetrioUserRecordCache.get(
+      if (this.container.caches.tetrioUserRecords.has(username)) {
+        userRecords = this.container.caches.tetrioUserRecords.get(
           username
         ) as TetrioUserRecords;
       } else {
@@ -170,7 +169,7 @@ export class TetrioCommand extends Command {
           };
         }
 
-        this.container.tetrioUserRecordCache.set(
+        this.container.caches.tetrioUserRecords.set(
           username,
           userRecordsRequest.data,
           {
@@ -214,11 +213,13 @@ export class TetrioCommand extends Command {
       description += `Country: ${getCountryName(userInfo.country, 'en')}`;
     }
 
-    description += `\nLevel: ${Math.floor(
+    const userLevel = Math.floor(
       Math.pow(userInfo.xp / 500, 0.6) +
         userInfo.xp / (5000 + Math.max(0, userInfo.xp - 4000000) / 5000) +
         1
-    )} (${userInfo.xp.toLocaleString()} XP)`;
+    );
+
+    description += `\nLevel: ${userLevel} (${userInfo.xp.toLocaleString()} XP)`;
 
     description += '\nPublic Games: ';
     switch (userInfo.gamesplayed) {
@@ -300,16 +301,16 @@ export class TetrioCommand extends Command {
       }
 
       if (leagueData.standing !== -1) {
-        leagueDescription += `\nRanking: [No. ${leagueData.standing.toLocaleString()}](https://ch.tetr.io/players/#${
-          leagueData.rating
-        }:${leagueData.standing})`;
+        leagueDescription += `\nRanking: ${hyperlink(
+          `No. ${leagueData.standing.toLocaleString()}`,
+          `https://ch.tetr.io/players/#${leagueData.rating}:${leagueData.standing}`
+        )}`;
 
         if (leagueData.standing_local !== -1) {
-          leagueDescription += ` | [No. ${leagueData.standing_local.toLocaleString()}](https://ch.tetr.io/players/#${
-            leagueData.rating
-          }:${leagueData.standing_local}:${
-            userInfo.country
-          }) on Local Leaderboards`;
+          leagueDescription += ` | ${hyperlink(
+            `No. ${leagueData.standing_local.toLocaleString()}`,
+            `https://ch.tetr.io/players/#${leagueData.rating}:${leagueData.standing_local}:${userInfo.country}`
+          )} on Local Leaderboards`;
         }
       } else {
         leagueDescription += '\nRanking: Not on Leaderboards';
@@ -322,27 +323,26 @@ export class TetrioCommand extends Command {
 
     // Blitz
     const blitzData = userRecords.records.blitz;
-    let blitzDescription = '';
+    let blitzDescription = 'No Record';
 
     if (blitzData.record !== null) {
       const endcontext = blitzData.record.endcontext as RecordEndContext;
 
-      blitzDescription = `[${endcontext.score.toLocaleString()}](https://tetr.io/#r:${
-        blitzData.record.replayid
-      })`;
+      blitzDescription = hyperlink(
+        endcontext.score.toLocaleString(),
+        `https://tetr.io/#r:${blitzData.record.replayid}`
+      );
 
-      if (blitzData.rank !== null) {
-        blitzDescription += '\nNo. ' + blitzData.rank.toLocaleString();
-      } else {
+      if (blitzData.rank === null) {
         blitzDescription += '\nNot on leaderboards';
+      } else {
+        blitzDescription += '\nNo. ' + blitzData.rank.toLocaleString();
       }
-    } else {
-      blitzDescription += 'No Record';
     }
 
     // Sprint/40 Lines
     const sprintData = userRecords.records['40l'];
-    let sprintDescription = '';
+    let sprintDescription = 'No Record';
 
     if (sprintData.record !== null) {
       const endcontext = sprintData.record.endcontext as RecordEndContext;
@@ -351,17 +351,16 @@ export class TetrioCommand extends Command {
         Math.floor(endcontext.finalTime)
       );
 
-      sprintDescription = `[${recordDuration.toFormat(
-        'm:ss:SSS'
-      )}](https://tetr.io/#r:${sprintData.record.replayid})`;
+      sprintDescription = hyperlink(
+        recordDuration.toFormat('m:ss:SSS'),
+        `https://tetr.io/#r:${sprintData.record.replayid}`
+      );
 
-      if (sprintData.rank !== null) {
-        sprintDescription += '\nNo. ' + sprintData.rank.toLocaleString();
-      } else {
+      if (sprintData.rank === null) {
         sprintDescription += '\nNot on leaderboards';
+      } else {
+        sprintDescription += '\nNo. ' + sprintData.rank.toLocaleString();
       }
-    } else {
-      sprintDescription += 'No Record';
     }
 
     embed.addFields([

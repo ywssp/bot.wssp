@@ -14,18 +14,19 @@ import {
   TextBasedChannel,
   VoiceBasedChannel
 } from 'discord.js';
-import { getGuildMusicData } from '../getGuildMusicData';
+import { getGuildMusicData } from '../guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
 import { getPlayingType } from '../getPlayingType';
 import { getAudioPlayer } from '../getAudioPlayer';
-import { disconnectRadioWebsocket } from '../LISTEN.moe/disconnectWebsocket';
+import { disconnectGuildFromRadioWebsocket } from '../LISTEN.moe/disconnectGuildFromWebsocket';
 import { connectVoiceChannel } from '../connectVoiceChannel';
-import { unsubscribeVoiceConnection } from '../unsubscribeVoiceConnection';
+import { unsubscribeVCFromAudioPlayer } from '../unsubscribeVCFromAudioPlayer';
 import { Duration } from 'luxon';
 import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicData';
+import { MusicResourceMetadata } from '../../../interfaces/MusicResourceMetadata';
 
 function createNowPlayingMessage(
   guildMusicData: GuildMusicData
@@ -89,9 +90,15 @@ async function playVideo(
 ) {
   const streamedVideo = await playdl.stream(video.url);
 
+  // Set type as MusicResourceMetadata with property type of 'youtube'
+  const metadata: MusicResourceMetadata = {
+    type: 'youtube',
+    data: video
+  };
+
   const resource = createAudioResource(streamedVideo.stream, {
     inputType: streamedVideo.type,
-    metadata: video
+    metadata
   });
 
   audioPlayer.play(resource);
@@ -124,36 +131,34 @@ export function startQueuePlayback(
   const guildMusicData = getGuildMusicData(guildId)!;
   const youtubeData = guildMusicData.youtubeData;
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const textUpdateChannel = client.channels.cache.get(
     guildMusicData.textUpdateChannelId
   ) as TextBasedChannel;
 
   const voiceConnection = connectVoiceChannel(voiceChannel);
 
-  let audioPlayer: AudioPlayer;
+  let audioPlayer = createAudioPlayer({
+    behaviors: {
+      noSubscriber: NoSubscriberBehavior.Play
+    }
+  });
 
   const playingType = getPlayingType(guildId);
 
-  if (playingType === 'radio') {
+  if (playingType === 'youtube') {
+    return;
+  } else if (playingType === 'radio') {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    audioPlayer = getAudioPlayer(guildId)!;
-    audioPlayer.removeAllListeners().stop();
-    disconnectRadioWebsocket(guildId);
+    const oldAudioPlayer = getAudioPlayer(guildId)!;
+    oldAudioPlayer.removeAllListeners().stop();
+    unsubscribeVCFromAudioPlayer(guildId);
+    disconnectGuildFromRadioWebsocket(guildId);
     textUpdateChannel.send(
       'Disconnecting from the radio to play a YouTube video...'
     );
-  } else if (playingType === 'youtube') {
-    return;
-  } else {
-    audioPlayer = createAudioPlayer({
-      behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play
-      }
-    });
   }
 
-  audioPlayer.on('error', (error) => {
+  audioPlayer = audioPlayer.on('error', (error) => {
     const resourceMetadata = error.resource.metadata as QueuedYTVideoInfo;
     const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
       'm:ss'
@@ -184,8 +189,11 @@ export function startQueuePlayback(
     textUpdateChannel.send({ embeds: [embed] });
   });
 
+  voiceConnection.subscribe(audioPlayer);
+
+  playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
+
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (youtubeData.loop.type === 'queue') {
       youtubeData.videoList.push(youtubeData.currentVideo());
     }
@@ -199,7 +207,7 @@ export function startQueuePlayback(
         'No users are inside the voice channel. Stopping...'
       );
       audioPlayer.stop();
-      unsubscribeVoiceConnection(guildId);
+      unsubscribeVCFromAudioPlayer(guildId);
       voiceConnection.destroy();
       return;
     }
@@ -207,7 +215,7 @@ export function startQueuePlayback(
     if (youtubeData.videoList.length === youtubeData.videoListIndex) {
       textUpdateChannel.send('No more videos in the queue. Stopping...');
       audioPlayer.stop();
-      unsubscribeVoiceConnection(guildId);
+      unsubscribeVCFromAudioPlayer(guildId);
       voiceConnection.destroy();
       return;
     }
@@ -228,8 +236,4 @@ export function startQueuePlayback(
 
     playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
   });
-
-  voiceConnection.subscribe(audioPlayer);
-
-  playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
 }

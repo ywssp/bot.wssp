@@ -5,7 +5,7 @@ import { EmbedBuilder } from 'discord.js';
 import { DateTime, Duration } from 'luxon';
 import { ColorPalette } from '../../settings/ColorPalette';
 
-export class EmbedTestCommand extends Command {
+export class BotInfoCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,

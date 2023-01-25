@@ -23,8 +23,10 @@ export async function checkVideoCache(
     cachedAt: Date;
   };
 
-  if (container.videoCache.has(videoId)) {
-    const fetchedVideo = container.videoCache.get(videoId) as CachedYTVideoInfo;
+  if (container.caches.videos.has(videoId)) {
+    const fetchedVideo = container.caches.videos.get(
+      videoId
+    ) as CachedYTVideoInfo;
     cacheData = {
       status: 'hit',
       cachedAt: fetchedVideo.cachedAt
@@ -38,7 +40,7 @@ export async function checkVideoCache(
     };
     video = new SimpleYTVideoInfo(await getBasicInfo(videoId));
 
-    container.videoCache.set(
+    container.caches.videos.set(
       videoId,
       new CachedYTVideoInfo(video, cacheData.cachedAt)
     );

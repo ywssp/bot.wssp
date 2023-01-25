@@ -1,6 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/getGuildMusicData';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 
 export class ShuffleQueueCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -30,17 +30,17 @@ export class ShuffleQueueCommand extends Command {
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = getGuildMusicData(
-      interaction.guildId as string
-    )?.youtubeData;
+    const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (typeof guildYoutubeData === 'undefined') {
+    if (guildMusicData === undefined) {
       interaction.reply({
         content: '❓ | There is no song playing.',
         ephemeral: true
       });
       return;
     }
+
+    const guildYoutubeData = guildMusicData.youtubeData;
 
     const mode =
       interaction.options.getBoolean('shuffle') ?? !guildYoutubeData.shuffle;
