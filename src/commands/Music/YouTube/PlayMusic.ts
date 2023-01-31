@@ -67,12 +67,10 @@ export class PlayMusicCommand extends Command {
 
     await interaction.deferReply();
 
-    let videoCacheResult: VideoCacheResult;
+    let videoId: string;
 
     if (ytdl.validateURL(linkOrQuery)) {
-      const videoId = ytdl.getURLVideoID(linkOrQuery);
-
-      videoCacheResult = await checkVideoCache(videoId);
+      videoId = ytdl.getURLVideoID(linkOrQuery);
     } else {
       const searchResults = await ytsr(linkOrQuery, { limit: 10 });
 
@@ -88,7 +86,18 @@ export class PlayMusicCommand extends Command {
         (item) => item.type === 'video'
       ) as ytsr.Video;
 
-      videoCacheResult = await checkVideoCache(foundVideo.id);
+      videoId = foundVideo.id;
+    }
+
+    let videoCacheResult: VideoCacheResult;
+
+    try {
+      videoCacheResult = await checkVideoCache(videoId);
+    } catch (error) {
+      interaction.editReply({
+        content: '❌ | An error occurred while fetching the video.'
+      });
+      return;
     }
 
     const video = videoCacheResult.data;

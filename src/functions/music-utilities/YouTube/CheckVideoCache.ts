@@ -1,5 +1,4 @@
 import { container } from '@sapphire/framework';
-
 import { getBasicInfo } from 'ytdl-core';
 import {
   SimpleYTVideoInfo,
@@ -33,18 +32,25 @@ export async function checkVideoCache(
     };
     video = new SimpleYTVideoInfo(fetchedVideo);
   } else {
-    // TODO: Add a try catch here to catch errors when the video is not found
-    cacheData = {
-      status: 'miss',
-      cachedAt: new Date()
-    };
-    video = new SimpleYTVideoInfo(await getBasicInfo(videoId));
+    try {
+      cacheData = {
+        status: 'miss',
+        cachedAt: new Date()
+      };
+      video = new SimpleYTVideoInfo(await getBasicInfo(videoId));
 
-    container.caches.videos.set(
-      videoId,
-      new CachedYTVideoInfo(video, cacheData.cachedAt)
-    );
+      container.caches.videos.set(
+        videoId,
+        new CachedYTVideoInfo(video, cacheData.cachedAt)
+      );
+    } catch (error) {
+      console.error(error);
+      throw new Error(
+        `Could not fetch video information for video ID: ${videoId}`
+      );
+    }
   }
+
   return {
     data: video,
     cacheData

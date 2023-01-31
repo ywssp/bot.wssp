@@ -13,7 +13,10 @@ import ytsr from 'ytsr';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { checkVideoCache } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
+import {
+  checkVideoCache,
+  VideoCacheResult
+} from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
@@ -145,11 +148,21 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    const videoIndex = parseInt(collected.customId.replace('video', ''));
+    const videoIndex = parseInt(collected.customId.replace('video', '')) - 1;
 
-    const videoCacheResult = await checkVideoCache(
-      (searchResults.items[videoIndex - 1] as ytsr.Video).id
-    );
+    let videoCacheResult: VideoCacheResult;
+
+    try {
+      videoCacheResult = await checkVideoCache(
+        (searchResults.items[videoIndex] as ytsr.Video).id
+      );
+    } catch (error) {
+      interaction.editReply({
+        content: '❌ | An error occurred while fetching the video.'
+      });
+      return;
+    }
+
     const video = videoCacheResult.data;
     const cacheStatus = videoCacheResult.cacheData;
 

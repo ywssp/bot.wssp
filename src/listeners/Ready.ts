@@ -20,14 +20,17 @@ export class ReadyListener extends Listener {
   }
 
   public run(client: Client) {
+    // Log the bot's start time
     const now = new Date();
 
     this.container.logger.info(
       `${client.user?.tag} has started in ${now.toUTCString()}`
     );
 
+    // Setup the guild music data map
     this.container.guildMusicDataMap = new Map();
 
+    // Setup the caches
     const ttlDuration = Duration.fromObject({ days: 7 }).as('milliseconds');
 
     this.container.caches = {
