@@ -12,7 +12,8 @@ import {
   EmbedBuilder,
   BaseMessageOptions,
   TextBasedChannel,
-  VoiceBasedChannel
+  VoiceBasedChannel,
+  hyperlink
 } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
@@ -48,7 +49,10 @@ function createNowPlayingMessage(
       if (guildMusicData.youtubeData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
-        nextString = `[${nextVideo.title}](${nextVideo.url}) by [${nextVideo.channel.name}](${nextVideo.channel.url})`;
+        nextString = `${hyperlink(
+          nextVideo.title,
+          nextVideo.url
+        )} by ${hyperlink(nextVideo.channel.name, nextVideo.channel.url)}`;
       }
 
       embed.addFields([
