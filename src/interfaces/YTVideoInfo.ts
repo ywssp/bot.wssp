@@ -1,6 +1,6 @@
 import { User } from 'discord.js';
 import { Duration } from 'luxon';
-import { videoInfo } from 'ytdl-core';
+import { extractID, YouTubeVideo } from 'play-dl';
 
 export class SimpleYTVideoInfo {
   readonly type = 'youtube';
@@ -14,7 +14,7 @@ export class SimpleYTVideoInfo {
   };
   readonly thumbnail?: string;
 
-  constructor(data: videoInfo | SimpleYTVideoInfo) {
+  constructor(data: YouTubeVideo | SimpleYTVideoInfo) {
     if (data instanceof SimpleYTVideoInfo) {
       this.title = data.title;
       this.url = data.url;
@@ -25,25 +25,37 @@ export class SimpleYTVideoInfo {
       return;
     }
 
-    const videoDetails = data.videoDetails;
-    this.title = videoDetails.title;
-    this.url = videoDetails.video_url;
-    this.id = videoDetails.videoId;
+    this.title = data.title ?? 'Unknown';
+    this.url = data.url;
+
+    this.id = data.id ?? extractID(data.url);
+
     this.channel = {
-      name: videoDetails.author.name,
-      url: videoDetails.author.channel_url
+      name: data.channel?.name ?? 'Unknown',
+      url: data.channel?.url ?? ''
     };
-    this.duration = videoDetails.isLiveContent
+
+    this.duration = data.live
       ? 'Live Stream'
-      : Duration.fromMillis(Number(videoDetails.lengthSeconds) * 1000);
-    this.thumbnail = videoDetails.thumbnails.pop()?.url;
+      : Duration.fromMillis(Number(data.durationInSec) * 1000);
+
+    if (data.thumbnails.length > 0) {
+      const highestResThumbnail = data.thumbnails.reduce((prev, curr) => {
+        if (prev.width * prev.height > curr.width * curr.height) {
+          return curr;
+        }
+        return prev;
+      });
+
+      this.thumbnail = highestResThumbnail.url;
+    }
   }
 }
 
 export class QueuedYTVideoInfo extends SimpleYTVideoInfo {
   readonly requestedBy: string;
 
-  constructor(data: videoInfo | SimpleYTVideoInfo, user: User) {
+  constructor(data: YouTubeVideo | SimpleYTVideoInfo, user: User) {
     super(data);
     this.requestedBy = user.tag;
   }
@@ -52,7 +64,7 @@ export class QueuedYTVideoInfo extends SimpleYTVideoInfo {
 export class CachedYTVideoInfo extends SimpleYTVideoInfo {
   readonly cachedAt: Date;
 
-  constructor(data: videoInfo | SimpleYTVideoInfo, cachedAt: Date) {
+  constructor(data: YouTubeVideo | SimpleYTVideoInfo, cachedAt: Date) {
     super(data);
     this.cachedAt = cachedAt;
   }

@@ -1,5 +1,5 @@
 import { container } from '@sapphire/framework';
-import { getBasicInfo } from 'ytdl-core';
+import { video_basic_info } from 'play-dl';
 import {
   SimpleYTVideoInfo,
   CachedYTVideoInfo
@@ -37,7 +37,11 @@ export async function checkVideoCache(
         status: 'miss',
         cachedAt: new Date()
       };
-      video = new SimpleYTVideoInfo(await getBasicInfo(videoId));
+      video = new SimpleYTVideoInfo(
+        await (
+          await video_basic_info(videoId)
+        ).video_details
+      );
 
       container.caches.videos.set(
         videoId,

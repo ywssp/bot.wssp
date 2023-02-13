@@ -6,10 +6,12 @@ import {
   MessageComponentInteraction,
   EmbedBuilder,
   ButtonStyle,
-  ComponentType
+  ComponentType,
+  hyperlink
 } from 'discord.js';
 
-import ytsr from 'ytsr';
+import play, { YouTubeVideo } from 'play-dl';
+
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
@@ -46,6 +48,7 @@ export class SearchVideosCommand extends Command {
             .setName('query')
             .setDescription('The search query.')
             .setRequired(true)
+            .setMinLength(3)
         )
     );
   }
@@ -68,16 +71,19 @@ export class SearchVideosCommand extends Command {
 
     interaction.deferReply();
 
-    const searchFilter = (await ytsr.getFilters(query))
-      .get('Type')
-      ?.get('Video');
-    const searchResults = await ytsr(searchFilter?.url as string, { limit: 5 });
+    let searchResults: YouTubeVideo[];
 
-    if (searchResults.items.length === 0) {
-      interaction.editReply({
-        content: 'No videos found.'
+    try {
+      searchResults = await play.search(query, {
+        limit: 5,
+        source: {
+          youtube: 'video'
+        }
       });
-
+    } catch (error) {
+      interaction.editReply({
+        content: '❌ | An error occurred while searching for videos.'
+      });
       return;
     }
 
@@ -85,7 +91,7 @@ export class SearchVideosCommand extends Command {
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         [1, 2, 3, 4, 5].map((number) =>
           new ButtonBuilder()
-            .setCustomId('video' + number.toString())
+            .setCustomId(number.toString())
             .setLabel(number.toString())
             .setStyle(ButtonStyle.Secondary)
         )
@@ -103,12 +109,24 @@ export class SearchVideosCommand extends Command {
       .setColor(ColorPalette.selection)
       .setTitle('Select a video')
       .addFields(
-        (searchResults.items as ytsr.Video[]).map((item, index) => ({
-          name: `${index + 1}. ${item.title}`,
-          value: `[Link](${item.url}) ${
-            item.author ? `| [${item.author.name}](${item.author.url})` : ''
-          } | ${item.duration ? item.duration : 'Live Stream'}`
-        }))
+        searchResults.map((item, index) => {
+          let formattedChannel = '';
+          if (item.channel) {
+            const channelName = item.channel.name ?? 'Unknown';
+            if (item.channel.url) {
+              formattedChannel = hyperlink(channelName, item.channel.url);
+            } else {
+              formattedChannel = channelName;
+            }
+          }
+
+          return {
+            name: `${index + 1}. ${item.title}`,
+            value: `${hyperlink('Link', item.url)} ${
+              formattedChannel ? `| ${formattedChannel}` : ''
+            } | ${item.live ? 'Live Stream' : item.durationRaw}`
+          };
+        })
       );
 
     const selectionMessage = await interaction.channel?.send({
@@ -148,13 +166,14 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    const videoIndex = parseInt(collected.customId.replace('video', '')) - 1;
+    const videoIndex = parseInt(collected.customId) - 1;
 
     let videoCacheResult: VideoCacheResult;
 
     try {
       videoCacheResult = await checkVideoCache(
-        (searchResults.items[videoIndex] as ytsr.Video).id
+        searchResults[videoIndex].id ??
+          play.extractID(searchResults[videoIndex].url)
       );
     } catch (error) {
       interaction.editReply({

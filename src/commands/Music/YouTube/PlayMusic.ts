@@ -1,9 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember } from 'discord.js';
 
-import ytdl from 'ytdl-core';
-import { validateID } from 'ytpl';
-import ytsr from 'ytsr';
+import play from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
@@ -57,7 +55,7 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    if (validateID(linkOrQuery)) {
+    if (play.yt_validate(linkOrQuery) === 'playlist') {
       interaction.reply({
         content: 'Playlist detected. Use the `addplaylist` command instead.',
         ephemeral: true
@@ -69,12 +67,17 @@ export class PlayMusicCommand extends Command {
 
     let videoId: string;
 
-    if (ytdl.validateURL(linkOrQuery)) {
-      videoId = ytdl.getURLVideoID(linkOrQuery);
+    if ((await play.validate(linkOrQuery)) === 'yt_video') {
+      videoId = play.extractID(linkOrQuery);
     } else {
-      const searchResults = await ytsr(linkOrQuery, { limit: 10 });
+      const searchResults = await play.search(linkOrQuery, {
+        source: {
+          youtube: 'video'
+        },
+        limit: 10
+      });
 
-      if (!searchResults.items.some((item) => item.type === 'video')) {
+      if (searchResults.length === 0) {
         interaction.editReply({
           content: '❓ | No videos found.'
         });
@@ -82,11 +85,7 @@ export class PlayMusicCommand extends Command {
         return;
       }
 
-      const foundVideo = searchResults.items.find(
-        (item) => item.type === 'video'
-      ) as ytsr.Video;
-
-      videoId = foundVideo.id;
+      videoId = searchResults[0].id ?? play.extractID(searchResults[0].url);
     }
 
     let videoCacheResult: VideoCacheResult;

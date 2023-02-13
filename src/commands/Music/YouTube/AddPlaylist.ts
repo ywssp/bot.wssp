@@ -1,8 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { EmbedBuilder, GuildMember } from 'discord.js';
+import { EmbedBuilder, GuildMember, hyperlink } from 'discord.js';
 
-import ytdl from 'ytdl-core';
-import ytpl from 'ytpl';
+import play, { YouTubePlayList } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
@@ -62,7 +61,9 @@ export class AddPlaylistCommand extends Command {
 
     const link = interaction.options.getString('link') as string;
 
-    if (!ytpl.validateID(link)) {
+    console.log(`Checking if ${link} is a playlist...`);
+
+    if ((await play.validate(link)) !== 'yt_playlist') {
       interaction.reply({
         content: '❓ | Invalid playlist link.',
         ephemeral: true
@@ -72,27 +73,36 @@ export class AddPlaylistCommand extends Command {
 
     interaction.reply('Processing playlist...');
 
-    const playlist = await ytpl(link, {
-      limit: Infinity
-    });
+    console.log(`Getting playlist info for ${link}...`);
 
-    const processedVideos = await Promise.allSettled(
-      playlist.items.map((video) => ytdl.getBasicInfo(video.url))
-    );
+    let playlist: YouTubePlayList;
 
-    const videos = (
-      processedVideos.filter(
-        (result) =>
-          result.status === 'fulfilled' && !result.value.videoDetails.isPrivate
-      ) as PromiseFulfilledResult<ytdl.videoInfo>[]
-    ).map((result) => new QueuedYTVideoInfo(result.value, interaction.user));
+    try {
+      playlist = await play.playlist_info(link, {
+        incomplete: true
+      });
+    } catch (error) {
+      interaction.editReply({
+        content: '❌ | An error occurred while getting the playlist info.'
+      });
+      console.error(error);
+      return;
+    }
 
-    if (videos.length === 0) {
+    const foundVideos = await (
+      await playlist.all_videos()
+    ).filter((video) => !video.private);
+
+    if (foundVideos.length === 0) {
       interaction.editReply({
         content: '❌ | No videos were found in the playlist.'
       });
       return;
     }
+
+    const videos = foundVideos.map(
+      (video) => new QueuedYTVideoInfo(video, interaction.user)
+    );
 
     if (interaction.options.getBoolean('loop')) {
       guildYoutubeData.setLoopType('queue');
@@ -106,26 +116,40 @@ export class AddPlaylistCommand extends Command {
         break;
     }
 
+    const relevantData = {
+      title: playlist.title ?? 'Unknown',
+      url: playlist.url,
+      channel: {
+        name: playlist.channel?.name ?? 'Unknown',
+        url: playlist.channel?.url
+      },
+      playlistLength: playlist.videoCount ?? 'Unknown'
+    };
+
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.success)
       .setTitle('Playlist Added to queue')
       .addFields([
         {
           name: 'Playlist',
-          value: `[${playlist.title}](${playlist.url})`
+          value: relevantData.url
+            ? hyperlink(relevantData.title, relevantData.url)
+            : relevantData.title
         },
         {
           name: 'Author',
-          value: `[${playlist.author.name}](${playlist.author.url})`
+          value: relevantData.channel.url
+            ? hyperlink(relevantData.channel.name, relevantData.channel.url)
+            : relevantData.channel.name
         },
         {
           name: 'Length',
-          value: `${videos.length}/${playlist.items.length} playable videos`
+          value: `${videos.length}/${relevantData.playlistLength} playable videos`
         }
       ]);
 
-    if (playlist.bestThumbnail.url !== null) {
-      embed.setThumbnail(playlist.bestThumbnail.url);
+    if (playlist.thumbnail !== undefined) {
+      embed.setThumbnail(playlist.thumbnail.url);
     }
 
     interaction.editReply({
