@@ -1,7 +1,5 @@
 {
   "name": "bot.wssp-sapphire",
-  "version": "1.0.0",
-  "description": "",
   "author": "ywssp",
   "repository": {
     "type": "git",
@@ -10,7 +8,8 @@
   "main": "./out/main.js",
   "license": "MPL-2.0",
   "engines": {
-    "node": ">=16.6.0"
+    "node": ">=18.0.0",
+    "pnpm": ">=7.0.0"
   },
   "scripts": {
     "start": "node out/main.js",
@@ -41,6 +40,7 @@
     "@sapphire/discord.js-utilities": "^6.0.1",
     "@sapphire/fetch": "^2.4.1",
     "@sapphire/framework": "^4.0.2",
+    "@sapphire/pieces": "^3.6.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
