@@ -16,7 +16,7 @@ import {
   hyperlink
 } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { formatVideoEmbed } from './formatVideoEmbed';
@@ -35,7 +35,7 @@ function createNowPlayingMessage(
   const video = guildMusicData.youtubeData.currentVideo();
   const nextVideo = guildMusicData.youtubeData.videoList[
     guildMusicData.youtubeData.videoListIndex + 1
-  ] as QueuedYTVideoInfo | undefined;
+  ] as QueuedTrack | undefined;
 
   if (guildMusicData.musicAnnounceStyle === 'full') {
     const baseEmbed = new EmbedBuilder()
@@ -50,9 +50,9 @@ function createNowPlayingMessage(
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
         const channelString =
-          nextVideo.channel.url !== undefined
-            ? hyperlink(nextVideo.channel.name, nextVideo.channel.url)
-            : nextVideo.channel.name;
+          nextVideo.uploader.url !== undefined
+            ? hyperlink(nextVideo.uploader.name, nextVideo.uploader.url)
+            : nextVideo.uploader.name;
 
         nextString = `${hyperlink(
           nextVideo.title,
@@ -79,13 +79,13 @@ function createNowPlayingMessage(
     typeof video.duration === 'string'
       ? video.duration
       : video.duration.toFormat('m:ss')
-  } | By ${video.channel.name}`;
+  } | By ${video.uploader.name}`;
 
   if (nextVideo) {
     if (guildMusicData.youtubeData.shuffle) {
       text += '\n🔀 | The next song is a random song from the queue.';
     } else {
-      text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.channel.name}`;
+      text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.uploader.name}`;
     }
   }
 
@@ -93,7 +93,7 @@ function createNowPlayingMessage(
 }
 
 async function playVideo(
-  video: QueuedYTVideoInfo,
+  video: QueuedTrack,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
@@ -168,7 +168,7 @@ export function startQueuePlayback(
   }
 
   audioPlayer = audioPlayer.on('error', (error) => {
-    const resourceMetadata = error.resource.metadata as QueuedYTVideoInfo;
+    const resourceMetadata = error.resource.metadata as QueuedTrack;
     const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
       'm:ss'
     );

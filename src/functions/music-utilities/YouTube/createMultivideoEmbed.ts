@@ -1,10 +1,10 @@
 import { EmbedBuilder } from 'discord.js';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 import { formatVideoField } from './formatVideoField';
 
 export function createMultiVideoEmbed(
   baseEmbed: EmbedBuilder,
-  videoList: QueuedYTVideoInfo[]
+  videoList: QueuedTrack[]
 ): EmbedBuilder {
   const embed = new EmbedBuilder(baseEmbed.data).setFields(
     videoList.slice(0, 9).map((video) => formatVideoField(video))

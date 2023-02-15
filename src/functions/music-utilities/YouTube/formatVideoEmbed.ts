@@ -1,10 +1,7 @@
 import { APIEmbed, EmbedBuilder, hyperlink } from 'discord.js';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 
-export function formatVideoEmbed(
-  baseEmbed: APIEmbed,
-  video: QueuedYTVideoInfo
-) {
+export function formatVideoEmbed(baseEmbed: APIEmbed, video: QueuedTrack) {
   const embed = new EmbedBuilder(baseEmbed).setFields([
     {
       name: 'Title',
@@ -13,9 +10,9 @@ export function formatVideoEmbed(
     {
       name: 'Channel',
       value:
-        video.channel.url !== undefined
-          ? hyperlink(video.channel.name, video.channel.url)
-          : video.channel.name
+        video.uploader.url !== undefined
+          ? hyperlink(video.uploader.name, video.uploader.url)
+          : video.uploader.name
     },
     {
       name: 'Duration',

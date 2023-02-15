@@ -1,12 +1,9 @@
 import { container } from '@sapphire/framework';
 import { video_basic_info } from 'play-dl';
-import {
-  SimpleYTVideoInfo,
-  CachedYTVideoInfo
-} from '../../../interfaces/YTVideoInfo';
+import { SimpleTrack, CachedTrack } from '../../../interfaces/YTVideoInfo';
 
 export type VideoCacheResult = {
-  data: SimpleYTVideoInfo;
+  data: SimpleTrack;
   cacheData: {
     status: 'hit' | 'miss';
     cachedAt: Date;
@@ -16,28 +13,26 @@ export type VideoCacheResult = {
 export async function checkVideoCache(
   videoId: string
 ): Promise<VideoCacheResult> {
-  let video: SimpleYTVideoInfo;
+  let video: SimpleTrack;
   let cacheData: {
     status: 'hit' | 'miss';
     cachedAt: Date;
   };
 
   if (container.caches.videos.has(videoId)) {
-    const fetchedVideo = container.caches.videos.get(
-      videoId
-    ) as CachedYTVideoInfo;
+    const fetchedVideo = container.caches.videos.get(videoId) as CachedTrack;
     cacheData = {
       status: 'hit',
       cachedAt: fetchedVideo.cachedAt
     };
-    video = new SimpleYTVideoInfo(fetchedVideo);
+    video = new SimpleTrack(fetchedVideo);
   } else {
     try {
       cacheData = {
         status: 'miss',
         cachedAt: new Date()
       };
-      video = new SimpleYTVideoInfo(
+      video = new SimpleTrack(
         await (
           await video_basic_info(videoId)
         ).video_details
@@ -45,7 +40,7 @@ export async function checkVideoCache(
 
       container.caches.videos.set(
         videoId,
-        new CachedYTVideoInfo(video, cacheData.cachedAt)
+        new CachedTrack(video, cacheData.cachedAt)
       );
     } catch (error) {
       console.error(error);

@@ -28,7 +28,7 @@ declare module '@sapphire/framework' {
 import { RadioStationNames } from './interfaces/AvailableRadioStations';
 import { GuildMusicData } from './interfaces/GuildMusicData/GuildMusicData';
 import { TetrioUserInfo, TetrioUserRecords } from './interfaces/TetrioAPI';
-import { CachedYTVideoInfo } from './interfaces/YTVideoInfo';
+import { CachedTrack } from './interfaces/YTVideoInfo';
 import { RadioWebsocketUpdate } from './interfaces/RadioWebsocketUpdate';
 import type WebSocket from 'ws';
 import LRU from 'lru-cache';
@@ -36,7 +36,7 @@ declare module '@sapphire/pieces' {
   interface Container {
     guildMusicDataMap: Map<string, GuildMusicData>;
     caches: {
-      videos: LRU<string, CachedYTVideoInfo>;
+      videos: LRU<string, CachedTrack>;
       tetrioUserInfos: LRU<string, TetrioUserInfo>;
       tetrioUserRecords: LRU<string, TetrioUserRecords>;
     };

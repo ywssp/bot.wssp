@@ -60,7 +60,7 @@ export class DisplayQueueCommand extends Command {
 
       const currentVideo = guildYoutubeData.currentVideo();
       description += `🔂 | ${inlineCode(currentVideo.title)} by ${inlineCode(
-        currentVideo.channel.name
+        currentVideo.uploader.name
       )} is looping.`;
     }
 

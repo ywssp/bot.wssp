@@ -4,7 +4,7 @@ import { EmbedBuilder, GuildMember, hyperlink } from 'discord.js';
 import play, { YouTubePlayList } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -101,7 +101,7 @@ export class AddPlaylistCommand extends Command {
     }
 
     const videos = foundVideos.map(
-      (video) => new QueuedYTVideoInfo(video, interaction.user)
+      (video) => new QueuedTrack(video, interaction.user)
     );
 
     if (interaction.options.getBoolean('loop')) {

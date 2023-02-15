@@ -4,6 +4,8 @@ import type { Client } from 'discord.js';
 import LRU from 'lru-cache';
 import { Duration } from 'luxon';
 
+import play from 'play-dl';
+
 export class ReadyListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
     super(context, {
@@ -20,6 +22,15 @@ export class ReadyListener extends Listener {
     this.container.logger.info(
       `${client.user?.tag} has started in ${now.toUTCString()}`
     );
+
+    // Setup the SoundCloud client ID
+    play.getFreeClientID().then((id) => {
+      play.setToken({
+        soundcloud: {
+          client_id: id
+        }
+      });
+    });
 
     // Setup the guild music data map
     this.container.guildMusicDataMap = new Map();

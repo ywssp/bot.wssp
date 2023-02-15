@@ -21,7 +21,7 @@ import {
 } from '../../../functions/music-utilities/YouTube/CheckVideoCache';
 import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
 import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -185,7 +185,7 @@ export class SearchVideosCommand extends Command {
     const video = videoCacheResult.data;
     const cacheStatus = videoCacheResult.cacheData;
 
-    const queuedVideo = new QueuedYTVideoInfo(video, interaction.user);
+    const queuedVideo = new QueuedTrack(video, interaction.user);
     guildYoutubeData.videoList.push(queuedVideo);
 
     const baseEmbed = new EmbedBuilder()

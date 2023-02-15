@@ -4,7 +4,7 @@ import { EmbedBuilder, GuildMember } from 'discord.js';
 import play from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 import {
   checkVideoCache,
   VideoCacheResult
@@ -102,7 +102,7 @@ export class PlayMusicCommand extends Command {
     const video = videoCacheResult.data;
     const cacheStatus = videoCacheResult.cacheData;
 
-    const queuedVideo = new QueuedYTVideoInfo(video, interaction.user);
+    const queuedVideo = new QueuedTrack(video, interaction.user);
     guildYoutubeData.videoList.push(queuedVideo);
 
     const baseEmbed = new EmbedBuilder()

@@ -1,36 +1,51 @@
 import { User } from 'discord.js';
 import { Duration } from 'luxon';
-import { extractID, YouTubeVideo } from 'play-dl';
+import { extractID, YouTubeVideo, SoundCloudTrack } from 'play-dl';
 
-export class SimpleYTVideoInfo {
-  readonly type = 'youtube';
+export class SimpleTrack {
+  readonly type = 'queue_track';
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
   readonly url: string;
   readonly id: string;
-  readonly channel: {
+  readonly uploader: {
     name: string;
     url: string | undefined;
   };
   readonly thumbnail?: string;
 
-  constructor(data: YouTubeVideo | SimpleYTVideoInfo) {
-    if (data instanceof SimpleYTVideoInfo) {
+  constructor(data: SimpleTrack | YouTubeVideo | SoundCloudTrack) {
+    if (data instanceof SimpleTrack) {
       this.title = data.title;
       this.url = data.url;
       this.id = data.id;
-      this.channel = data.channel;
+      this.uploader = data.uploader;
       this.duration = data.duration;
       this.thumbnail = data.thumbnail;
       return;
     }
 
+    // SoundCloud Track handling
+    if (data instanceof SoundCloudTrack) {
+      this.title = data.name;
+      this.url = data.permalink;
+      this.id = data.id.toString();
+      this.uploader = {
+        name: data.user.name,
+        url: data.user.url
+      };
+      this.duration = Duration.fromMillis(data.durationInMs);
+      this.thumbnail = data.thumbnail;
+      return;
+    }
+
+    // YouTube Video handling
     this.title = data.title ?? 'Unknown';
     this.url = data.url;
 
     this.id = data.id ?? extractID(data.url);
 
-    this.channel = {
+    this.uploader = {
       name: data.channel?.name ?? 'Unknown',
       url: data.channel?.url
     };
@@ -52,19 +67,19 @@ export class SimpleYTVideoInfo {
   }
 }
 
-export class QueuedYTVideoInfo extends SimpleYTVideoInfo {
+export class QueuedTrack extends SimpleTrack {
   readonly requestedBy: string;
 
-  constructor(data: YouTubeVideo | SimpleYTVideoInfo, user: User) {
+  constructor(data: SimpleTrack | YouTubeVideo, user: User) {
     super(data);
     this.requestedBy = user.tag;
   }
 }
 
-export class CachedYTVideoInfo extends SimpleYTVideoInfo {
+export class CachedTrack extends SimpleTrack {
   readonly cachedAt: Date;
 
-  constructor(data: YouTubeVideo | SimpleYTVideoInfo, cachedAt: Date) {
+  constructor(data: SimpleTrack | YouTubeVideo, cachedAt: Date) {
     super(data);
     this.cachedAt = cachedAt;
   }

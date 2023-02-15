@@ -1,8 +1,8 @@
 import { EmbedField, hyperlink } from 'discord.js';
-import { QueuedYTVideoInfo } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
 
 export function formatVideoField(
-  video: QueuedYTVideoInfo,
+  video: QueuedTrack,
   prefix?: string
 ): EmbedField {
   let name = '';
@@ -22,9 +22,9 @@ export function formatVideoField(
   }
 
   const channelString =
-    video.channel.url !== undefined
-      ? hyperlink(video.channel.name, video.channel.url)
-      : video.channel.name;
+    video.uploader.url !== undefined
+      ? hyperlink(video.uploader.name, video.uploader.url)
+      : video.uploader.name;
 
   value += ` | By ${channelString}`;
 
