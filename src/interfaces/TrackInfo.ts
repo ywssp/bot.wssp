@@ -2,7 +2,7 @@ import { User } from 'discord.js';
 import { Duration } from 'luxon';
 import { extractID, YouTubeVideo, SoundCloudTrack } from 'play-dl';
 
-export class SimpleTrack {
+export class TrackInfo {
   readonly type = 'queue_track';
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
@@ -14,8 +14,8 @@ export class SimpleTrack {
   };
   readonly thumbnail?: string;
 
-  constructor(data: SimpleTrack | YouTubeVideo | SoundCloudTrack) {
-    if (data instanceof SimpleTrack) {
+  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack) {
+    if (data instanceof TrackInfo) {
       this.title = data.title;
       this.url = data.url;
       this.id = data.id;
@@ -67,19 +67,19 @@ export class SimpleTrack {
   }
 }
 
-export class QueuedTrack extends SimpleTrack {
+export class QueuedTrackInfo extends TrackInfo {
   readonly requestedBy: string;
 
-  constructor(data: SimpleTrack | YouTubeVideo, user: User) {
+  constructor(data: TrackInfo | YouTubeVideo, user: User) {
     super(data);
     this.requestedBy = user.tag;
   }
 }
 
-export class CachedTrack extends SimpleTrack {
+export class CachedTrackInfo extends TrackInfo {
   readonly cachedAt: Date;
 
-  constructor(data: SimpleTrack | YouTubeVideo, cachedAt: Date) {
+  constructor(data: TrackInfo | YouTubeVideo, cachedAt: Date) {
     super(data);
     this.cachedAt = cachedAt;
   }

@@ -1,16 +1,16 @@
 import { RadioData } from './RadioData';
-import { YouTubeData } from './YouTubeData';
+import { QueueSystemData } from './QueueSystemData';
 
 export class GuildMusicData {
   textUpdateChannelId: string;
   musicAnnounceStyle: 'full' | 'minimal' | 'none';
-  youtubeData: YouTubeData;
+  queueSystemData: QueueSystemData;
   radioData: RadioData;
 
   constructor(textUpdateChannelId: string) {
     this.textUpdateChannelId = textUpdateChannelId;
     this.musicAnnounceStyle = 'full';
-    this.youtubeData = new YouTubeData();
+    this.queueSystemData = new QueueSystemData();
     this.radioData = new RadioData();
   }
 }

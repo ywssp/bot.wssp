@@ -6,7 +6,7 @@ import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDat
 import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
-import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/LISTEN.moe/disconnectGuildFromWebsocket';
+import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
 import { unsubscribeVCFromAudioPlayer } from '../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
 
 export class LeaveVCCommand extends Command {
@@ -45,7 +45,7 @@ export class LeaveVCCommand extends Command {
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (voiceConnection === undefined || audioPlayer === undefined) {
-      interaction.reply('There is no video playing!');
+      interaction.reply('There is nothing playing!');
       return;
     }
 
@@ -57,8 +57,8 @@ export class LeaveVCCommand extends Command {
 
     if (playingType === 'radio') {
       disconnectGuildFromRadioWebsocket(interaction.guildId as string);
-    } else if (playingType === 'youtube') {
-      const youtubeData = guildMusicData.youtubeData;
+    } else if (playingType === 'queued_track') {
+      const youtubeData = guildMusicData.queueSystemData;
 
       if (youtubeData.loop.type !== 'track') {
         youtubeData.modifyIndex(2);
@@ -67,11 +67,11 @@ export class LeaveVCCommand extends Command {
 
     switch (interaction.options.getString('clear') as 'queue' | 'data' | null) {
       case 'queue':
-        if (guildMusicData.youtubeData !== undefined) {
-          guildMusicData.youtubeData.videoList.splice(
-            guildMusicData.youtubeData.videoListIndex,
-            guildMusicData.youtubeData.videoList.length -
-              guildMusicData.youtubeData.videoListIndex
+        if (guildMusicData.queueSystemData !== undefined) {
+          guildMusicData.queueSystemData.trackList.splice(
+            guildMusicData.queueSystemData.trackListIndex,
+            guildMusicData.queueSystemData.trackList.length -
+              guildMusicData.queueSystemData.trackListIndex
           );
         }
         break;

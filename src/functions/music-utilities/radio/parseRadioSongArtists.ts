@@ -1,10 +1,10 @@
 import { basicInfo, RadioSongInfo } from '../../../interfaces/RadioSongInfo';
-import { createClickableRadioLink } from './CreateClickableRadioLink';
+import { createRadioHyperlink } from './createRadioHyperlink';
 
-export function parseArtists(song: RadioSongInfo): string[] {
+export function parseRadioSongArtists(song: RadioSongInfo): string[] {
   if (song.characters === undefined) {
     return song.artists.map((artist) =>
-      createClickableRadioLink(artist, 'artists')
+      createRadioHyperlink(artist, 'artists')
     );
   }
 
@@ -25,10 +25,10 @@ export function parseArtists(song: RadioSongInfo): string[] {
   }
 
   return pairedArtists.map(({ artist, character }) => {
-    const artistText = createClickableRadioLink(artist, 'artists');
+    const artistText = createRadioHyperlink(artist, 'artists');
 
     if (character) {
-      const characterText = createClickableRadioLink(character, 'characters');
+      const characterText = createRadioHyperlink(character, 'characters');
 
       return `${characterText} | CV: ${artistText}`;
     }

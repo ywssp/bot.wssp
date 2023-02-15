@@ -1,8 +1,8 @@
-import { QueuedTrack } from '../YTVideoInfo';
+import { QueuedTrackInfo } from '../TrackInfo';
 
-export class YouTubeData {
-  videoList: QueuedTrack[];
-  videoListIndex: number;
+export class QueueSystemData {
+  trackList: QueuedTrackInfo[];
+  trackListIndex: number;
   skipped: boolean;
   shuffle: boolean;
   loop:
@@ -11,8 +11,8 @@ export class YouTubeData {
     | { type: 'queue'; emoji: '🔁' };
 
   constructor() {
-    this.videoList = [];
-    this.videoListIndex = 0;
+    this.trackList = [];
+    this.trackListIndex = 0;
     this.skipped = false;
     this.shuffle = false;
     this.loop = {
@@ -22,19 +22,19 @@ export class YouTubeData {
   }
 
   isPlaying() {
-    return this.videoListIndex < this.videoList.length;
+    return this.trackListIndex < this.trackList.length;
   }
 
-  currentVideo() {
-    return this.videoList[this.videoListIndex];
+  currentTrack() {
+    return this.trackList[this.trackListIndex];
   }
 
   getQueue() {
-    return this.videoList.slice(this.videoListIndex + 1);
+    return this.trackList.slice(this.trackListIndex + 1);
   }
 
   getHistory() {
-    return this.videoList.slice(0, this.videoListIndex);
+    return this.trackList.slice(0, this.trackListIndex);
   }
 
   setLoopType(type: 'off' | 'track' | 'queue') {
@@ -47,10 +47,10 @@ export class YouTubeData {
   }
 
   modifyIndex(amount: number) {
-    this.videoListIndex += amount;
+    this.trackListIndex += amount;
 
     if (this.loop.type !== 'track') {
-      this.videoListIndex--;
+      this.trackListIndex--;
     }
   }
 }

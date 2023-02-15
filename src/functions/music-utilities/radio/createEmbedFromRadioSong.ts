@@ -2,8 +2,8 @@ import { EmbedBuilder } from 'discord.js';
 
 import { Duration } from 'luxon';
 
-import { createClickableRadioLink } from './CreateClickableRadioLink';
-import { parseArtists } from './ParseRadioArtists';
+import { createRadioHyperlink } from './createRadioHyperlink';
+import { parseRadioSongArtists } from './parseRadioSongArtists';
 import { RadioSongInfo } from '../../../interfaces/RadioSongInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -20,7 +20,7 @@ export function createRadioSongEmbed(song: RadioSongInfo) {
       {
         name: 'Artist' + (song.artists.length > 1 ? 's' : ''),
 
-        value: parseArtists(song).join(',\n')
+        value: parseRadioSongArtists(song).join(',\n')
       }
     ]);
 
@@ -28,7 +28,7 @@ export function createRadioSongEmbed(song: RadioSongInfo) {
     const album = song.albums[0];
     embed.addFields({
       name: 'Album',
-      value: createClickableRadioLink(album, 'albums')
+      value: createRadioHyperlink(album, 'albums')
     });
 
     if (album.image) {

@@ -2,14 +2,14 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 
-export class PausePlaybackCommand extends Command {
+export class ResumePlaybackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
-      name: 'pause',
-      description: 'Pauses the video playing.',
+      name: 'resume',
+      description: 'Resumes the queue playback.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
+      preconditions: ['InVoiceChannel', 'IsPlaying']
     });
   }
 
@@ -25,17 +25,17 @@ export class PausePlaybackCommand extends Command {
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
-      interaction.reply('❓ | There is no video playing.');
+      interaction.reply('❓ | There is no track playing.');
       return;
     }
 
-    if (audioPlayer.state.status === 'paused') {
-      interaction.reply('❓ | The video is already paused.');
+    if (audioPlayer.state.status === 'playing') {
+      interaction.reply('❓ | The track is already playing.');
       return;
     }
 
-    audioPlayer.pause();
-    interaction.reply('⏸️ | Paused the video.');
+    audioPlayer.unpause();
+    interaction.reply('▶️ | Resumed the track.');
     return;
   }
 }

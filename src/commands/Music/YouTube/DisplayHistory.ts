@@ -2,12 +2,12 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
-export class DisplayHistoryCommand extends Command {
+export class DisplayTrackHistoryCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
@@ -30,16 +30,16 @@ export class DisplayHistoryCommand extends Command {
 
     if (
       guildMusicData === undefined ||
-      guildMusicData.youtubeData.getHistory().length === 0
+      guildMusicData.queueSystemData.getHistory().length === 0
     ) {
-      interaction.reply('❓ | The video history is empty.');
+      interaction.reply('❓ | The track history is empty.');
       return;
     }
 
-    const history = guildMusicData.youtubeData.getHistory();
+    const history = guildMusicData.queueSystemData.getHistory();
 
     const historyFields = history
-      .map((video) => formatVideoField(video))
+      .map((track) => createEmbedFieldFromTrack(track))
       .reverse();
 
     const embed = new EmbedBuilder()

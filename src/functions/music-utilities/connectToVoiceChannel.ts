@@ -1,7 +1,13 @@
-import { getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
+import {
+  getVoiceConnection,
+  joinVoiceChannel,
+  VoiceConnection
+} from '@discordjs/voice';
 import { VoiceBasedChannel } from 'discord.js';
 
-export function connectVoiceChannel(voiceChannel: VoiceBasedChannel) {
+export function connectToVoiceChannel(
+  voiceChannel: VoiceBasedChannel
+): VoiceConnection {
   const existingConnection = getVoiceConnection(voiceChannel.guild.id);
 
   if (existingConnection) {

@@ -16,14 +16,14 @@ import {
   hyperlink
 } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { formatVideoEmbed } from './formatVideoEmbed';
+import { createEmbedFromTrack } from './createEmbedFromTrack';
 import { getPlayingType } from '../getPlayingType';
 import { getAudioPlayer } from '../getAudioPlayer';
-import { disconnectGuildFromRadioWebsocket } from '../LISTEN.moe/disconnectGuildFromWebsocket';
-import { connectVoiceChannel } from '../connectVoiceChannel';
+import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
+import { connectToVoiceChannel } from '../connectToVoiceChannel';
 import { unsubscribeVCFromAudioPlayer } from '../unsubscribeVCFromAudioPlayer';
 import { Duration } from 'luxon';
 import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicData';
@@ -32,21 +32,21 @@ import { MusicResourceMetadata } from '../../../interfaces/MusicResourceMetadata
 function createNowPlayingMessage(
   guildMusicData: GuildMusicData
 ): BaseMessageOptions {
-  const video = guildMusicData.youtubeData.currentVideo();
-  const nextVideo = guildMusicData.youtubeData.videoList[
-    guildMusicData.youtubeData.videoListIndex + 1
-  ] as QueuedTrack | undefined;
+  const video = guildMusicData.queueSystemData.currentTrack();
+  const nextVideo = guildMusicData.queueSystemData.trackList[
+    guildMusicData.queueSystemData.trackListIndex + 1
+  ] as QueuedTrackInfo | undefined;
 
   if (guildMusicData.musicAnnounceStyle === 'full') {
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(baseEmbed.data, video);
+    const embed = createEmbedFromTrack(baseEmbed, video);
 
     if (nextVideo) {
       let nextString = '';
-      if (guildMusicData.youtubeData.shuffle) {
+      if (guildMusicData.queueSystemData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
         const channelString =
@@ -82,7 +82,7 @@ function createNowPlayingMessage(
   } | By ${video.uploader.name}`;
 
   if (nextVideo) {
-    if (guildMusicData.youtubeData.shuffle) {
+    if (guildMusicData.queueSystemData.shuffle) {
       text += '\n🔀 | The next song is a random song from the queue.';
     } else {
       text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.uploader.name}`;
@@ -93,7 +93,7 @@ function createNowPlayingMessage(
 }
 
 async function playVideo(
-  video: QueuedTrack,
+  video: QueuedTrackInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
@@ -101,7 +101,7 @@ async function playVideo(
 
   // Set type as MusicResourceMetadata with property type of 'youtube'
   const metadata: MusicResourceMetadata = {
-    type: 'youtube',
+    type: 'queued_track',
     data: video
   };
 
@@ -113,13 +113,13 @@ async function playVideo(
   audioPlayer.play(resource);
 
   if (
-    !musicData.youtubeData.skipped &&
-    musicData.youtubeData.loop.type === 'track'
+    !musicData.queueSystemData.skipped &&
+    musicData.queueSystemData.loop.type === 'track'
   ) {
     return;
   }
 
-  musicData.youtubeData.skipped = false;
+  musicData.queueSystemData.skipped = false;
 
   if (musicData.musicAnnounceStyle !== 'none') {
     const message = createNowPlayingMessage(musicData);
@@ -138,13 +138,13 @@ export function startQueuePlayback(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const guildMusicData = getGuildMusicData(guildId)!;
-  const youtubeData = guildMusicData.youtubeData;
+  const youtubeData = guildMusicData.queueSystemData;
 
   const textUpdateChannel = client.channels.cache.get(
     guildMusicData.textUpdateChannelId
   ) as TextBasedChannel;
 
-  const voiceConnection = connectVoiceChannel(voiceChannel);
+  const voiceConnection = connectToVoiceChannel(voiceChannel);
 
   let audioPlayer = createAudioPlayer({
     behaviors: {
@@ -154,7 +154,7 @@ export function startQueuePlayback(
 
   const playingType = getPlayingType(guildId);
 
-  if (playingType === 'youtube') {
+  if (playingType === 'queued_track') {
     return;
   } else if (playingType === 'radio') {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -168,7 +168,7 @@ export function startQueuePlayback(
   }
 
   audioPlayer = audioPlayer.on('error', (error) => {
-    const resourceMetadata = error.resource.metadata as QueuedTrack;
+    const resourceMetadata = error.resource.metadata as QueuedTrackInfo;
     const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
       'm:ss'
     );
@@ -181,7 +181,7 @@ export function startQueuePlayback(
       .setColor(ColorPalette.error)
       .setTitle('Playback Error');
 
-    const embed = formatVideoEmbed(baseEmbed.data, resourceMetadata);
+    const embed = createEmbedFromTrack(baseEmbed, resourceMetadata);
 
     if (resourceMetadata.duration !== 'Live Stream') {
       embed.spliceFields(2, 1, {
@@ -200,15 +200,15 @@ export function startQueuePlayback(
 
   voiceConnection.subscribe(audioPlayer);
 
-  playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
+  playVideo(youtubeData.currentTrack(), audioPlayer, guildMusicData);
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
     if (youtubeData.loop.type === 'queue') {
-      youtubeData.videoList.push(youtubeData.currentVideo());
+      youtubeData.trackList.push(youtubeData.currentTrack());
     }
 
     if (youtubeData.loop.type !== 'track') {
-      youtubeData.videoListIndex++;
+      youtubeData.trackListIndex++;
     }
 
     if (voiceChannel.members.filter((member) => !member.user.bot).size === 0) {
@@ -221,7 +221,7 @@ export function startQueuePlayback(
       return;
     }
 
-    if (youtubeData.videoList.length === youtubeData.videoListIndex) {
+    if (youtubeData.trackList.length === youtubeData.trackListIndex) {
       textUpdateChannel.send('No more videos in the queue. Stopping...');
       audioPlayer.stop();
       unsubscribeVCFromAudioPlayer(guildId);
@@ -234,15 +234,15 @@ export function startQueuePlayback(
         Math.random() * youtubeData.getQueue().length
       );
 
-      const selectedVideo = youtubeData.videoList.splice(randomIndex, 1)[0];
+      const selectedVideo = youtubeData.trackList.splice(randomIndex, 1)[0];
 
-      youtubeData.videoList.splice(
-        youtubeData.videoListIndex,
+      youtubeData.trackList.splice(
+        youtubeData.trackListIndex,
         0,
         selectedVideo
       );
     }
 
-    playVideo(youtubeData.currentVideo(), audioPlayer, guildMusicData);
+    playVideo(youtubeData.currentTrack(), audioPlayer, guildMusicData);
   });
 }

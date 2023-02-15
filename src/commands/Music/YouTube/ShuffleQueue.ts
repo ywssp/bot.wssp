@@ -40,7 +40,7 @@ export class ShuffleQueueCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildYoutubeData = guildMusicData.queueSystemData;
 
     const mode =
       interaction.options.getBoolean('shuffle') ?? !guildYoutubeData.shuffle;

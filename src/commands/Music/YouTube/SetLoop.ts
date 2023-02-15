@@ -9,7 +9,7 @@ export class SetLoopCommand extends Command {
       name: 'loop',
       description: 'Sets the loop mode of the music player.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'HasGuildMusicData', 'IsPlayingYoutube']
+      preconditions: ['InVoiceChannel', 'HasGuildMusicData']
     });
   }
 
@@ -45,7 +45,7 @@ export class SetLoopCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildYoutubeData = guildMusicData.queueSystemData;
 
     const mode = interaction.options.getString('mode') as
       | 'off'

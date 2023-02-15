@@ -4,8 +4,8 @@ import { EmbedBuilder, GuildMember, hyperlink } from 'discord.js';
 import play, { YouTubePlayList } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
-import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
+import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
@@ -57,7 +57,7 @@ export class AddPlaylistCommand extends Command {
     const guildYoutubeData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
-    ).youtubeData;
+    ).queueSystemData;
 
     const link = interaction.options.getString('link') as string;
 
@@ -101,7 +101,7 @@ export class AddPlaylistCommand extends Command {
     }
 
     const videos = foundVideos.map(
-      (video) => new QueuedTrack(video, interaction.user)
+      (video) => new QueuedTrackInfo(video, interaction.user)
     );
 
     if (interaction.options.getBoolean('loop')) {
@@ -157,9 +157,9 @@ export class AddPlaylistCommand extends Command {
       embeds: [embed]
     });
 
-    guildYoutubeData.videoList.push(...videos);
+    guildYoutubeData.trackList.push(...videos);
 
-    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+    if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 

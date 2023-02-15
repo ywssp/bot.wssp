@@ -16,7 +16,7 @@ const radioWebsocketURLs: Record<
   jpop: radioStations.jpop.websocketUrl
 };
 
-export function setupRadioWebsocket(radioName: 'kpop' | 'jpop') {
+export function createRadioWebsocketConnection(radioName: 'kpop' | 'jpop') {
   const socket = new WebSocket(radioWebsocketURLs[radioName]);
 
   socket.onopen = () => {

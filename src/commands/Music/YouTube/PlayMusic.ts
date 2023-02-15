@@ -4,13 +4,13 @@ import { EmbedBuilder, GuildMember } from 'discord.js';
 import play from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
+import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
 import {
-  checkVideoCache,
-  VideoCacheResult
-} from '../../../functions/music-utilities/YouTube/CheckVideoCache';
-import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
-import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
+  getTrackFromCache,
+  TrackCacheResult
+} from '../../../functions/music-utilities/queue-system/getTrackFromCache';
+import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
@@ -46,7 +46,7 @@ export class PlayMusicCommand extends Command {
     const guildYoutubeData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
-    ).youtubeData;
+    ).queueSystemData;
 
     const linkOrQuery = interaction.options.getString('link-or-query');
 
@@ -88,10 +88,10 @@ export class PlayMusicCommand extends Command {
       videoId = searchResults[0].id ?? play.extractID(searchResults[0].url);
     }
 
-    let videoCacheResult: VideoCacheResult;
+    let videoCacheResult: TrackCacheResult;
 
     try {
-      videoCacheResult = await checkVideoCache(videoId);
+      videoCacheResult = await getTrackFromCache(videoId);
     } catch (error) {
       interaction.editReply({
         content: '❌ | An error occurred while fetching the video.'
@@ -102,8 +102,8 @@ export class PlayMusicCommand extends Command {
     const video = videoCacheResult.data;
     const cacheStatus = videoCacheResult.cacheData;
 
-    const queuedVideo = new QueuedTrack(video, interaction.user);
-    guildYoutubeData.videoList.push(queuedVideo);
+    const queuedVideo = new QueuedTrackInfo(video, interaction.user);
+    guildYoutubeData.trackList.push(queuedVideo);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.success)
@@ -114,11 +114,11 @@ export class PlayMusicCommand extends Command {
         }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
       });
 
-    const embed = formatVideoEmbed(baseEmbed.data, queuedVideo);
+    const embed = createEmbedFromTrack(baseEmbed, queuedVideo);
 
     interaction.editReply({ content: null, embeds: [embed] });
 
-    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+    if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 

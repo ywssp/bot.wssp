@@ -39,7 +39,7 @@ export class ReadyListener extends Listener {
     const ttlDuration = Duration.fromObject({ days: 7 }).as('milliseconds');
 
     this.container.caches = {
-      videos: new LRU({
+      tracks: new LRU({
         max: 100,
         ttl: ttlDuration,
         ttlResolution: ttlDuration / 7

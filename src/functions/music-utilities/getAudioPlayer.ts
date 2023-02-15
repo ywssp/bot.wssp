@@ -2,6 +2,7 @@ import { AudioPlayer, getVoiceConnection } from '@discordjs/voice';
 
 export function getAudioPlayer(guildId: string): AudioPlayer | undefined {
   const voiceConnection = getVoiceConnection(guildId);
+
   if (
     voiceConnection === undefined ||
     voiceConnection.state.status !== 'ready' ||

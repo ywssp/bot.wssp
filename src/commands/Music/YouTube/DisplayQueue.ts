@@ -2,7 +2,7 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, inlineCode } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { formatVideoField } from '../../../functions/music-utilities/YouTube/formatVideoField';
+import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -31,17 +31,17 @@ export class DisplayQueueCommand extends Command {
 
     if (
       guildMusicData === undefined ||
-      guildMusicData.youtubeData.getQueue().length === 0
+      guildMusicData.queueSystemData.getQueue().length === 0
     ) {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildYoutubeData = guildMusicData.queueSystemData;
     const queue = guildYoutubeData.getQueue();
 
-    const queueFields = queue.map((video, index) =>
-      formatVideoField(video, `${index + 1}. `)
+    const queueFields = queue.map((track, index) =>
+      createEmbedFieldFromTrack(track, `${index + 1}. `)
     );
 
     let description = null;
@@ -58,9 +58,9 @@ export class DisplayQueueCommand extends Command {
         description += '\n';
       }
 
-      const currentVideo = guildYoutubeData.currentVideo();
-      description += `🔂 | ${inlineCode(currentVideo.title)} by ${inlineCode(
-        currentVideo.uploader.name
+      const currentTrack = guildYoutubeData.currentTrack();
+      description += `🔂 | ${inlineCode(currentTrack.title)} by ${inlineCode(
+        currentTrack.uploader.name
       )} is looping.`;
     }
 

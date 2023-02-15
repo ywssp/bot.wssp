@@ -16,12 +16,12 @@ import { getPlayingType } from '../../../functions/music-utilities/getPlayingTyp
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import {
-  checkVideoCache,
-  VideoCacheResult
-} from '../../../functions/music-utilities/YouTube/CheckVideoCache';
-import { formatVideoEmbed } from '../../../functions/music-utilities/YouTube/formatVideoEmbed';
-import { startQueuePlayback } from '../../../functions/music-utilities/YouTube/startQueuePlayback';
-import { QueuedTrack } from '../../../interfaces/YTVideoInfo';
+  getTrackFromCache,
+  TrackCacheResult
+} from '../../../functions/music-utilities/queue-system/getTrackFromCache';
+import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
+import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
@@ -57,9 +57,9 @@ export class SearchVideosCommand extends Command {
     const guildYoutubeData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
-    ).youtubeData;
+    ).queueSystemData;
 
-    const query = interaction.options.getString('query') as string;
+    const query = interaction.options.getString('query', true);
 
     if (query.length < 3) {
       interaction.reply({
@@ -87,7 +87,7 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    const actionRows = [
+    const buttonRows = [
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         [1, 2, 3, 4, 5].map((number) =>
           new ButtonBuilder()
@@ -131,7 +131,7 @@ export class SearchVideosCommand extends Command {
 
     const selectionMessage = await interaction.channel?.send({
       embeds: [selectionEmbed],
-      components: actionRows
+      components: buttonRows
     });
 
     if (selectionMessage === undefined) {
@@ -151,7 +151,7 @@ export class SearchVideosCommand extends Command {
         componentType: ComponentType.Button
       });
     } catch (e) {
-      interaction.editReply('🛑 | No video selected.');
+      interaction.editReply('🛑 | No track selected.');
       selectionMessage.delete();
       return;
     }
@@ -168,44 +168,44 @@ export class SearchVideosCommand extends Command {
 
     const videoIndex = parseInt(collected.customId) - 1;
 
-    let videoCacheResult: VideoCacheResult;
+    let trackCacheResult: TrackCacheResult;
 
     try {
-      videoCacheResult = await checkVideoCache(
+      trackCacheResult = await getTrackFromCache(
         searchResults[videoIndex].id ??
           play.extractID(searchResults[videoIndex].url)
       );
     } catch (error) {
       interaction.editReply({
-        content: '❌ | An error occurred while fetching the video.'
+        content: '❌ | An error occurred while fetching the track.'
       });
       return;
     }
 
-    const video = videoCacheResult.data;
-    const cacheStatus = videoCacheResult.cacheData;
+    const track = trackCacheResult.data;
+    const cacheStatus = trackCacheResult.cacheData;
 
-    const queuedVideo = new QueuedTrack(video, interaction.user);
-    guildYoutubeData.videoList.push(queuedVideo);
+    const queuedTrack = new QueuedTrackInfo(track, interaction.user);
+    guildYoutubeData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.success)
-      .setTitle('Added video to queue')
+      .setTitle('Added track to queue')
       .setFooter({
         text: `Cache ${
           cacheStatus.status
         }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
       });
 
-    const replyEmbed = formatVideoEmbed(baseEmbed.data, queuedVideo);
+    const replyEmbed = createEmbedFromTrack(baseEmbed, queuedTrack);
 
-    if (video.thumbnail) {
-      replyEmbed.setThumbnail(video.thumbnail);
+    if (track.thumbnail) {
+      replyEmbed.setThumbnail(track.thumbnail);
     }
 
     interaction.editReply({ embeds: [replyEmbed] });
 
-    if (getPlayingType(interaction.guildId as string) !== 'youtube') {
+    if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 

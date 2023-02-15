@@ -6,10 +6,10 @@ import { DateTime, Duration } from 'luxon';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
-import { formatVideoEmbed } from '../../functions/music-utilities/YouTube/formatVideoEmbed';
+import { createEmbedFromTrack } from '../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
-import { createRadioSongEmbed } from '../../functions/music-utilities/LISTEN.moe/createRadioSongEmbed';
+import { createRadioSongEmbed } from '../../functions/music-utilities/radio/createEmbedFromRadioSong';
 
 import { ColorPalette } from '../../settings/ColorPalette';
 export class NowPlayingCommand extends Command {
@@ -17,9 +17,8 @@ export class NowPlayingCommand extends Command {
     super(context, {
       ...options,
       name: 'nowplaying',
-      description: 'Displays the details of the currently playing video.',
-      runIn: 'GUILD_ANY',
-      preconditions: ['IsPlaying']
+      description: 'Displays the details of the currently playing track.',
+      runIn: 'GUILD_ANY'
     });
   }
 
@@ -33,18 +32,17 @@ export class NowPlayingCommand extends Command {
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData(interaction.guildId as string);
+    const playType = getPlayingType(interaction.guildId as string);
 
-    if (typeof guildMusicData === 'undefined') {
+    if (playType === undefined || guildMusicData === undefined) {
       interaction.reply({
-        content: 'There is no video playing.',
+        content: 'There is nothing playing.',
         ephemeral: true
       });
       return;
     }
 
-    const playType = getPlayingType(interaction.guildId as string);
-
-    if (playType === 'youtube') {
+    if (playType === 'queued_track') {
       interaction.reply(this.getYoutubeEmbed(interaction, guildMusicData));
     } else if (playType === 'radio') {
       interaction.reply(this.getRadioEmbed(guildMusicData));
@@ -57,16 +55,9 @@ export class NowPlayingCommand extends Command {
     interaction: ChatInputCommand.Interaction,
     guildMusicData: GuildMusicData
   ) {
-    const youtubeData = guildMusicData.youtubeData;
-    const currentVideo = youtubeData.currentVideo();
+    const youtubeData = guildMusicData.queueSystemData;
+    const currentTrack = youtubeData.currentTrack();
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
-
-    if (audioPlayer === undefined) {
-      return {
-        content: 'There is no video playing.',
-        ephemeral: true
-      };
-    }
 
     if (
       audioPlayer === undefined ||
@@ -74,18 +65,18 @@ export class NowPlayingCommand extends Command {
         audioPlayer.state.status !== 'paused')
     ) {
       return {
-        content: '❓ | There is no video playing.',
+        content: '❓ | There is no track playing.',
         ephemeral: true
       };
     }
 
     let durationVisual = '';
-    if (typeof currentVideo.duration !== 'string') {
+    if (typeof currentTrack.duration !== 'string') {
       const passedTime = Duration.fromMillis(
         audioPlayer.state.resource.playbackDuration
       );
 
-      const totalTime = currentVideo.duration;
+      const totalTime = currentTrack.duration;
 
       durationVisual = this.getDurationVisual(passedTime, totalTime);
     } else {
@@ -96,7 +87,7 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.info)
       .setTitle('Now Playing');
 
-    const embed = formatVideoEmbed(baseEmbed.data, currentVideo);
+    const embed = createEmbedFromTrack(baseEmbed, currentTrack);
 
     embed.spliceFields(2, 1, {
       name: 'Duration',
@@ -111,8 +102,8 @@ export class NowPlayingCommand extends Command {
       } ${capitalize(youtubeData.loop.type)}`
     });
 
-    if (currentVideo.thumbnail) {
-      embed.setThumbnail(currentVideo.thumbnail);
+    if (currentTrack.thumbnail) {
+      embed.setThumbnail(currentTrack.thumbnail);
     }
 
     return { embeds: [embed] };

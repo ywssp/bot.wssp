@@ -19,7 +19,6 @@ declare module '@sapphire/framework' {
   interface Preconditions {
     InVoiceChannel: never;
     IsPlaying: never;
-    IsPlayingYoutube: never;
     OwnerOnly: never;
     HasGuildMusicData: never;
   }
@@ -28,7 +27,7 @@ declare module '@sapphire/framework' {
 import { RadioStationNames } from './interfaces/AvailableRadioStations';
 import { GuildMusicData } from './interfaces/GuildMusicData/GuildMusicData';
 import { TetrioUserInfo, TetrioUserRecords } from './interfaces/TetrioAPI';
-import { CachedTrack } from './interfaces/YTVideoInfo';
+import { CachedTrackInfo } from './interfaces/TrackInfo';
 import { RadioWebsocketUpdate } from './interfaces/RadioWebsocketUpdate';
 import type WebSocket from 'ws';
 import LRU from 'lru-cache';
@@ -36,7 +35,7 @@ declare module '@sapphire/pieces' {
   interface Container {
     guildMusicDataMap: Map<string, GuildMusicData>;
     caches: {
-      videos: LRU<string, CachedTrack>;
+      tracks: LRU<string, CachedTrackInfo>;
       tetrioUserInfos: LRU<string, TetrioUserInfo>;
       tetrioUserRecords: LRU<string, TetrioUserRecords>;
     };
