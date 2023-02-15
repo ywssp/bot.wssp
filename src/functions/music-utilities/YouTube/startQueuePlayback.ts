@@ -49,10 +49,15 @@ function createNowPlayingMessage(
       if (guildMusicData.youtubeData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
+        const channelString =
+          nextVideo.channel.url !== undefined
+            ? hyperlink(nextVideo.channel.name, nextVideo.channel.url)
+            : nextVideo.channel.name;
+
         nextString = `${hyperlink(
           nextVideo.title,
           nextVideo.url
-        )} by ${hyperlink(nextVideo.channel.name, nextVideo.channel.url)}`;
+        )} by ${channelString}`;
       }
 
       embed.addFields([

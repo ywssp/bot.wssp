@@ -12,7 +12,10 @@ export function formatVideoEmbed(
     },
     {
       name: 'Channel',
-      value: hyperlink(video.channel.name, video.channel.url)
+      value:
+        video.channel.url !== undefined
+          ? hyperlink(video.channel.name, video.channel.url)
+          : video.channel.name
     },
     {
       name: 'Duration',

@@ -21,7 +21,12 @@ export function formatVideoField(
     value += video.duration.toFormat('m:ss');
   }
 
-  value += ` | By ${hyperlink(video.channel.name, video.channel.url)}`;
+  const channelString =
+    video.channel.url !== undefined
+      ? hyperlink(video.channel.name, video.channel.url)
+      : video.channel.name;
+
+  value += ` | By ${channelString}`;
 
   return {
     name,

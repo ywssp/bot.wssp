@@ -10,7 +10,7 @@ export class SimpleYTVideoInfo {
   readonly id: string;
   readonly channel: {
     name: string;
-    url: string;
+    url: string | undefined;
   };
   readonly thumbnail?: string;
 
@@ -32,7 +32,7 @@ export class SimpleYTVideoInfo {
 
     this.channel = {
       name: data.channel?.name ?? 'Unknown',
-      url: data.channel?.url ?? ''
+      url: data.channel?.url
     };
 
     this.duration = data.live
