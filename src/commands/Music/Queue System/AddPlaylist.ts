@@ -127,7 +127,7 @@ export class AddPlaylistCommand extends Command {
     };
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.success)
+      .setColor(ColorPalette.Success)
       .setTitle('Playlist Added to queue')
       .addFields([
         {

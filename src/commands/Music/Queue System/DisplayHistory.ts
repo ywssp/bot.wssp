@@ -43,7 +43,7 @@ export class DisplayTrackHistoryCommand extends Command {
       .reverse();
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.default)
+      .setColor(ColorPalette.Default)
       .setTitle('History');
 
     createPagedEmbed(interaction, historyFields, embed);

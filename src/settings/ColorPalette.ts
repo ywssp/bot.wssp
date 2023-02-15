@@ -14,10 +14,10 @@
 // - When a command requires a selection
 // Ex. When the user is selecting a song to play
 
-export const ColorPalette = {
-  default: '#88c0d0',
-  success: '#a3be8c',
-  error: '#bf616a',
-  info: '#b48ead',
-  selection: '#ebcb8b'
-} as const;
+export enum ColorPalette {
+  Default = '#88c0d0',
+  Success = '#a3be8c',
+  Error = '#bf616a',
+  Info = '#b48ead',
+  Selection = '#ebcb8b'
+}

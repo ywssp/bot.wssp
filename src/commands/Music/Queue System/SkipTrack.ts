@@ -83,7 +83,7 @@ export class SkipTrackCommand extends Command {
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.error)
+      .setColor(ColorPalette.Error)
       .setTitle(
         `Skipped ${skippedTracks.length} track${
           skippedTracks.length > 1 ? 's' : ''

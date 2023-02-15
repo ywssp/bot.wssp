@@ -60,7 +60,8 @@
     "no-return-await": "error",
     "no-self-assign": "error",
     "no-self-compare": "error",
-    "no-shadow": [
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": [
       "error",
       {
         "allow": [

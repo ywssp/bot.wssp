@@ -101,7 +101,7 @@ export class TetrioCommand extends Command {
     switch (userInfo.role) {
       case 'banned':
         specialEmbed = new EmbedBuilder()
-          .setColor(ColorPalette.error)
+          .setColor(ColorPalette.Error)
           .setTitle(userInfo.username.toUpperCase())
           .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
           .setThumbnail('https://tetr.io/res/avatar-banned.png')
@@ -189,7 +189,7 @@ export class TetrioCommand extends Command {
 
     // Create embed
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.default)
+      .setColor(ColorPalette.Default)
       .setTitle(userInfo.username.toUpperCase())
       .setURL(`https://ch.tetr.io/u/${userInfo.username}`);
 

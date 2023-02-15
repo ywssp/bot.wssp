@@ -15,7 +15,7 @@ export class MessageCommandDeniedListener extends Listener {
   }
   public run(error: UserError, { message }: MessageCommandDeniedPayload) {
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.error)
+      .setColor(ColorPalette.Error)
       .setTitle('Cannot run command')
       .setDescription(error.message);
 

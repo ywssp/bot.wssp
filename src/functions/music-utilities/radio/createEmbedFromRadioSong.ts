@@ -10,7 +10,7 @@ import { ColorPalette } from '../../../settings/ColorPalette';
 
 export function createRadioSongEmbed(song: RadioSongInfo) {
   const embed = new EmbedBuilder()
-    .setColor(ColorPalette.info)
+    .setColor(ColorPalette.Info)
     .setTitle('Now Playing')
     .addFields([
       {

@@ -106,7 +106,7 @@ export class SearchVideosCommand extends Command {
     ];
 
     const selectionEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.selection)
+      .setColor(ColorPalette.Selection)
       .setTitle('Select a video')
       .addFields(
         searchResults.map((item, index) => {
@@ -189,7 +189,7 @@ export class SearchVideosCommand extends Command {
     guildYoutubeData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.success)
+      .setColor(ColorPalette.Success)
       .setTitle('Added track to queue')
       .setFooter({
         text: `Cache ${

@@ -106,7 +106,7 @@ export class PlayMusicCommand extends Command {
     guildYoutubeData.trackList.push(queuedVideo);
 
     const baseEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.success)
+      .setColor(ColorPalette.Success)
       .setTitle('Added video to queue')
       .setFooter({
         text: `Cache ${

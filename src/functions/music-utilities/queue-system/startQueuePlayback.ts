@@ -39,7 +39,7 @@ function createNowPlayingMessage(
 
   if (guildMusicData.musicAnnounceStyle === 'full') {
     const baseEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.info)
+      .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
     const embed = createEmbedFromTrack(baseEmbed, video);
@@ -178,7 +178,7 @@ export function startQueuePlayback(
     );
 
     const baseEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.error)
+      .setColor(ColorPalette.Error)
       .setTitle('Playback Error');
 
     const embed = createEmbedFromTrack(baseEmbed, resourceMetadata);

@@ -65,7 +65,7 @@ export class DisplayQueueCommand extends Command {
     }
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.default)
+      .setColor(ColorPalette.Default)
       .setTitle('Queue')
       .setDescription(description);
 

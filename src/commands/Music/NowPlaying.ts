@@ -84,7 +84,7 @@ export class NowPlayingCommand extends Command {
     }
 
     const baseEmbed = new EmbedBuilder()
-      .setColor(ColorPalette.info)
+      .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
     const embed = createEmbedFromTrack(baseEmbed, currentTrack);

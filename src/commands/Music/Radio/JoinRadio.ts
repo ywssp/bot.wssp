@@ -133,7 +133,7 @@ export class JoinRadioCommand extends Command {
       this.container.logger.error(error);
 
       const embed = new EmbedBuilder()
-        .setColor(ColorPalette.error)
+        .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -155,7 +155,7 @@ export class JoinRadioCommand extends Command {
 
       if (radioStationResource === null) {
         const embed = new EmbedBuilder()
-          .setColor(ColorPalette.error)
+          .setColor(ColorPalette.Error)
           .setTitle('Playback Error')
           .setDescription(
             'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -181,7 +181,7 @@ export class JoinRadioCommand extends Command {
 
     if (radioStationResource === null) {
       const embed = new EmbedBuilder()
-        .setColor(ColorPalette.error)
+        .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -218,7 +218,7 @@ export class JoinRadioCommand extends Command {
     }
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.success)
+      .setColor(ColorPalette.Success)
       .setTitle('Connected')
       .setDescription(
         `Connected to the LISTEN.moe ${
