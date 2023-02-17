@@ -35,7 +35,8 @@ declare module '@sapphire/pieces' {
   interface Container {
     guildMusicDataMap: Map<string, GuildMusicData>;
     caches: {
-      tracks: LRU<string, CachedTrackInfo>;
+      youtubeTracks: LRU<string, CachedTrackInfo>;
+      soundcloudTracks: LRU<string, CachedTrackInfo>;
       tetrioUserInfos: LRU<string, TetrioUserInfo>;
       tetrioUserRecords: LRU<string, TetrioUserRecords>;
     };

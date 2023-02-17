@@ -1,14 +1,15 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember } from 'discord.js';
 
-import play, { SoundCloudTrack } from 'play-dl';
+import play from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { QueuedTrackInfo, TrackInfo } from '../../../interfaces/TrackInfo';
 import {
   getTrackFromCache,
+  storeTrackInCache,
   TrackCacheResult
-} from '../../../functions/music-utilities/queue-system/getTrackFromCache';
+} from '../../../functions/music-utilities/queue-system/trackCacheManager';
 import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
@@ -118,10 +119,25 @@ export class PlayMusicCommand extends Command {
     let cacheStatus: TrackCacheResult['cacheData'] | undefined;
 
     if (source === 'youtube') {
-      let videoId: string;
-
       if ((await play.validate(linkOrQuery)) === 'yt_video') {
-        videoId = play.extractID(linkOrQuery);
+        const videoId = play.extractID(linkOrQuery);
+
+        let videoCacheResult: TrackCacheResult;
+        try {
+          videoCacheResult = await getTrackFromCache(videoId);
+        } catch (error) {
+          interaction.editReply({
+            content: '❌ | An error occurred while fetching the video.'
+          });
+          return;
+        }
+
+        queuedTrack = new QueuedTrackInfo(
+          videoCacheResult.data,
+          interaction.user
+        );
+
+        cacheStatus = videoCacheResult.cacheData;
       } else {
         const searchResults = await play.search(linkOrQuery, {
           source: {
@@ -138,50 +154,43 @@ export class PlayMusicCommand extends Command {
           return;
         }
 
-        videoId = searchResults[0].id ?? play.extractID(searchResults[0].url);
+        storeTrackInCache(new TrackInfo(searchResults[0]));
+        queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
       }
-
-      let videoCacheResult: TrackCacheResult;
-
+    } else if (linkOrQueryType === 'so_track') {
+      let trackCacheResult: TrackCacheResult;
       try {
-        videoCacheResult = await getTrackFromCache(videoId);
+        trackCacheResult = await getTrackFromCache(linkOrQuery);
       } catch (error) {
         interaction.editReply({
-          content: '❌ | An error occurred while fetching the video.'
+          content: '❌ | An error occurred while fetching the track.'
         });
         return;
       }
 
       queuedTrack = new QueuedTrackInfo(
-        videoCacheResult.data,
+        trackCacheResult.data,
         interaction.user
       );
-      cacheStatus = videoCacheResult.cacheData;
+      cacheStatus = trackCacheResult.cacheData;
     } else {
-      let trackInfo: SoundCloudTrack;
+      const searchResults = await play.search(linkOrQuery, {
+        source: {
+          soundcloud: 'tracks'
+        },
+        limit: 10
+      });
 
-      if (linkOrQueryType === 'so_track') {
-        trackInfo = (await play.soundcloud(linkOrQuery)) as SoundCloudTrack;
-      } else {
-        const searchResults = await play.search(linkOrQuery, {
-          source: {
-            soundcloud: 'tracks'
-          },
-          limit: 10
+      if (searchResults.length === 0) {
+        interaction.editReply({
+          content: '❓ | No tracks found.'
         });
 
-        if (searchResults.length === 0) {
-          interaction.editReply({
-            content: '❓ | No tracks found.'
-          });
-
-          return;
-        }
-
-        trackInfo = searchResults[0];
+        return;
       }
 
-      queuedTrack = new QueuedTrackInfo(trackInfo, interaction.user);
+      storeTrackInCache(new TrackInfo(searchResults[0]));
+      queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
     }
 
     guildQueueData.trackList.push(queuedTrack);

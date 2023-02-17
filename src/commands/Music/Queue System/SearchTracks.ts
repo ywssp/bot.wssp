@@ -14,10 +14,7 @@ import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import {
-  getTrackFromCache,
-  TrackCacheResult
-} from '../../../functions/music-utilities/queue-system/getTrackFromCache';
+import { storeTrackInCache } from '../../../functions/music-utilities/queue-system/trackCacheManager';
 import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import { QueuedTrackInfo, TrackInfo } from '../../../interfaces/TrackInfo';
@@ -190,50 +187,22 @@ export class SearchVideosCommand extends Command {
 
     const videoIndex = parseInt(collected.customId) - 1;
 
-    let trackCacheResult: TrackCacheResult;
+    const queuedTrack = new QueuedTrackInfo(
+      choices[videoIndex],
+      interaction.user
+    );
 
-    // TODO: Add Cache support for SoundCloud, this is a temporary fix.
-
-    if (source === 'youtube') {
-      try {
-        trackCacheResult = await getTrackFromCache(
-          choices[videoIndex].id ?? play.extractID(choices[videoIndex].url)
-        );
-      } catch (error) {
-        interaction.editReply({
-          content: '❌ | An error occurred while fetching the track.'
-        });
-        return;
-      }
-    } else {
-      trackCacheResult = {
-        data: choices[videoIndex],
-        cacheData: {
-          status: 'miss',
-          cachedAt: new Date()
-        }
-      };
-    }
-
-    const track = trackCacheResult.data;
-    const cacheStatus = trackCacheResult.cacheData;
-
-    const queuedTrack = new QueuedTrackInfo(track, interaction.user);
+    storeTrackInCache(queuedTrack);
     guildYoutubeData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle('Added track to queue')
-      .setFooter({
-        text: `Cache ${
-          cacheStatus.status
-        }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
-      });
+      .setTitle('Added track to queue');
 
     const replyEmbed = createEmbedFromTrack(baseEmbed, queuedTrack);
 
-    if (track.thumbnail) {
-      replyEmbed.setThumbnail(track.thumbnail);
+    if (queuedTrack.thumbnail) {
+      replyEmbed.setThumbnail(queuedTrack.thumbnail);
     }
 
     interaction.editReply({ embeds: [replyEmbed] });
