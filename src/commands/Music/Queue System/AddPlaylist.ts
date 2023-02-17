@@ -1,7 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember, hyperlink } from 'discord.js';
 
-import play, { YouTubePlayList } from 'play-dl';
+import play, {
+  SoundCloudPlaylist,
+  SoundCloudTrack,
+  YouTubePlayList
+} from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
@@ -9,6 +13,7 @@ import { startQueuePlayback } from '../../../functions/music-utilities/queue-sys
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
+import { Duration } from 'luxon';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -64,7 +69,9 @@ export class AddPlaylistCommand extends Command {
 
     console.log(`Checking if ${link} is a playlist...`);
 
-    if ((await play.validate(link)) !== 'yt_playlist') {
+    const linkType = await play.validate(link);
+
+    if (linkType !== 'yt_playlist' && linkType !== 'so_playlist') {
       interaction.reply({
         content: '❓ | Invalid playlist link.',
         ephemeral: true
@@ -72,38 +79,118 @@ export class AddPlaylistCommand extends Command {
       return;
     }
 
-    interaction.reply('Processing playlist...');
+    const source = linkType === 'yt_playlist' ? 'YouTube' : 'SoundCloud';
+
+    interaction.reply(`Processing playlist from ${source}...`);
 
     console.log(`Getting playlist info for ${link}...`);
 
-    let playlist: YouTubePlayList;
+    let playlistMetadata: {
+      title: string;
+      url: string | undefined;
+      channel: {
+        name: string;
+        url: string | undefined;
+      };
+      thumbnail: string | undefined;
+      playlistLength: number | undefined;
+    };
 
-    try {
-      playlist = await play.playlist_info(link, {
-        incomplete: true
+    let tracks: QueuedTrackInfo[];
+    let playlistDuration: Duration | 'Unknown / Live' = Duration.fromMillis(0);
+
+    if (source === 'YouTube') {
+      let playlist: YouTubePlayList;
+      try {
+        playlist = await play.playlist_info(link, {
+          incomplete: true
+        });
+      } catch (error) {
+        interaction.editReply({
+          content: '❌ | An error occurred while getting the playlist info.'
+        });
+        console.error(error);
+        return;
+      }
+
+      const foundTracks = await (
+        await playlist.all_videos()
+      ).filter((video) => !video.private);
+
+      tracks = foundTracks.map((video) => {
+        const track = new QueuedTrackInfo(video, interaction.user);
+
+        if (playlistDuration !== 'Unknown / Live') {
+          if (track.duration === 'Live Stream') {
+            playlistDuration = 'Unknown / Live';
+          } else {
+            playlistDuration = playlistDuration.plus(track.duration);
+          }
+        }
+
+        return track;
       });
-    } catch (error) {
-      interaction.editReply({
-        content: '❌ | An error occurred while getting the playlist info.'
-      });
-      console.error(error);
-      return;
+
+      playlistMetadata = {
+        title: playlist.title ?? 'Unknown',
+        url: playlist.url,
+        channel: {
+          name: playlist.channel?.name ?? 'Unknown',
+          url: playlist.channel?.url
+        },
+        thumbnail: playlist.thumbnail?.url,
+        playlistLength: playlist.videoCount
+      };
+    } else {
+      let playlist: SoundCloudPlaylist;
+
+      try {
+        playlist = (await play.soundcloud(link)) as SoundCloudPlaylist;
+      } catch (error) {
+        interaction.editReply({
+          content: '❌ | An error occurred while getting the playlist info.'
+        });
+        console.error(error);
+        return;
+      }
+
+      let foundTracks: SoundCloudTrack[];
+
+      try {
+        foundTracks = await playlist.all_tracks();
+      } catch (error) {
+        interaction.editReply({
+          content:
+            '❌ | An error occurred while getting the tracks of the playlist.'
+        });
+        console.error(error);
+        return;
+      }
+
+      tracks = foundTracks.map(
+        (track) => new QueuedTrackInfo(track, interaction.user)
+      );
+
+      playlistDuration = Duration.fromMillis(playlist.durationInMs);
+
+      playlistMetadata = {
+        title: playlist.name,
+        url: undefined,
+        channel: {
+          name: playlist.user.name,
+          url: playlist.user.url
+        },
+        thumbnail: undefined,
+        playlistLength: playlist.total_tracks
+      };
     }
 
-    const foundVideos = await (
-      await playlist.all_videos()
-    ).filter((video) => !video.private);
-
-    if (foundVideos.length === 0) {
+    if (tracks.length === 0) {
       interaction.editReply({
-        content: '❌ | No videos were found in the playlist.'
+        content: '❌ | No tracks were found in the playlist.'
       });
       return;
     }
-
-    const videos = foundVideos.map(
-      (video) => new QueuedTrackInfo(video, interaction.user)
-    );
 
     if (interaction.options.getBoolean('loop')) {
       guildQueueData.setLoopType('queue');
@@ -111,46 +198,44 @@ export class AddPlaylistCommand extends Command {
 
     switch (interaction.options.getString('modifier') as 'reverse' | null) {
       case 'reverse':
-        videos.reverse();
+        tracks.reverse();
         break;
       default:
         break;
     }
 
-    const relevantData = {
-      title: playlist.title ?? 'Unknown',
-      url: playlist.url,
-      channel: {
-        name: playlist.channel?.name ?? 'Unknown',
-        url: playlist.channel?.url
-      },
-      playlistLength: playlist.videoCount ?? 'Unknown'
-    };
-
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle('Playlist Added to queue')
+      .setTitle(`${source} Playlist Added to Queue}`)
       .addFields([
         {
-          name: 'Playlist',
-          value: relevantData.url
-            ? hyperlink(relevantData.title, relevantData.url)
-            : relevantData.title
+          name: 'Playlist Name',
+          value: playlistMetadata.url
+            ? hyperlink(playlistMetadata.title, playlistMetadata.url)
+            : playlistMetadata.title
         },
         {
           name: 'Author',
-          value: relevantData.channel.url
-            ? hyperlink(relevantData.channel.name, relevantData.channel.url)
-            : relevantData.channel.name
+          value: playlistMetadata.channel.url
+            ? hyperlink(
+                playlistMetadata.channel.name,
+                playlistMetadata.channel.url
+              )
+            : playlistMetadata.channel.name
         },
         {
           name: 'Length',
-          value: `${videos.length}/${relevantData.playlistLength} playable videos`
+          value: `${
+            playlistMetadata.playlistLength !== undefined &&
+            tracks.length === playlistMetadata.playlistLength
+              ? ''
+              : `${tracks.length}/${playlistMetadata.playlistLength} playable tracks | `
+          }Duration: ${playlistDuration.normalize().toFormat('hh:mm:ss')}`
         }
       ]);
 
-    if (playlist.thumbnail !== undefined) {
-      embed.setThumbnail(playlist.thumbnail.url);
+    if (playlistMetadata.thumbnail !== undefined) {
+      embed.setThumbnail(playlistMetadata.thumbnail);
     }
 
     interaction.editReply({
@@ -158,7 +243,7 @@ export class AddPlaylistCommand extends Command {
       embeds: [embed]
     });
 
-    guildQueueData.trackList.push(...videos);
+    guildQueueData.trackList.push(...tracks);
 
     if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
