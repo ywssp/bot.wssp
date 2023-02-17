@@ -2,9 +2,9 @@ import { AudioResource } from '@discordjs/voice';
 import { MusicResourceMetadata } from '../../interfaces/MusicResourceMetadata';
 import { getAudioPlayer } from './getAudioPlayer';
 
-export function getPlayingType(
-  guildId: string
-): 'youtube' | 'radio' | undefined {
+type MusicResourceType = MusicResourceMetadata['type'];
+
+export function getPlayingType(guildId: string): MusicResourceType | undefined {
   const audioPlayer = getAudioPlayer(guildId);
 
   if (audioPlayer === undefined) {

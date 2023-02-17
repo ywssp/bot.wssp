@@ -40,12 +40,12 @@ export class ShuffleQueueCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     const mode =
-      interaction.options.getBoolean('shuffle') ?? !guildYoutubeData.shuffle;
+      interaction.options.getBoolean('shuffle') ?? !guildQueueData.shuffle;
 
-    guildYoutubeData.shuffle = mode;
+    guildQueueData.shuffle = mode;
 
     interaction.reply(
       `${mode ? '🔀' : '➡️'} | Shuffle mode is now \`${mode ? 'on' : 'off'}\`.`

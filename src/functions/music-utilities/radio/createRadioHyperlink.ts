@@ -1,7 +1,7 @@
 import { hyperlink } from 'discord.js';
 import type { basicInfo } from '../../../interfaces/RadioSongInfo';
 
-export function createClickableRadioLink(
+export function createRadioHyperlink(
   info: basicInfo,
   directory: 'artists' | 'albums' | 'characters'
 ) {

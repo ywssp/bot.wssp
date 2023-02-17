@@ -1,10 +1,10 @@
 import { RadioStations, RadioStationNames } from './AvailableRadioStations';
-import { QueuedYTVideoInfo } from './YTVideoInfo';
+import { QueuedTrackInfo } from './TrackInfo';
 
 export type MusicResourceMetadata =
   | {
-      type: 'youtube';
-      data: QueuedYTVideoInfo;
+      type: 'queued_track';
+      data: QueuedTrackInfo;
     }
   | {
       type: 'radio';

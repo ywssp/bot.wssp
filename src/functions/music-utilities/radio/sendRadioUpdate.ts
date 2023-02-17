@@ -3,7 +3,7 @@ import { TextChannel } from 'discord.js';
 import { Duration } from 'luxon';
 import { RadioWebsocketUpdateData } from '../../../interfaces/RadioWebsocketUpdate';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { createRadioSongEmbed } from './createRadioSongEmbed';
+import { createRadioSongEmbed } from './createEmbedFromRadioSong';
 
 export function sendRadioUpdate(
   guildId: string,

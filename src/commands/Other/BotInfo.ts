@@ -36,7 +36,7 @@ export class BotInfoCommand extends Command {
 
   private createEmbed(client: Client) {
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.default)
+      .setColor(ColorPalette.Default)
       .setTitle('Bot Information');
 
     if (client.user) {

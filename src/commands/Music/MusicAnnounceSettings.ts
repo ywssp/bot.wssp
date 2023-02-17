@@ -10,7 +10,7 @@ export class MusicAnnounceSettingsCommand extends Command {
       name: 'music-announce',
       description: 'Changes the music announce settings.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel']
     });
   }
 
@@ -58,7 +58,7 @@ export class MusicAnnounceSettingsCommand extends Command {
 
     if (guildMusicData === undefined) {
       interaction.reply({
-        content: '❓ | There is no video playing.',
+        content: '❓ | There is nothing playing.',
         ephemeral: true
       });
       return;

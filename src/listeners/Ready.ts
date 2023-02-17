@@ -4,6 +4,8 @@ import type { Client } from 'discord.js';
 import LRU from 'lru-cache';
 import { Duration } from 'luxon';
 
+import play from 'play-dl';
+
 export class ReadyListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {
     super(context, {
@@ -21,6 +23,15 @@ export class ReadyListener extends Listener {
       `${client.user?.tag} has started in ${now.toUTCString()}`
     );
 
+    // Setup the SoundCloud client ID
+    play.getFreeClientID().then((id) => {
+      play.setToken({
+        soundcloud: {
+          client_id: id
+        }
+      });
+    });
+
     // Setup the guild music data map
     this.container.guildMusicDataMap = new Map();
 
@@ -28,7 +39,12 @@ export class ReadyListener extends Listener {
     const ttlDuration = Duration.fromObject({ days: 7 }).as('milliseconds');
 
     this.container.caches = {
-      videos: new LRU({
+      youtubeTracks: new LRU({
+        max: 100,
+        ttl: ttlDuration,
+        ttlResolution: ttlDuration / 7
+      }),
+      soundcloudTracks: new LRU({
         max: 100,
         ttl: ttlDuration,
         ttlResolution: ttlDuration / 7

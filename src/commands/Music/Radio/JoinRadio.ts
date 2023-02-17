@@ -11,20 +11,20 @@ import {
 } from '@discordjs/voice';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { setupRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/setupRadioWebsocket';
+import { createRadioWebsocketConnection } from '../../../functions/music-utilities/radio/setupRadioWebsocket';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
-import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/LISTEN.moe/disconnectGuildFromWebsocket';
-import { connectVoiceChannel } from '../../../functions/music-utilities/connectVoiceChannel';
+import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
+import { connectToVoiceChannel } from '../../../functions/music-utilities/connectToVoiceChannel';
 import internal from 'stream';
 import { unsubscribeVCFromAudioPlayer } from '../../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
 import {
   RadioStationNames,
   RadioStations
 } from '../../../interfaces/AvailableRadioStations';
-import { sendRadioUpdate } from '../../../functions/music-utilities/LISTEN.moe/sendRadioUpdate';
+import { sendRadioUpdate } from '../../../functions/music-utilities/radio/sendRadioUpdate';
 import { RadioWebsocketUpdateData } from '../../../interfaces/RadioWebsocketUpdate';
 
 export class JoinRadioCommand extends Command {
@@ -89,7 +89,7 @@ export class JoinRadioCommand extends Command {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
 
-    const voiceConnection = connectVoiceChannel(voiceChannel);
+    const voiceConnection = connectToVoiceChannel(voiceChannel);
 
     const audioPlayer = createAudioPlayer({
       behaviors: {
@@ -118,8 +118,8 @@ export class JoinRadioCommand extends Command {
       } else {
         interaction.channel?.send('Switching to radio...');
 
-        if (guildMusicData.youtubeData.loop.type !== 'track') {
-          guildMusicData.youtubeData.modifyIndex(2);
+        if (guildMusicData.queueSystemData.loop.type !== 'track') {
+          guildMusicData.queueSystemData.modifyIndex(2);
         }
       }
 
@@ -133,7 +133,7 @@ export class JoinRadioCommand extends Command {
       this.container.logger.error(error);
 
       const embed = new EmbedBuilder()
-        .setColor(ColorPalette.error)
+        .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -155,7 +155,7 @@ export class JoinRadioCommand extends Command {
 
       if (radioStationResource === null) {
         const embed = new EmbedBuilder()
-          .setColor(ColorPalette.error)
+          .setColor(ColorPalette.Error)
           .setTitle('Playback Error')
           .setDescription(
             'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -181,7 +181,7 @@ export class JoinRadioCommand extends Command {
 
     if (radioStationResource === null) {
       const embed = new EmbedBuilder()
-        .setColor(ColorPalette.error)
+        .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
           'An error occurred while playing music.\nDisconnecting from the voice channel.'
@@ -208,7 +208,7 @@ export class JoinRadioCommand extends Command {
     );
 
     if (this.container.radioWebsockets[station].connection === null) {
-      setupRadioWebsocket(station);
+      createRadioWebsocketConnection(station);
     } else {
       sendRadioUpdate(
         interaction.guildId as string,
@@ -218,7 +218,7 @@ export class JoinRadioCommand extends Command {
     }
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.success)
+      .setColor(ColorPalette.Success)
       .setTitle('Connected')
       .setDescription(
         `Connected to the LISTEN.moe ${

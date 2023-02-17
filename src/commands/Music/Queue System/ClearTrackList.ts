@@ -2,12 +2,12 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 
-export class ClearVideoListCommand extends Command {
+export class ClearTrackListCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
       name: 'clear',
-      description: 'Clears the video history or queue.',
+      description: 'Clears the track history or queue.',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'HasGuildMusicData']
     });
@@ -21,12 +21,12 @@ export class ClearVideoListCommand extends Command {
         .setName(this.name)
         .setDescription(this.description)
         .addSubcommand((subcommand) =>
-          subcommand.setName('queue').setDescription('Clears the queue.')
+          subcommand.setName('queue').setDescription('Clears the track queue.')
         )
         .addSubcommand((subcommand) =>
           subcommand
             .setName('history')
-            .setDescription('Clears the video history.')
+            .setDescription('Clears the track history.')
         )
     );
   }
@@ -36,27 +36,27 @@ export class ClearVideoListCommand extends Command {
 
     if (
       guildMusicData === undefined ||
-      guildMusicData.youtubeData.videoList.length === 0
+      guildMusicData.queueSystemData.trackList.length === 0
     ) {
       interaction.reply({
-        content: 'The video list is empty.',
+        content: 'The track list is empty.',
         ephemeral: true
       });
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     if (interaction.options.getSubcommand() === 'queue') {
-      guildYoutubeData.videoList.splice(guildYoutubeData.videoListIndex + 1);
+      guildQueueData.trackList.splice(guildQueueData.trackListIndex + 1);
 
-      interaction.reply('🗑 | Cleared the video queue.');
+      interaction.reply('🗑 | Cleared the track queue.');
     }
     if (interaction.options.getSubcommand() === 'history') {
-      guildYoutubeData.videoList.splice(0, guildYoutubeData.videoListIndex);
-      guildYoutubeData.videoListIndex = 0;
+      guildQueueData.trackList.splice(0, guildQueueData.trackListIndex);
+      guildQueueData.trackListIndex = 0;
 
-      interaction.reply('🗑 | Cleared the video history.');
+      interaction.reply('🗑 | Cleared the track history.');
     }
 
     return;

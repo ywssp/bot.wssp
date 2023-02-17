@@ -2,18 +2,18 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
+import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
-export class RemoveVideoCommand extends Command {
+export class RemoveTrackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
       name: 'remove',
-      description: 'Removes an amount of videos from the queue.',
+      description: 'Removes an amount of tracks from the queue.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
+      preconditions: ['InVoiceChannel', 'IsPlaying']
     });
   }
 
@@ -28,14 +28,14 @@ export class RemoveVideoCommand extends Command {
           option
             .setName('start')
             .setDescription(
-              'Where the removal should start. Defaults to the recently added video in the queue'
+              'Where the removal should start. Defaults to the recently added track in the queue'
             )
             .setRequired(false)
         )
         .addIntegerOption((option) =>
           option
             .setName('amount')
-            .setDescription('The amount of videos to remove. Defaults to 1')
+            .setDescription('The amount of tracks to remove. Defaults to 1')
             .setRequired(false)
         )
         .addIntegerOption((option) =>
@@ -54,22 +54,22 @@ export class RemoveVideoCommand extends Command {
 
     if (
       guildMusicData === undefined ||
-      guildMusicData.youtubeData.getQueue().length === 0
+      guildMusicData.queueSystemData.getQueue().length === 0
     ) {
       interaction.reply('The queue is empty.');
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     let removalStart;
 
     if (interaction.options.getInteger('start')) {
       removalStart =
-        guildYoutubeData.videoListIndex +
+        guildQueueData.trackListIndex +
         (interaction.options.getInteger('start') as number);
     } else {
-      removalStart = guildYoutubeData.videoList.length - 1;
+      removalStart = guildQueueData.trackList.length - 1;
     }
 
     const removalAmount = interaction.options.getInteger('amount') ?? 1;
@@ -77,8 +77,8 @@ export class RemoveVideoCommand extends Command {
       removalStart + (interaction.options.getInteger('end') ?? removalAmount);
 
     if (
-      removalStart <= guildYoutubeData.videoListIndex ||
-      removalStart >= guildYoutubeData.videoList.length
+      removalStart <= guildQueueData.trackListIndex ||
+      removalStart >= guildQueueData.trackList.length
     ) {
       interaction.reply({
         content: '⛔ | The start index is out of bounds.',
@@ -89,7 +89,7 @@ export class RemoveVideoCommand extends Command {
 
     if (removalAmount < 1) {
       interaction.reply({
-        content: '⛔ | The amount of videos to remove must be at least 1.',
+        content: '⛔ | The amount of tracks to remove must be at least 1.',
         ephemeral: true
       });
       return;
@@ -97,7 +97,7 @@ export class RemoveVideoCommand extends Command {
 
     if (
       removalEnd < removalStart ||
-      removalEnd > guildYoutubeData.videoList.length
+      removalEnd > guildQueueData.trackList.length
     ) {
       interaction.reply({
         content: '⛔ | The end index is out of bounds.',
@@ -106,21 +106,21 @@ export class RemoveVideoCommand extends Command {
       return;
     }
 
-    const removedVideos = guildYoutubeData.videoList.splice(
+    const removedTracks = guildQueueData.trackList.splice(
       removalStart,
       removalEnd - removalStart
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.error)
+      .setColor(ColorPalette.Error)
       .setTitle(
-        `Removed ${removedVideos.length} video${
-          removedVideos.length > 1 ? 's' : ''
+        `Removed ${removedTracks.length} track${
+          removedTracks.length > 1 ? 's' : ''
         } from the queue`
       );
 
     interaction.reply({
-      embeds: [createMultiVideoEmbed(embed, removedVideos)]
+      embeds: [createEmbedFromTrackArray(embed, removedTracks)]
     });
     return;
   }

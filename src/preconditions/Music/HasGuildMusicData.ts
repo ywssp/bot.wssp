@@ -18,7 +18,7 @@ export class HasGuildMusicDataPrecondition extends Precondition {
     }
 
     if (this.container.guildMusicDataMap.has(guildId) === false) {
-      return this.error({ message: 'There is no video playing!' });
+      return this.error({ message: 'There is nothing playing!' });
     }
 
     return this.ok();

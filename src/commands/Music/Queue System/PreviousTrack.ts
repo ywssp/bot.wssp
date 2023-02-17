@@ -5,16 +5,16 @@ import { getGuildMusicData } from '../../../functions/music-utilities/guildMusic
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
-import { createMultiVideoEmbed } from '../../../functions/music-utilities/YouTube/createMultivideoEmbed';
+import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
 
-export class SkipVideoCommand extends Command {
+export class PreviousTrackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
-      name: 'skip',
-      description: 'Skips an amount of videos.',
+      name: 'previous',
+      description: 'Plays a track from the music history.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying', 'IsPlayingYoutube']
+      preconditions: ['InVoiceChannel', 'IsPlaying']
     });
   }
 
@@ -28,7 +28,7 @@ export class SkipVideoCommand extends Command {
         .addIntegerOption((option) =>
           option
             .setName('number')
-            .setDescription('The number of videos to skip. Defaults to `1`')
+            .setDescription('The number of tracks to skip. Defaults to 1')
             .setMinValue(1)
             .setRequired(false)
         )
@@ -38,64 +38,55 @@ export class SkipVideoCommand extends Command {
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData(interaction.guildId as string);
 
-    if (guildMusicData === undefined) {
-      interaction.reply('The queue is empty.');
+    if (
+      guildMusicData === undefined ||
+      guildMusicData.queueSystemData.getHistory().length === 0
+    ) {
+      interaction.reply('❓ | The track history is empty.');
       return;
     }
 
-    const guildYoutubeData = guildMusicData.youtubeData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (audioPlayer === undefined) {
       interaction.reply({
-        content: '❓ | There is no video playing.',
+        content: '❓ | There is no track playing.',
         ephemeral: true
       });
       return;
     }
 
-    let skipNumber = interaction.options.getInteger('number') ?? 1;
+    const skipNumber = interaction.options.getInteger('number') ?? 1;
 
-    if (
-      skipNumber < 1 ||
-      (guildYoutubeData.videoList.length - 1 - guildYoutubeData.videoListIndex >
-        0 &&
-        skipNumber >=
-          guildYoutubeData.videoList.length - guildYoutubeData.videoListIndex)
-    ) {
+    if (skipNumber < 1 || skipNumber > guildQueueData.trackListIndex) {
       interaction.reply({
-        content: `⛔ | Invalid number. The number must be between \`1-${
-          guildYoutubeData.getQueue().length
-        }\`.`,
+        content: `⛔ | Invalid number. The number must be between \`1-${guildQueueData.trackListIndex}\`.`,
         ephemeral: true
       });
       return;
     }
 
-    if (guildYoutubeData.videoList.length === 0) {
-      skipNumber = 1;
-    }
-
-    const skippedVideos = guildYoutubeData.videoList.slice(
-      guildYoutubeData.videoListIndex,
-      guildYoutubeData.videoListIndex + skipNumber
+    const skippedTracks = guildQueueData.trackList.slice(
+      guildQueueData.trackListIndex - skipNumber + 1,
+      guildQueueData.trackListIndex + 1
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.error)
+      .setColor(ColorPalette.Error)
       .setTitle(
-        `Skipped ${skippedVideos.length} video${
-          skippedVideos.length > 1 ? 's' : ''
+        `Skipped ${skippedTracks.length} track${
+          skippedTracks.length > 1 ? 's' : ''
         } from the queue`
       );
 
-    guildYoutubeData.modifyIndex(skipNumber);
-    guildYoutubeData.skipped = true;
+    guildQueueData.modifyIndex(-skipNumber);
+    guildQueueData.skipped = true;
 
     audioPlayer.stop();
     interaction.reply({
-      embeds: [createMultiVideoEmbed(embed, skippedVideos)]
+      embeds: [createEmbedFromTrackArray(embed, skippedTracks)]
     });
     return;
   }
