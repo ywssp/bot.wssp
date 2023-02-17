@@ -206,7 +206,7 @@ export class AddPlaylistCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle(`${source} Playlist Added to Queue}`)
+      .setTitle(`${source} Playlist Added to Queue`)
       .addFields([
         {
           name: 'Playlist Name',
