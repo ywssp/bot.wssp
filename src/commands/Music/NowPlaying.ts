@@ -43,7 +43,7 @@ export class NowPlayingCommand extends Command {
     }
 
     if (playType === 'queued_track') {
-      interaction.reply(this.getYoutubeEmbed(interaction, guildMusicData));
+      interaction.reply(this.getTrackEmbed(interaction, guildMusicData));
     } else if (playType === 'radio') {
       interaction.reply(this.getRadioEmbed(guildMusicData));
     }
@@ -51,12 +51,12 @@ export class NowPlayingCommand extends Command {
     return;
   }
 
-  public getYoutubeEmbed(
+  public getTrackEmbed(
     interaction: ChatInputCommand.Interaction,
     guildMusicData: GuildMusicData
   ) {
-    const youtubeData = guildMusicData.queueSystemData;
-    const currentTrack = youtubeData.currentTrack();
+    const queueData = guildMusicData.queueSystemData;
+    const currentTrack = queueData.currentTrack();
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
     if (
@@ -103,8 +103,8 @@ export class NowPlayingCommand extends Command {
 
     embed.setFooter({
       text: `${playingEmoji} ${capitalize(audioPlayer.state.status)} | ${
-        youtubeData.loop.emoji
-      } ${capitalize(youtubeData.loop.type)}`
+        queueData.loop.emoji
+      } ${capitalize(queueData.loop.type)}`
     });
 
     if (currentTrack.thumbnail) {

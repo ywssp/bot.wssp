@@ -45,17 +45,17 @@ export class SetLoopCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     const mode = interaction.options.getString('mode') as
       | 'off'
       | 'track'
       | 'queue';
 
-    guildYoutubeData.setLoopType(mode);
+    guildQueueData.setLoopType(mode);
 
     interaction.reply(
-      `${guildYoutubeData.loop.emoji} | Loop mode set to \`${mode}\`.`
+      `${guildQueueData.loop.emoji} | Loop mode set to \`${mode}\`.`
     );
     return;
   }

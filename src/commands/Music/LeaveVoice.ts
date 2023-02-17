@@ -58,10 +58,10 @@ export class LeaveVCCommand extends Command {
     if (playingType === 'radio') {
       disconnectGuildFromRadioWebsocket(interaction.guildId as string);
     } else if (playingType === 'queued_track') {
-      const youtubeData = guildMusicData.queueSystemData;
+      const queueData = guildMusicData.queueSystemData;
 
-      if (youtubeData.loop.type !== 'track') {
-        youtubeData.modifyIndex(2);
+      if (queueData.loop.type !== 'track') {
+        queueData.modifyIndex(2);
       }
     }
 

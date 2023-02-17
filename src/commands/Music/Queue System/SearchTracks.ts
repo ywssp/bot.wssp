@@ -68,7 +68,7 @@ export class SearchVideosCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = createGuildMusicData(
+    const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
     ).queueSystemData;
@@ -193,7 +193,7 @@ export class SearchVideosCommand extends Command {
     );
 
     storeTrackInCache(queuedTrack);
-    guildYoutubeData.trackList.push(queuedTrack);
+    guildQueueData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)

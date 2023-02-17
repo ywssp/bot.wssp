@@ -60,16 +60,16 @@ export class RemoveTrackCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     let removalStart;
 
     if (interaction.options.getInteger('start')) {
       removalStart =
-        guildYoutubeData.trackListIndex +
+        guildQueueData.trackListIndex +
         (interaction.options.getInteger('start') as number);
     } else {
-      removalStart = guildYoutubeData.trackList.length - 1;
+      removalStart = guildQueueData.trackList.length - 1;
     }
 
     const removalAmount = interaction.options.getInteger('amount') ?? 1;
@@ -77,8 +77,8 @@ export class RemoveTrackCommand extends Command {
       removalStart + (interaction.options.getInteger('end') ?? removalAmount);
 
     if (
-      removalStart <= guildYoutubeData.trackListIndex ||
-      removalStart >= guildYoutubeData.trackList.length
+      removalStart <= guildQueueData.trackListIndex ||
+      removalStart >= guildQueueData.trackList.length
     ) {
       interaction.reply({
         content: '⛔ | The start index is out of bounds.',
@@ -97,7 +97,7 @@ export class RemoveTrackCommand extends Command {
 
     if (
       removalEnd < removalStart ||
-      removalEnd > guildYoutubeData.trackList.length
+      removalEnd > guildQueueData.trackList.length
     ) {
       interaction.reply({
         content: '⛔ | The end index is out of bounds.',
@@ -106,7 +106,7 @@ export class RemoveTrackCommand extends Command {
       return;
     }
 
-    const removedTracks = guildYoutubeData.trackList.splice(
+    const removedTracks = guildQueueData.trackList.splice(
       removalStart,
       removalEnd - removalStart
     );

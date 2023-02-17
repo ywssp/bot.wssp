@@ -46,7 +46,7 @@ export class PreviousTrackCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
@@ -60,17 +60,17 @@ export class PreviousTrackCommand extends Command {
 
     const skipNumber = interaction.options.getInteger('number') ?? 1;
 
-    if (skipNumber < 1 || skipNumber > guildYoutubeData.trackListIndex) {
+    if (skipNumber < 1 || skipNumber > guildQueueData.trackListIndex) {
       interaction.reply({
-        content: `⛔ | Invalid number. The number must be between \`1-${guildYoutubeData.trackListIndex}\`.`,
+        content: `⛔ | Invalid number. The number must be between \`1-${guildQueueData.trackListIndex}\`.`,
         ephemeral: true
       });
       return;
     }
 
-    const skippedTracks = guildYoutubeData.trackList.slice(
-      guildYoutubeData.trackListIndex - skipNumber + 1,
-      guildYoutubeData.trackListIndex + 1
+    const skippedTracks = guildQueueData.trackList.slice(
+      guildQueueData.trackListIndex - skipNumber + 1,
+      guildQueueData.trackListIndex + 1
     );
 
     const embed = new EmbedBuilder()
@@ -81,8 +81,8 @@ export class PreviousTrackCommand extends Command {
         } from the queue`
       );
 
-    guildYoutubeData.modifyIndex(-skipNumber);
-    guildYoutubeData.skipped = true;
+    guildQueueData.modifyIndex(-skipNumber);
+    guildQueueData.skipped = true;
 
     audioPlayer.stop();
     interaction.reply({

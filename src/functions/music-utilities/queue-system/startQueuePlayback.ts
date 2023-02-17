@@ -143,7 +143,7 @@ export function startQueuePlayback(
 ) {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const guildMusicData = getGuildMusicData(guildId)!;
-  const youtubeData = guildMusicData.queueSystemData;
+  const queueData = guildMusicData.queueSystemData;
 
   const textUpdateChannel = client.channels.cache.get(
     guildMusicData.textUpdateChannelId
@@ -205,15 +205,15 @@ export function startQueuePlayback(
 
   voiceConnection.subscribe(audioPlayer);
 
-  playVideo(youtubeData.currentTrack(), audioPlayer, guildMusicData);
+  playVideo(queueData.currentTrack(), audioPlayer, guildMusicData);
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    if (youtubeData.loop.type === 'queue') {
-      youtubeData.trackList.push(youtubeData.currentTrack());
+    if (queueData.loop.type === 'queue') {
+      queueData.trackList.push(queueData.currentTrack());
     }
 
-    if (youtubeData.loop.type !== 'track') {
-      youtubeData.trackListIndex++;
+    if (queueData.loop.type !== 'track') {
+      queueData.trackListIndex++;
     }
 
     if (voiceChannel.members.filter((member) => !member.user.bot).size === 0) {
@@ -226,7 +226,7 @@ export function startQueuePlayback(
       return;
     }
 
-    if (youtubeData.trackList.length === youtubeData.trackListIndex) {
+    if (queueData.trackList.length === queueData.trackListIndex) {
       textUpdateChannel.send('No more videos in the queue. Stopping...');
       audioPlayer.stop();
       unsubscribeVCFromAudioPlayer(guildId);
@@ -234,20 +234,16 @@ export function startQueuePlayback(
       return;
     }
 
-    if (youtubeData.shuffle && youtubeData.loop.type !== 'track') {
+    if (queueData.shuffle && queueData.loop.type !== 'track') {
       const randomIndex = Math.floor(
-        Math.random() * youtubeData.getQueue().length
+        Math.random() * queueData.getQueue().length
       );
 
-      const selectedVideo = youtubeData.trackList.splice(randomIndex, 1)[0];
+      const selectedVideo = queueData.trackList.splice(randomIndex, 1)[0];
 
-      youtubeData.trackList.splice(
-        youtubeData.trackListIndex,
-        0,
-        selectedVideo
-      );
+      queueData.trackList.splice(queueData.trackListIndex, 0, selectedVideo);
     }
 
-    playVideo(youtubeData.currentTrack(), audioPlayer, guildMusicData);
+    playVideo(queueData.currentTrack(), audioPlayer, guildMusicData);
   });
 }

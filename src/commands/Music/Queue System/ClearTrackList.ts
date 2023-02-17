@@ -45,16 +45,16 @@ export class ClearTrackListCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     if (interaction.options.getSubcommand() === 'queue') {
-      guildYoutubeData.trackList.splice(guildYoutubeData.trackListIndex + 1);
+      guildQueueData.trackList.splice(guildQueueData.trackListIndex + 1);
 
       interaction.reply('🗑 | Cleared the track queue.');
     }
     if (interaction.options.getSubcommand() === 'history') {
-      guildYoutubeData.trackList.splice(0, guildYoutubeData.trackListIndex);
-      guildYoutubeData.trackListIndex = 0;
+      guildQueueData.trackList.splice(0, guildQueueData.trackListIndex);
+      guildQueueData.trackListIndex = 0;
 
       interaction.reply('🗑 | Cleared the track history.');
     }

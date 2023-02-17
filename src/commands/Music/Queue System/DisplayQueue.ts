@@ -37,8 +37,8 @@ export class DisplayQueueCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
-    const queue = guildYoutubeData.getQueue();
+    const guildQueueData = guildMusicData.queueSystemData;
+    const queue = guildQueueData.getQueue();
 
     const queueFields = queue.map((track, index) =>
       createEmbedFieldFromTrack(track, `${index + 1}. `)
@@ -46,19 +46,19 @@ export class DisplayQueueCommand extends Command {
 
     let description = null;
 
-    if (guildYoutubeData.shuffle) {
+    if (guildQueueData.shuffle) {
       description =
         '🔀 | The queue is shuffled. Songs will be played in a random order.';
     }
 
-    if (guildYoutubeData.loop.type === 'track') {
+    if (guildQueueData.loop.type === 'track') {
       if (description === null) {
         description = '';
       } else {
         description += '\n';
       }
 
-      const currentTrack = guildYoutubeData.currentTrack();
+      const currentTrack = guildQueueData.currentTrack();
       description += `🔂 | ${inlineCode(currentTrack.title)} by ${inlineCode(
         currentTrack.uploader.name
       )} is looping.`;

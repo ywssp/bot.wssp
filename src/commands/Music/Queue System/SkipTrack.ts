@@ -43,7 +43,7 @@ export class SkipTrackCommand extends Command {
       return;
     }
 
-    const guildYoutubeData = guildMusicData.queueSystemData;
+    const guildQueueData = guildMusicData.queueSystemData;
 
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
@@ -59,27 +59,27 @@ export class SkipTrackCommand extends Command {
 
     if (
       skipNumber < 1 ||
-      (guildYoutubeData.trackList.length - 1 - guildYoutubeData.trackListIndex >
+      (guildQueueData.trackList.length - 1 - guildQueueData.trackListIndex >
         0 &&
         skipNumber >=
-          guildYoutubeData.trackList.length - guildYoutubeData.trackListIndex)
+          guildQueueData.trackList.length - guildQueueData.trackListIndex)
     ) {
       interaction.reply({
         content: `⛔ | Invalid number. The number must be between \`1-${
-          guildYoutubeData.getQueue().length
+          guildQueueData.getQueue().length
         }\`.`,
         ephemeral: true
       });
       return;
     }
 
-    if (guildYoutubeData.trackList.length === 0) {
+    if (guildQueueData.trackList.length === 0) {
       skipNumber = 1;
     }
 
-    const skippedTracks = guildYoutubeData.trackList.slice(
-      guildYoutubeData.trackListIndex,
-      guildYoutubeData.trackListIndex + skipNumber
+    const skippedTracks = guildQueueData.trackList.slice(
+      guildQueueData.trackListIndex,
+      guildQueueData.trackListIndex + skipNumber
     );
 
     const embed = new EmbedBuilder()
@@ -90,8 +90,8 @@ export class SkipTrackCommand extends Command {
         } from the queue`
       );
 
-    guildYoutubeData.modifyIndex(skipNumber);
-    guildYoutubeData.skipped = true;
+    guildQueueData.modifyIndex(skipNumber);
+    guildQueueData.skipped = true;
 
     audioPlayer.stop();
     interaction.reply({

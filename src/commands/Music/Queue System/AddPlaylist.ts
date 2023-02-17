@@ -15,7 +15,8 @@ export class AddPlaylistCommand extends Command {
     super(context, {
       ...options,
       name: 'addplaylist',
-      description: 'Adds the contents of a YouTube playlist to the queue.',
+      description:
+        'Adds the contents of a YouTube or SoundCloud playlist to the queue.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -31,7 +32,7 @@ export class AddPlaylistCommand extends Command {
         .addStringOption((option) =>
           option
             .setName('link')
-            .setDescription('The link of the YouTube playlist.')
+            .setDescription('The link of a YouTube or SoundCloud playlist.')
             .setRequired(true)
         )
         .addBooleanOption((option) =>
@@ -54,7 +55,7 @@ export class AddPlaylistCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = createGuildMusicData(
+    const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
     ).queueSystemData;
@@ -105,7 +106,7 @@ export class AddPlaylistCommand extends Command {
     );
 
     if (interaction.options.getBoolean('loop')) {
-      guildYoutubeData.setLoopType('queue');
+      guildQueueData.setLoopType('queue');
     }
 
     switch (interaction.options.getString('modifier') as 'reverse' | null) {
@@ -157,7 +158,7 @@ export class AddPlaylistCommand extends Command {
       embeds: [embed]
     });
 
-    guildYoutubeData.trackList.push(...videos);
+    guildQueueData.trackList.push(...videos);
 
     if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
