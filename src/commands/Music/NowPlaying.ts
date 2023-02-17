@@ -87,7 +87,12 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createEmbedFromTrack(baseEmbed, currentTrack);
+    const embed = createEmbedFromTrack(baseEmbed, currentTrack).addFields([
+      {
+        name: 'Requested By',
+        value: currentTrack.requestedBy
+      }
+    ]);
 
     embed.spliceFields(2, 1, {
       name: 'Duration',

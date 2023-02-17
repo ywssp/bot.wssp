@@ -42,7 +42,12 @@ function createNowPlayingMessage(
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createEmbedFromTrack(baseEmbed, video);
+    const embed = createEmbedFromTrack(baseEmbed, video).addFields([
+      {
+        name: 'Requested By',
+        value: video.requestedBy
+      }
+    ]);
 
     if (nextVideo) {
       let nextString = '';

@@ -1,10 +1,10 @@
 import { EmbedBuilder } from 'discord.js';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { TrackInfo } from '../../../interfaces/TrackInfo';
 import { createEmbedFieldFromTrack } from './createEmbedFieldFromTrack';
 
 export function createEmbedFromTrackArray(
   baseEmbed: EmbedBuilder,
-  trackArray: QueuedTrackInfo[]
+  trackArray: TrackInfo[]
 ): EmbedBuilder {
   const embed = baseEmbed.setFields(
     trackArray.slice(0, 9).map((track) => createEmbedFieldFromTrack(track))

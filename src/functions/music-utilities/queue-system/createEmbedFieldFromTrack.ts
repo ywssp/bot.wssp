@@ -1,8 +1,8 @@
 import { EmbedField, hyperlink } from 'discord.js';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { TrackInfo } from '../../../interfaces/TrackInfo';
 
 export function createEmbedFieldFromTrack(
-  track: QueuedTrackInfo,
+  track: TrackInfo,
   prefix?: string
 ): EmbedField {
   let name = '';

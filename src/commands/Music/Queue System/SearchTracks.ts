@@ -6,11 +6,10 @@ import {
   MessageComponentInteraction,
   EmbedBuilder,
   ButtonStyle,
-  ComponentType,
-  hyperlink
+  ComponentType
 } from 'discord.js';
 
-import play, { YouTubeVideo } from 'play-dl';
+import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 
 import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
@@ -21,9 +20,10 @@ import {
 } from '../../../functions/music-utilities/queue-system/getTrackFromCache';
 import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { QueuedTrackInfo, TrackInfo } from '../../../interfaces/TrackInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
+import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -43,12 +43,29 @@ export class SearchVideosCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addStringOption((option) =>
-          option
-            .setName('query')
-            .setDescription('The search query.')
-            .setRequired(true)
-            .setMinLength(3)
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('youtube')
+            .setDescription('Search tracks on YouTube')
+            .addStringOption((option) =>
+              option
+                .setName('query')
+                .setDescription('The search query.')
+                .setRequired(true)
+                .setMinLength(3)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('soundcloud')
+            .setDescription('Search tracks on SoundCloud')
+            .addStringOption((option) =>
+              option
+                .setName('query')
+                .setDescription('The search query.')
+                .setRequired(true)
+                .setMinLength(3)
+            )
         )
     );
   }
@@ -59,6 +76,9 @@ export class SearchVideosCommand extends Command {
       interaction.channelId
     ).queueSystemData;
 
+    const source = interaction.options.getSubcommand() as
+      | 'youtube'
+      | 'soundcloud';
     const query = interaction.options.getString('query', true);
 
     if (query.length < 3) {
@@ -71,18 +91,30 @@ export class SearchVideosCommand extends Command {
 
     interaction.deferReply();
 
-    let searchResults: YouTubeVideo[];
+    let choices: TrackInfo[];
 
     try {
-      searchResults = await play.search(query, {
-        limit: 5,
-        source: {
-          youtube: 'video'
-        }
-      });
+      let searchResult: YouTubeVideo[] | SoundCloudTrack[];
+      if (source === 'youtube') {
+        searchResult = await play.search(query, {
+          limit: 5,
+          source: {
+            youtube: 'video'
+          }
+        });
+      } else {
+        searchResult = await play.search(query, {
+          limit: 5,
+          source: {
+            soundcloud: 'tracks'
+          }
+        });
+      }
+
+      choices = searchResult.map((item) => new TrackInfo(item));
     } catch (error) {
       interaction.editReply({
-        content: '❌ | An error occurred while searching for videos.'
+        content: '❌ | An error occurred while searching for tracks.'
       });
       return;
     }
@@ -105,29 +137,19 @@ export class SearchVideosCommand extends Command {
       )
     ];
 
+    const selectionTimeSeconds = 30;
+
     const selectionEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Selection)
       .setTitle('Select a video')
       .addFields(
-        searchResults.map((item, index) => {
-          let formattedChannel = '';
-          if (item.channel) {
-            const channelName = item.channel.name ?? 'Unknown';
-            if (item.channel.url) {
-              formattedChannel = hyperlink(channelName, item.channel.url);
-            } else {
-              formattedChannel = channelName;
-            }
-          }
-
-          return {
-            name: `${index + 1}. ${item.title}`,
-            value: `${hyperlink('Link', item.url)} ${
-              formattedChannel ? `| ${formattedChannel}` : ''
-            } | ${item.live ? 'Live Stream' : item.durationRaw}`
-          };
-        })
-      );
+        choices.map((item, index) =>
+          createEmbedFieldFromTrack(item, String(index + 1))
+        )
+      )
+      .setFooter({
+        text: `You have ${selectionTimeSeconds} seconds to select a track.`
+      });
 
     const selectionMessage = await interaction.channel?.send({
       embeds: [selectionEmbed],
@@ -147,7 +169,7 @@ export class SearchVideosCommand extends Command {
           i.deferUpdate();
           return i.user.id === interaction.user.id;
         },
-        time: 15000,
+        time: selectionTimeSeconds * 1000,
         componentType: ComponentType.Button
       });
     } catch (e) {
@@ -170,16 +192,27 @@ export class SearchVideosCommand extends Command {
 
     let trackCacheResult: TrackCacheResult;
 
-    try {
-      trackCacheResult = await getTrackFromCache(
-        searchResults[videoIndex].id ??
-          play.extractID(searchResults[videoIndex].url)
-      );
-    } catch (error) {
-      interaction.editReply({
-        content: '❌ | An error occurred while fetching the track.'
-      });
-      return;
+    // TODO: Add Cache support for SoundCloud, this is a temporary fix.
+
+    if (source === 'youtube') {
+      try {
+        trackCacheResult = await getTrackFromCache(
+          choices[videoIndex].id ?? play.extractID(choices[videoIndex].url)
+        );
+      } catch (error) {
+        interaction.editReply({
+          content: '❌ | An error occurred while fetching the track.'
+        });
+        return;
+      }
+    } else {
+      trackCacheResult = {
+        data: choices[videoIndex],
+        cacheData: {
+          status: 'miss',
+          cachedAt: new Date()
+        }
+      };
     }
 
     const track = trackCacheResult.data;

@@ -1,9 +1,9 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { TrackInfo } from '../../../interfaces/TrackInfo';
 
 export function createEmbedFromTrack(
   baseEmbed: EmbedBuilder,
-  track: QueuedTrackInfo
+  track: TrackInfo
 ) {
   const embed = baseEmbed.setFields([
     {
@@ -23,10 +23,6 @@ export function createEmbedFromTrack(
         typeof track.duration === 'string'
           ? track.duration
           : track.duration.toFormat('m:ss')
-    },
-    {
-      name: 'Requested by',
-      value: track.requestedBy
     }
   ]);
 
