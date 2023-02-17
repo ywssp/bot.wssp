@@ -21,12 +21,12 @@ export function createEmbedFieldFromTrack(
     value += track.duration.toFormat('m:ss');
   }
 
-  const channelString =
+  const uploaderString =
     track.uploader.url !== undefined
       ? hyperlink(track.uploader.name, track.uploader.url)
       : track.uploader.name;
 
-  value += ` | By ${channelString}`;
+  value += ` | By ${uploaderString}`;
 
   return {
     name,

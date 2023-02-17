@@ -4,6 +4,7 @@ import { extractID, YouTubeVideo, SoundCloudTrack } from 'play-dl';
 
 export class TrackInfo {
   readonly type = 'queue_track';
+  readonly source: 'youtube' | 'soundcloud';
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
   readonly url: string;
@@ -16,6 +17,7 @@ export class TrackInfo {
 
   constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack) {
     if (data instanceof TrackInfo) {
+      this.source = data.source;
       this.title = data.title;
       this.url = data.url;
       this.id = data.id;
@@ -27,6 +29,7 @@ export class TrackInfo {
 
     // SoundCloud Track handling
     if (data instanceof SoundCloudTrack) {
+      this.source = 'soundcloud';
       this.title = data.name;
       this.url = data.permalink;
       this.id = data.id.toString();
@@ -40,6 +43,7 @@ export class TrackInfo {
     }
 
     // YouTube Video handling
+    this.source = 'youtube';
     this.title = data.title ?? 'Unknown';
     this.url = data.url;
 
@@ -70,7 +74,7 @@ export class TrackInfo {
 export class QueuedTrackInfo extends TrackInfo {
   readonly requestedBy: string;
 
-  constructor(data: TrackInfo | YouTubeVideo, user: User) {
+  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack, user: User) {
     super(data);
     this.requestedBy = user.tag;
   }
@@ -79,7 +83,10 @@ export class QueuedTrackInfo extends TrackInfo {
 export class CachedTrackInfo extends TrackInfo {
   readonly cachedAt: Date;
 
-  constructor(data: TrackInfo | YouTubeVideo, cachedAt: Date) {
+  constructor(
+    data: TrackInfo | YouTubeVideo | SoundCloudTrack,
+    cachedAt: Date
+  ) {
     super(data);
     this.cachedAt = cachedAt;
   }

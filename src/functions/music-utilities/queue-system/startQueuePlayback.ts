@@ -49,7 +49,7 @@ function createNowPlayingMessage(
       if (guildMusicData.queueSystemData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
-        const channelString =
+        const uploaderString =
           nextVideo.uploader.url !== undefined
             ? hyperlink(nextVideo.uploader.name, nextVideo.uploader.url)
             : nextVideo.uploader.name;
@@ -57,7 +57,7 @@ function createNowPlayingMessage(
         nextString = `${hyperlink(
           nextVideo.title,
           nextVideo.url
-        )} by ${channelString}`;
+        )} by ${uploaderString}`;
       }
 
       embed.addFields([
@@ -66,7 +66,7 @@ function createNowPlayingMessage(
           value: '\u200B'
         },
         {
-          name: 'Next',
+          name: 'Next Track',
           value: nextString
         }
       ]);

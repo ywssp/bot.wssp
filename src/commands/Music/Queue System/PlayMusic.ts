@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember } from 'discord.js';
 
-import play from 'play-dl';
+import play, { SoundCloudTrack } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
@@ -20,7 +20,7 @@ export class PlayMusicCommand extends Command {
     super(context, {
       ...options,
       name: 'play',
-      description: 'Plays a video from YouTube.',
+      description: 'Plays a track from YouTube or SoundCloud',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -33,29 +33,58 @@ export class PlayMusicCommand extends Command {
       builder
         .setName(this.name)
         .setDescription(this.description)
-        .addStringOption((option) =>
-          option
-            .setName('link-or-query')
-            .setDescription('The link of the YouTube video, or a search query.')
-            .setRequired(true)
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('youtube')
+            .setDescription('Gets the track from YouTube')
+            .addStringOption((option) =>
+              option
+                .setName('link-or-query')
+                .setDescription(
+                  'The link of the track, or the query to use for searching'
+                )
+                .setRequired(true)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('soundcloud')
+            .setDescription('Gets the track from SoundCloud')
+            .addStringOption((option) =>
+              option
+                .setName('link-or-query')
+                .setDescription(
+                  'The link of the track, or the query to use for searching'
+                )
+                .setRequired(true)
+            )
         )
     );
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const guildYoutubeData = createGuildMusicData(
+    const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
       interaction.channelId
     ).queueSystemData;
 
-    const linkOrQuery = interaction.options.getString('link-or-query');
+    let source = interaction.options.getSubcommand(true) as
+      | 'youtube'
+      | 'soundcloud';
+    const linkOrQuery = interaction.options.getString('link-or-query', true);
 
-    if (linkOrQuery === null) {
-      interaction.reply('No link or query provided.');
+    if (linkOrQuery.length < 3) {
+      interaction.reply('Search query is too short!');
       return;
     }
 
-    if (play.yt_validate(linkOrQuery) === 'playlist') {
+    let linkOrQueryType = await play.validate(linkOrQuery);
+
+    if (linkOrQueryType === false) {
+      linkOrQueryType = 'search';
+    }
+
+    if (linkOrQueryType === 'yt_playlist') {
       interaction.reply({
         content: 'Playlist detected. Use the `addplaylist` command instead.',
         ephemeral: true
@@ -63,58 +92,113 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    await interaction.deferReply();
-
-    let videoId: string;
-
-    if ((await play.validate(linkOrQuery)) === 'yt_video') {
-      videoId = play.extractID(linkOrQuery);
-    } else {
-      const searchResults = await play.search(linkOrQuery, {
-        source: {
-          youtube: 'video'
-        },
-        limit: 10
+    if (linkOrQueryType.startsWith('yt_') && source !== 'youtube') {
+      await interaction.reply({
+        content:
+          'YouTube link detected. Using the `youtube` subcommand instead.'
       });
 
-      if (searchResults.length === 0) {
-        interaction.editReply({
-          content: '❓ | No videos found.'
+      source = 'youtube';
+    }
+
+    if (linkOrQueryType.startsWith('so_') && source !== 'soundcloud') {
+      await interaction.reply({
+        content:
+          'SoundCloud link detected. Using the `soundcloud` subcommand instead.'
+      });
+
+      source = 'soundcloud';
+    }
+
+    if (!interaction.replied) {
+      await interaction.deferReply();
+    }
+
+    let queuedTrack: QueuedTrackInfo;
+    let cacheStatus: TrackCacheResult['cacheData'] | undefined;
+
+    if (source === 'youtube') {
+      let videoId: string;
+
+      if ((await play.validate(linkOrQuery)) === 'yt_video') {
+        videoId = play.extractID(linkOrQuery);
+      } else {
+        const searchResults = await play.search(linkOrQuery, {
+          source: {
+            youtube: 'video'
+          },
+          limit: 10
         });
 
+        if (searchResults.length === 0) {
+          interaction.editReply({
+            content: '❓ | No videos found.'
+          });
+
+          return;
+        }
+
+        videoId = searchResults[0].id ?? play.extractID(searchResults[0].url);
+      }
+
+      let videoCacheResult: TrackCacheResult;
+
+      try {
+        videoCacheResult = await getTrackFromCache(videoId);
+      } catch (error) {
+        interaction.editReply({
+          content: '❌ | An error occurred while fetching the video.'
+        });
         return;
       }
 
-      videoId = searchResults[0].id ?? play.extractID(searchResults[0].url);
+      queuedTrack = new QueuedTrackInfo(
+        videoCacheResult.data,
+        interaction.user
+      );
+      cacheStatus = videoCacheResult.cacheData;
+    } else {
+      let trackInfo: SoundCloudTrack;
+
+      if (linkOrQueryType === 'so_track') {
+        trackInfo = (await play.soundcloud(linkOrQuery)) as SoundCloudTrack;
+      } else {
+        const searchResults = await play.search(linkOrQuery, {
+          source: {
+            soundcloud: 'tracks'
+          },
+          limit: 10
+        });
+
+        if (searchResults.length === 0) {
+          interaction.editReply({
+            content: '❓ | No tracks found.'
+          });
+
+          return;
+        }
+
+        trackInfo = searchResults[0];
+      }
+
+      queuedTrack = new QueuedTrackInfo(trackInfo, interaction.user);
     }
 
-    let videoCacheResult: TrackCacheResult;
-
-    try {
-      videoCacheResult = await getTrackFromCache(videoId);
-    } catch (error) {
-      interaction.editReply({
-        content: '❌ | An error occurred while fetching the video.'
-      });
-      return;
-    }
-
-    const video = videoCacheResult.data;
-    const cacheStatus = videoCacheResult.cacheData;
-
-    const queuedVideo = new QueuedTrackInfo(video, interaction.user);
-    guildYoutubeData.trackList.push(queuedVideo);
+    guildQueueData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle('Added video to queue')
-      .setFooter({
+      .setTitle('Added video to queue');
+
+    if (cacheStatus !== undefined) {
+      baseEmbed.setFooter({
         text: `Cache ${
           cacheStatus.status
         }, cached on ${cacheStatus.cachedAt.toLocaleString()}`
       });
+    }
 
-    const embed = createEmbedFromTrack(baseEmbed, queuedVideo);
+    const embed = createEmbedFromTrack(baseEmbed, queuedTrack);
 
     interaction.editReply({ content: null, embeds: [embed] });
 

@@ -11,7 +11,7 @@ export function createEmbedFromTrack(
       value: hyperlink(track.title, track.url)
     },
     {
-      name: 'Channel',
+      name: 'Artist',
       value:
         track.uploader.url !== undefined
           ? hyperlink(track.uploader.name, track.uploader.url)
