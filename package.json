@@ -22,16 +22,16 @@
     "@types/inquirer": "^9.0.3",
     "@types/lodash": "^4.14.191",
     "@types/luxon": "^3.2.0",
-    "@types/node": "^18.11.18",
-    "@typescript-eslint/eslint-plugin": "^5.50.0",
-    "@typescript-eslint/parser": "^5.50.0",
-    "eslint": "^8.33.0",
+    "@types/node": "^18.14.0",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
+    "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
-    "lint-staged": "^13.1.0",
-    "prettier": "^2.8.3",
+    "lint-staged": "^13.1.2",
+    "prettier": "^2.8.4",
     "typescript": "^4.9.5"
   },
   "dependencies": {
@@ -39,7 +39,7 @@
     "@discordjs/voice": "^0.14.0",
     "@sapphire/discord.js-utilities": "^6.0.1",
     "@sapphire/fetch": "^2.4.1",
-    "@sapphire/framework": "^4.0.2",
+    "@sapphire/framework": "^4.1.0",
     "@sapphire/pieces": "^3.6.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.7.1",
@@ -48,12 +48,12 @@
     "i18n-iso-countries": "^7.5.0",
     "inquirer": "^8.2.5",
     "lodash": "^4.17.21",
-    "lru-cache": "^7.14.1",
+    "lru-cache": "^7.16.1",
     "luxon": "^3.2.1",
     "play-dl": "^1.9.6",
     "sequelize": "^6.28.0",
     "sodium-native": "^3.4.1",
     "sqlite3": "^5.1.4",
-    "ws": "^8.9.0"
+    "ws": "^8.12.1"
   }
 }
