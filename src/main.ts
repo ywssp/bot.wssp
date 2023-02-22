@@ -24,11 +24,11 @@ declare module '@sapphire/framework' {
   }
 }
 
-import { RadioStationNames } from './interfaces/AvailableRadioStations';
-import { GuildMusicData } from './interfaces/GuildMusicData/GuildMusicData';
-import { TetrioUserInfo, TetrioUserRecords } from './interfaces/TetrioAPI';
-import { CachedTrackInfo } from './interfaces/TrackInfo';
-import { RadioWebsocketUpdate } from './interfaces/RadioWebsocketUpdate';
+import { RadioStationNames } from './interfaces/Music/Radio/AvailableRadioStations';
+import { GuildMusicData } from './interfaces/Music/GuildMusicData/GuildMusicData';
+import { TetrioUserInfo, TetrioUserRecords } from './interfaces/APIs/TetrioAPI';
+import { CachedTrackInfo } from './interfaces/Music/Queue System/TrackInfo';
+import { RadioWebsocketUpdate } from './interfaces/Music/Radio/RadioWebsocketUpdate';
 import type WebSocket from 'ws';
 import LRU from 'lru-cache';
 declare module '@sapphire/pieces' {

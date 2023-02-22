@@ -4,7 +4,7 @@ import { Duration } from 'luxon';
 
 import { createRadioHyperlink } from './createRadioHyperlink';
 import { parseRadioSongArtists } from './parseRadioSongArtists';
-import { RadioSongInfo } from '../../../interfaces/RadioSongInfo';
+import { RadioSongInfo } from '../../../interfaces/Music/Radio/RadioSongInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 

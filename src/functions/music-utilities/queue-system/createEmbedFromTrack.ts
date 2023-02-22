@@ -1,5 +1,5 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
 export function createEmbedFromTrack(
   baseEmbed: EmbedBuilder,

@@ -8,7 +8,7 @@ import type {
   TetrioUserInfo,
   TetrioUserRecords,
   RecordEndContext
-} from '../../interfaces/TetrioAPI';
+} from '../../interfaces/APIs/TetrioAPI';
 
 import {
   getName as getCountryName,

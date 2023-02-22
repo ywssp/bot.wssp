@@ -1,5 +1,5 @@
 import { AudioResource } from '@discordjs/voice';
-import { MusicResourceMetadata } from '../../interfaces/MusicResourceMetadata';
+import { MusicResourceMetadata } from '../../interfaces/Music/MusicResourceMetadata';
 import { getAudioPlayer } from './getAudioPlayer';
 
 type MusicResourceType = MusicResourceMetadata['type'];

@@ -50,10 +50,16 @@ export class BotInfoCommand extends Command {
       ).toFormat('D, t ZZZZ');
 
       if (client.uptime) {
-        const uptimeDuration = Duration.fromMillis(client.uptime)
-          .shiftTo('days', 'hours', 'minutes', 'seconds', 'milliseconds')
-          .toObject();
-        botReadyTimestamp += `\nUptime: ${uptimeDuration.days}d ${uptimeDuration.hours}h ${uptimeDuration.minutes}m ${uptimeDuration.seconds}s`;
+        const uptimeDuration = Duration.fromMillis(client.uptime).shiftTo(
+          'days',
+          'hours',
+          'minutes',
+          'seconds',
+          'milliseconds'
+        );
+        botReadyTimestamp += uptimeDuration.toFormat(
+          "\n'Uptime: 'd' days, 'h' hours, 'm' minutes, and 's' seconds"
+        );
       }
 
       embed.addFields({

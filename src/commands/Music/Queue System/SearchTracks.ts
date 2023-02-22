@@ -17,7 +17,10 @@ import { createGuildMusicData } from '../../../functions/music-utilities/guildMu
 import { storeTrackInCache } from '../../../functions/music-utilities/queue-system/trackCacheManager';
 import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
-import { QueuedTrackInfo, TrackInfo } from '../../../interfaces/TrackInfo';
+import {
+  QueuedTrackInfo,
+  TrackInfo
+} from '../../../interfaces/Music/Queue System/TrackInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';

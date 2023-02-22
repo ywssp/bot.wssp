@@ -8,7 +8,7 @@ import play, {
 } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';

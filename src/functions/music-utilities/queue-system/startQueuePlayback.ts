@@ -16,7 +16,7 @@ import {
   hyperlink
 } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/TrackInfo';
+import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFromTrack } from './createEmbedFromTrack';
@@ -26,8 +26,8 @@ import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromR
 import { connectToVoiceChannel } from '../connectToVoiceChannel';
 import { unsubscribeVCFromAudioPlayer } from '../unsubscribeVCFromAudioPlayer';
 import { Duration } from 'luxon';
-import { GuildMusicData } from '../../../interfaces/GuildMusicData/GuildMusicData';
-import { MusicResourceMetadata } from '../../../interfaces/MusicResourceMetadata';
+import { GuildMusicData } from '../../../interfaces/Music/GuildMusicData/GuildMusicData';
+import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 
 function createNowPlayingMessage(
   guildMusicData: GuildMusicData

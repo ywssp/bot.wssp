@@ -1,7 +1,7 @@
 import { container } from '@sapphire/framework';
 import { TextChannel } from 'discord.js';
 import { Duration } from 'luxon';
-import { RadioWebsocketUpdateData } from '../../../interfaces/RadioWebsocketUpdate';
+import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { createRadioSongEmbed } from './createEmbedFromRadioSong';
 

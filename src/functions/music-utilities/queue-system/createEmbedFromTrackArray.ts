@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import { createEmbedFieldFromTrack } from './createEmbedFieldFromTrack';
 
 export function createEmbedFromTrackArray(

@@ -1,4 +1,7 @@
-import { RadioStationNames, RadioStations } from '../AvailableRadioStations';
+import {
+  RadioStationNames,
+  RadioStations
+} from '../Radio/AvailableRadioStations';
 
 export class RadioData {
   station: RadioStationNames | 'none';

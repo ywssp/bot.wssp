@@ -5,7 +5,7 @@ import { capitalize } from 'lodash';
 import { DateTime, Duration } from 'luxon';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
-import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
+import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { createEmbedFromTrack } from '../../functions/music-utilities/queue-system/createEmbedFromTrack';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';

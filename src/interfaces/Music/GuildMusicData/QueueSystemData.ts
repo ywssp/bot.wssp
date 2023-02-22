@@ -1,4 +1,4 @@
-import { QueuedTrackInfo } from '../TrackInfo';
+import { QueuedTrackInfo } from '../Queue System/TrackInfo';
 
 export class QueueSystemData {
   trackList: QueuedTrackInfo[];

@@ -4,8 +4,8 @@ import {
   RadioStationNames,
   RadioStations,
   radioStations
-} from '../../../interfaces/AvailableRadioStations';
-import { RadioWebsocketUpdate } from '../../../interfaces/RadioWebsocketUpdate';
+} from '../../../interfaces/Music/Radio/AvailableRadioStations';
+import { RadioWebsocketUpdate } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { sendRadioUpdate } from './sendRadioUpdate';
 
 const radioWebsocketURLs: Record<

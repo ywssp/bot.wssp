@@ -4,7 +4,10 @@ import { EmbedBuilder, GuildMember } from 'discord.js';
 import play from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrackInfo, TrackInfo } from '../../../interfaces/TrackInfo';
+import {
+  QueuedTrackInfo,
+  TrackInfo
+} from '../../../interfaces/Music/Queue System/TrackInfo';
 import {
   getTrackFromCache,
   storeTrackInCache,

@@ -3,7 +3,7 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 import { getVoiceConnection } from '@discordjs/voice';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
-import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
+import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';

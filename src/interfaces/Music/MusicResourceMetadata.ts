@@ -1,5 +1,8 @@
-import { RadioStations, RadioStationNames } from './AvailableRadioStations';
-import { QueuedTrackInfo } from './TrackInfo';
+import {
+  RadioStations,
+  RadioStationNames
+} from './Radio/AvailableRadioStations';
+import { QueuedTrackInfo } from './Queue System/TrackInfo';
 
 export type MusicResourceMetadata =
   | {

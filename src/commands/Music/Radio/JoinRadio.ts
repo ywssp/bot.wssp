@@ -23,9 +23,9 @@ import { unsubscribeVCFromAudioPlayer } from '../../../functions/music-utilities
 import {
   RadioStationNames,
   RadioStations
-} from '../../../interfaces/AvailableRadioStations';
+} from '../../../interfaces/Music/Radio/AvailableRadioStations';
 import { sendRadioUpdate } from '../../../functions/music-utilities/radio/sendRadioUpdate';
-import { RadioWebsocketUpdateData } from '../../../interfaces/RadioWebsocketUpdate';
+import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

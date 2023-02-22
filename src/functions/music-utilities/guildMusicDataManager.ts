@@ -1,5 +1,5 @@
 import { container } from '@sapphire/framework';
-import { GuildMusicData } from '../../interfaces/GuildMusicData/GuildMusicData';
+import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 
 export function createGuildMusicData(
   guildId: string,

@@ -1,6 +1,9 @@
 import { container } from '@sapphire/framework';
 import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
-import { TrackInfo, CachedTrackInfo } from '../../../interfaces/TrackInfo';
+import {
+  TrackInfo,
+  CachedTrackInfo
+} from '../../../interfaces/Music/Queue System/TrackInfo';
 
 export type TrackCacheResult = {
   data: TrackInfo;

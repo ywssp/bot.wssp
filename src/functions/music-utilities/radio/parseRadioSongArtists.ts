@@ -1,4 +1,7 @@
-import { basicInfo, RadioSongInfo } from '../../../interfaces/RadioSongInfo';
+import {
+  basicInfo,
+  RadioSongInfo
+} from '../../../interfaces/Music/Radio/RadioSongInfo';
 import { createRadioHyperlink } from './createRadioHyperlink';
 
 export function parseRadioSongArtists(song: RadioSongInfo): string[] {
