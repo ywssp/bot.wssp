@@ -51,7 +51,7 @@
     "lru-cache": "^7.16.1",
     "luxon": "^3.2.1",
     "play-dl": "^1.9.6",
-    "sequelize": "^6.28.0",
+    "sequelize": "^6.28.2",
     "sodium-native": "^3.4.1",
     "sqlite3": "^5.1.4",
     "ws": "^8.12.1"
