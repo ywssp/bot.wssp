@@ -2,12 +2,15 @@ import { ChatInputCommand, Command } from '@sapphire/framework';
 
 import { getVoiceConnection } from '@discordjs/voice';
 
-import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
+import {
+  deleteGuildMusicData,
+  getGuildMusicData
+} from '../../functions/music-utilities/guildMusicDataManager';
 import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
-import { unsubscribeVCFromAudioPlayer } from '../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
+import { disposeAudioPlayer } from '../../functions/music-utilities/disposeAudioPlayer';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -76,7 +79,7 @@ export class LeaveVCCommand extends Command {
         }
         break;
       case 'data':
-        this.container.guildMusicDataMap.delete(interaction.guildId as string);
+        deleteGuildMusicData(interaction.guildId as string);
         break;
       default:
         break;
@@ -84,9 +87,7 @@ export class LeaveVCCommand extends Command {
 
     const voiceChannelName = interaction.guild?.members.me?.voice.channel?.name;
 
-    audioPlayer.removeAllListeners();
-    audioPlayer.stop();
-    unsubscribeVCFromAudioPlayer(interaction.guildId as string);
+    disposeAudioPlayer(interaction.guildId as string);
     voiceConnection.destroy();
     interaction.reply(`🛑 | Left the voice channel \`${voiceChannelName}\``);
     return;

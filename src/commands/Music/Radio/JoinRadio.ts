@@ -10,7 +10,10 @@ import {
   AudioResource
 } from '@discordjs/voice';
 
-import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
+import {
+  createGuildMusicData,
+  getGuildMusicData
+} from '../../../functions/music-utilities/guildMusicDataManager';
 import { createRadioWebsocketConnection } from '../../../functions/music-utilities/radio/setupRadioWebsocket';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -19,13 +22,14 @@ import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlaye
 import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
 import { connectToVoiceChannel } from '../../../functions/music-utilities/connectToVoiceChannel';
 import internal from 'stream';
-import { unsubscribeVCFromAudioPlayer } from '../../../functions/music-utilities/unsubscribeVCFromAudioPlayer';
 import {
   RadioStationNames,
   RadioStations
 } from '../../../interfaces/Music/Radio/AvailableRadioStations';
 import { sendRadioUpdate } from '../../../functions/music-utilities/radio/sendRadioUpdate';
 import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
+import { disposeAudioPlayer } from '../../../functions/music-utilities/disposeAudioPlayer';
+import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -65,9 +69,28 @@ export class JoinRadioCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
+    if (interaction.channel === null) {
+      interaction.reply({
+        content: 'Cannot find channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const voiceChannel = (interaction.member as GuildMember).voice.channel;
+
+    if (voiceChannel === null) {
+      interaction.reply({
+        content: 'Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const guildMusicData = createGuildMusicData(
       interaction.guildId as string,
-      interaction.channelId
+      voiceChannel,
+      interaction.channel
     );
 
     const station = interaction.options.getString('channel') as 'jpop' | 'kpop';
@@ -86,9 +109,6 @@ export class JoinRadioCommand extends Command {
         break;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
-
     const voiceConnection = connectToVoiceChannel(voiceChannel);
 
     const audioPlayer = createAudioPlayer({
@@ -104,27 +124,29 @@ export class JoinRadioCommand extends Command {
       const oldAudioPlayer = getAudioPlayer(interaction.guildId as string)!;
 
       if (playingType === 'radio') {
-        if (
-          ((
-            (oldAudioPlayer?.state as AudioPlayerPlayingState)
-              .resource as AudioResource<{ url: string }>
-          ).metadata?.url as string) === stationURL
-        ) {
+        const currentAudioResource = (
+          oldAudioPlayer.state as AudioPlayerPlayingState
+        ).resource as AudioResource<
+          Extract<MusicResourceMetadata, { type: 'radio' }>
+        >;
+
+        const currentStationURL = currentAudioResource.metadata.data.url;
+
+        if (currentStationURL === stationURL) {
           interaction.reply('Already playing from that radio station!');
           return;
         }
 
         interaction.channel?.send('Switching radio stations...');
       } else {
-        interaction.channel?.send('Switching to radio...');
-
         if (guildMusicData.queueSystemData.loop.type !== 'track') {
           guildMusicData.queueSystemData.modifyIndex(2);
         }
+
+        interaction.channel?.send('Switching to radio...');
       }
 
-      oldAudioPlayer.removeAllListeners().stop();
-      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
+      disposeAudioPlayer(interaction.guildId as string);
     }
 
     interaction.deferReply();
@@ -132,18 +154,25 @@ export class JoinRadioCommand extends Command {
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);
 
+      disposeAudioPlayer(interaction.guildId as string);
+      voiceConnection.destroy();
+
+      disconnectGuildFromRadioWebsocket(interaction.guildId as string);
+
+      const localMusicData = getGuildMusicData(interaction.guildId as string);
+
+      if (localMusicData === undefined) {
+        return;
+      }
+
       const embed = new EmbedBuilder()
         .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
-          'An error occurred while playing music.\nDisconnecting from the voice channel.'
+          'An error occurred while playing from the radio.\nDisconnecting from the voice channel.'
         );
 
-      audioPlayer.removeAllListeners().stop();
-      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
-      voiceConnection.destroy();
-      disconnectGuildFromRadioWebsocket(interaction.guildId as string);
-      interaction.channel?.send({
+      guildMusicData.sendUpdateMessage({
         embeds: [embed]
       });
     });
@@ -154,17 +183,24 @@ export class JoinRadioCommand extends Command {
       );
 
       if (radioStationResource === null) {
+        disposeAudioPlayer(interaction.guildId as string);
+
+        voiceConnection.destroy();
+
+        const localMusicData = getGuildMusicData(interaction.guildId as string);
+
+        if (localMusicData === undefined) {
+          return;
+        }
+
         const embed = new EmbedBuilder()
           .setColor(ColorPalette.Error)
           .setTitle('Playback Error')
           .setDescription(
-            'An error occurred while playing music.\nDisconnecting from the voice channel.'
+            'An error occurred while getting the radio stream.\nDisconnecting from the voice channel.'
           );
 
-        audioPlayer.removeAllListeners().stop();
-        unsubscribeVCFromAudioPlayer(interaction.guildId as string);
-        voiceConnection.destroy();
-        interaction.channel?.send({
+        guildMusicData.sendUpdateMessage({
           embeds: [embed]
         });
         return;
@@ -180,17 +216,18 @@ export class JoinRadioCommand extends Command {
     );
 
     if (radioStationResource === null) {
+      disposeAudioPlayer(interaction.guildId as string);
+
+      voiceConnection.destroy();
+
       const embed = new EmbedBuilder()
         .setColor(ColorPalette.Error)
         .setTitle('Playback Error')
         .setDescription(
-          'An error occurred while playing music.\nDisconnecting from the voice channel.'
+          'An error occurred while getting the radio stream.\nDisconnecting from the voice channel.'
         );
 
-      audioPlayer.removeAllListeners().stop();
-      unsubscribeVCFromAudioPlayer(interaction.guildId as string);
-      voiceConnection.destroy();
-      interaction.channel?.send({
+      guildMusicData.sendUpdateMessage({
         embeds: [embed]
       });
       return;

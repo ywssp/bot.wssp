@@ -17,7 +17,6 @@ import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-s
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -67,9 +66,28 @@ export class PlayMusicCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
+    if (interaction.channel === null) {
+      interaction.reply({
+        content: 'Cannot find channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const voiceChannel = (interaction.member as GuildMember).voice.channel;
+
+    if (voiceChannel === null) {
+      interaction.reply({
+        content: 'Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
-      interaction.channelId
+      voiceChannel,
+      interaction.channel
     ).queueSystemData;
 
     let source = interaction.options.getSubcommand(true) as
@@ -214,11 +232,6 @@ export class PlayMusicCommand extends Command {
 
     interaction.editReply({ content: null, embeds: [embed] });
 
-    if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
-
-      startQueuePlayback(interaction.guildId as string, voiceChannel);
-    }
+    startQueuePlayback(interaction.guildId as string);
   }
 }

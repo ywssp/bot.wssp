@@ -1,6 +1,12 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
+/**
+ * Creates an embed from a track.
+ * @param baseEmbed The base embed to add the fields to.
+ * @param track The track to create the embed from.
+ * @returns The embed.
+ */
 export function createEmbedFromTrack(
   baseEmbed: EmbedBuilder,
   track: TrackInfo

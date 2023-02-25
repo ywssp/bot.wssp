@@ -1,5 +1,4 @@
 import { container } from '@sapphire/framework';
-const { client } = container;
 
 import {
   AudioPlayer,
@@ -8,60 +7,62 @@ import {
   createAudioResource,
   NoSubscriberBehavior
 } from '@discordjs/voice';
-import {
-  EmbedBuilder,
-  BaseMessageOptions,
-  TextBasedChannel,
-  VoiceBasedChannel,
-  hyperlink
-} from 'discord.js';
+import { EmbedBuilder, hyperlink } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFromTrack } from './createEmbedFromTrack';
 import { getPlayingType } from '../getPlayingType';
-import { getAudioPlayer } from '../getAudioPlayer';
 import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
 import { connectToVoiceChannel } from '../connectToVoiceChannel';
-import { unsubscribeVCFromAudioPlayer } from '../unsubscribeVCFromAudioPlayer';
 import { Duration } from 'luxon';
 import { GuildMusicData } from '../../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
+import { disposeAudioPlayer } from '../disposeAudioPlayer';
 
-function createNowPlayingMessage(
-  guildMusicData: GuildMusicData
-): BaseMessageOptions {
-  const video = guildMusicData.queueSystemData.currentTrack();
-  const nextVideo = guildMusicData.queueSystemData.trackList[
-    guildMusicData.queueSystemData.trackListIndex + 1
-  ] as QueuedTrackInfo | undefined;
+function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
+  const currentTrack = guildMusicData.queueSystemData.currentTrack();
+  const nextTrack = guildMusicData.queueSystemData.getQueue().shift();
 
-  if (guildMusicData.musicAnnounceStyle === 'full') {
+  const announceStyle = guildMusicData.musicAnnounceStyle;
+
+  if (announceStyle === 'none') {
+    return;
+  }
+
+  let message: Parameters<GuildMusicData['sendUpdateMessage']>[0];
+
+  if (announceStyle === 'full') {
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createEmbedFromTrack(baseEmbed, video).addFields([
+    const embed = createEmbedFromTrack(baseEmbed, currentTrack).addFields([
       {
         name: 'Requested By',
-        value: video.requestedBy
+        value: currentTrack.requestedBy
       }
     ]);
 
-    if (nextVideo) {
+    if (nextTrack) {
       let nextString = '';
+
       if (guildMusicData.queueSystemData.shuffle) {
         nextString = '🔀 | The next song is a random song from the queue.';
       } else {
+        // Creates a string with a hyperlink to the next track, and a hyperlink to the next track's uploader.        / /
+        // If the uploader doesn't have a URL, it will just use the uploader's name.
+        // Example: [Next Track Title](<Track URL>) by [Uploader Name](<Optional Uploader URL>)
+
         const uploaderString =
-          nextVideo.uploader.url !== undefined
-            ? hyperlink(nextVideo.uploader.name, nextVideo.uploader.url)
-            : nextVideo.uploader.name;
+          nextTrack.uploader.url !== undefined
+            ? hyperlink(nextTrack.uploader.name, nextTrack.uploader.url)
+            : nextTrack.uploader.name;
 
         nextString = `${hyperlink(
-          nextVideo.title,
-          nextVideo.url
+          nextTrack.title,
+          nextTrack.url
         )} by ${uploaderString}`;
       }
 
@@ -77,32 +78,34 @@ function createNowPlayingMessage(
       ]);
     }
 
-    return { embeds: [embed] };
-  }
+    message = { embeds: [embed] };
+  } else {
+    let text = `Now Playing\n${currentTrack.title} - <${currentTrack.url}> | ${
+      typeof currentTrack.duration === 'string'
+        ? currentTrack.duration
+        : currentTrack.duration.toFormat('m:ss')
+    } | By ${currentTrack.uploader.name}`;
 
-  let text = `Now Playing\n${video.title} - <${video.url}> | ${
-    typeof video.duration === 'string'
-      ? video.duration
-      : video.duration.toFormat('m:ss')
-  } | By ${video.uploader.name}`;
-
-  if (nextVideo) {
-    if (guildMusicData.queueSystemData.shuffle) {
-      text += '\n🔀 | The next song is a random song from the queue.';
-    } else {
-      text += `\n\nNext Video\n${nextVideo.title} - <${nextVideo.url}>\nBy ${nextVideo.uploader.name}`;
+    if (nextTrack) {
+      if (guildMusicData.queueSystemData.shuffle) {
+        text += '\n🔀 | The next song is a random song from the queue.';
+      } else {
+        text += `\n\nNext Video\n${nextTrack.title} - <${nextTrack.url}>\nBy ${nextTrack.uploader.name}`;
+      }
     }
+
+    message = text;
   }
 
-  return { content: text };
+  guildMusicData.sendUpdateMessage(message);
 }
 
-async function playVideo(
+async function playTrack(
   video: QueuedTrackInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
-  const streamedVideo = await playdl.stream(video.url);
+  const streamedTrack = await playdl.stream(video.url);
 
   // Set type as MusicResourceMetadata with property type of 'youtube'
   const metadata: MusicResourceMetadata = {
@@ -110,46 +113,45 @@ async function playVideo(
     data: video
   };
 
-  const resource = createAudioResource(streamedVideo.stream, {
-    inputType: streamedVideo.type,
+  const resource = createAudioResource(streamedTrack.stream, {
+    inputType: streamedTrack.type,
     metadata
   });
 
   audioPlayer.play(resource);
 
-  if (
-    !musicData.queueSystemData.skipped &&
-    musicData.queueSystemData.loop.type === 'track'
-  ) {
-    return;
-  }
+  const trackSkipped = musicData.queueSystemData.skipped;
+  const isLoopingByTrack = musicData.queueSystemData.loop.type === 'track';
 
-  musicData.queueSystemData.skipped = false;
+  // Do not send the now playing message if the track has looped successfully
+  // This will only run when the loop type isn't 'track', or
+  // When the loop type is 'track' and the track was skipped
+  if (!(!trackSkipped && isLoopingByTrack)) {
+    musicData.queueSystemData.skipped = false;
 
-  if (musicData.musicAnnounceStyle !== 'none') {
-    const message = createNowPlayingMessage(musicData);
-
-    const announceChannel = client.channels.cache.get(
-      musicData.textUpdateChannelId
-    ) as TextBasedChannel;
-
-    announceChannel.send(message);
+    sendNowPlayingMessage(musicData);
   }
 }
 
-export function startQueuePlayback(
-  guildId: string,
-  voiceChannel: VoiceBasedChannel
-) {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const guildMusicData = getGuildMusicData(guildId)!;
+export function startQueuePlayback(guildId: string) {
+  const playingType = getPlayingType(guildId);
+
+  // If the bot is already playing a track from the queue, do not start queue playback
+  if (playingType === 'queued_track') {
+    return;
+  }
+
+  const guildMusicData = getGuildMusicData(guildId);
+
+  if (guildMusicData === undefined) {
+    throw new Error(`No guild music data exists for guild ${guildId}`);
+  }
+
   const queueData = guildMusicData.queueSystemData;
 
-  const textUpdateChannel = client.channels.cache.get(
-    guildMusicData.textUpdateChannelId
-  ) as TextBasedChannel;
-
-  const voiceConnection = connectToVoiceChannel(voiceChannel);
+  const voiceConnection = connectToVoiceChannel(
+    guildMusicData.getVoiceChannel()
+  );
 
   let audioPlayer = createAudioPlayer({
     behaviors: {
@@ -157,30 +159,36 @@ export function startQueuePlayback(
     }
   });
 
-  const playingType = getPlayingType(guildId);
-
-  if (playingType === 'queued_track') {
-    return;
-  } else if (playingType === 'radio') {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const oldAudioPlayer = getAudioPlayer(guildId)!;
-    oldAudioPlayer.removeAllListeners().stop();
-    unsubscribeVCFromAudioPlayer(guildId);
-    disconnectGuildFromRadioWebsocket(guildId);
-    textUpdateChannel.send(
+  // Handles the switch of the source of the audio player
+  if (playingType === 'radio') {
+    guildMusicData.sendUpdateMessage(
       'Disconnecting from the radio to play a YouTube video...'
     );
+
+    // Removes the old audio player used for radio playback
+    disposeAudioPlayer(guildId);
+
+    // Disconnects the guild from the radio websocket
+    disconnectGuildFromRadioWebsocket(guildId);
   }
 
   audioPlayer = audioPlayer.on('error', (error) => {
-    const resourceMetadata = error.resource.metadata as QueuedTrackInfo;
-    const seek = Duration.fromMillis(error.resource.playbackDuration).toFormat(
-      'm:ss'
-    );
+    const resourceMetadata = (error.resource.metadata as MusicResourceMetadata)
+      .data as QueuedTrackInfo;
+
+    const erroredTrackTimestamp = Duration.fromMillis(
+      error.resource.playbackDuration
+    ).toFormat('m:ss');
 
     container.logger.error(
-      `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url} in the ${seek} mark\n${error.stack}`
+      `An error occurred while playing ${resourceMetadata.title} | ${resourceMetadata.url} in the ${erroredTrackTimestamp} mark\n${error.stack}`
     );
+
+    const localMusicData = getGuildMusicData(guildId);
+
+    if (localMusicData === undefined) {
+      return;
+    }
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Error)
@@ -190,8 +198,10 @@ export function startQueuePlayback(
 
     if (resourceMetadata.duration !== 'Live Stream') {
       embed.spliceFields(2, 1, {
-        name: 'Duration',
-        value: `${seek} / ${resourceMetadata.duration.toFormat('m:ss')}`
+        name: 'Timestamp of Error',
+        value: `${erroredTrackTimestamp} / ${resourceMetadata.duration.toFormat(
+          'm:ss'
+        )}`
       });
     }
 
@@ -200,50 +210,68 @@ export function startQueuePlayback(
       value: `${error.name}: ${error.message}`
     });
 
-    textUpdateChannel.send({ embeds: [embed] });
+    localMusicData.sendUpdateMessage({ embeds: [embed] });
   });
 
   voiceConnection.subscribe(audioPlayer);
 
-  playVideo(queueData.currentTrack(), audioPlayer, guildMusicData);
+  playTrack(queueData.currentTrack(), audioPlayer, guildMusicData);
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    if (queueData.loop.type === 'queue') {
-      queueData.trackList.push(queueData.currentTrack());
+    const localMusicData = getGuildMusicData(guildId);
+
+    if (localMusicData === undefined) {
+      return;
     }
 
-    if (queueData.loop.type !== 'track') {
-      queueData.trackListIndex++;
+    const localQueueData = localMusicData.queueSystemData;
+
+    if (localQueueData.loop.type === 'queue') {
+      localQueueData.trackList.push(localQueueData.currentTrack());
     }
 
-    if (voiceChannel.members.filter((member) => !member.user.bot).size === 0) {
-      textUpdateChannel.send(
+    if (localQueueData.loop.type !== 'track') {
+      localQueueData.trackListIndex++;
+    }
+
+    if (
+      localMusicData
+        .getVoiceChannel()
+        .members.filter((member) => !member.user.bot).size === 0
+    ) {
+      localMusicData.sendUpdateMessage(
         'No users are inside the voice channel. Stopping...'
       );
-      audioPlayer.stop();
-      unsubscribeVCFromAudioPlayer(guildId);
+
+      disposeAudioPlayer(guildId);
       voiceConnection.destroy();
       return;
     }
 
-    if (queueData.trackList.length === queueData.trackListIndex) {
-      textUpdateChannel.send('No more videos in the queue. Stopping...');
-      audioPlayer.stop();
-      unsubscribeVCFromAudioPlayer(guildId);
-      voiceConnection.destroy();
-      return;
-    }
-
-    if (queueData.shuffle && queueData.loop.type !== 'track') {
-      const randomIndex = Math.floor(
-        Math.random() * queueData.getQueue().length
+    if (localQueueData.trackList.length === localQueueData.trackListIndex) {
+      localMusicData.sendUpdateMessage(
+        'No more tracks in the queue. Stopping...'
       );
 
-      const selectedVideo = queueData.trackList.splice(randomIndex, 1)[0];
-
-      queueData.trackList.splice(queueData.trackListIndex, 0, selectedVideo);
+      disposeAudioPlayer(guildId);
+      voiceConnection.destroy();
+      return;
     }
 
-    playVideo(queueData.currentTrack(), audioPlayer, guildMusicData);
+    if (localQueueData.shuffle && localQueueData.loop.type !== 'track') {
+      const randomIndex = Math.floor(
+        Math.random() * localQueueData.getQueue().length
+      );
+
+      const selectedVideo = localQueueData.trackList.splice(randomIndex, 1)[0];
+
+      localQueueData.trackList.splice(
+        localQueueData.trackListIndex,
+        0,
+        selectedVideo
+      );
+    }
+
+    playTrack(localQueueData.currentTrack(), audioPlayer, localMusicData);
   });
 }

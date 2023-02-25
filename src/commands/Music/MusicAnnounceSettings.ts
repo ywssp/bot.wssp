@@ -1,5 +1,10 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { TextChannel } from 'discord.js';
+import {
+  channelLink,
+  channelMention,
+  TextBasedChannel,
+  TextChannel
+} from 'discord.js';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
@@ -66,14 +71,29 @@ export class MusicAnnounceSettingsCommand extends Command {
 
     if (interaction.options.getSubcommand() === 'channel') {
       const channel =
-        interaction.options.getChannel('channel') ??
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        (interaction.channel! as TextChannel);
+        (interaction.options.getChannel('channel') as TextBasedChannel) ??
+        (interaction.channel as TextBasedChannel);
 
-      guildMusicData.textUpdateChannelId = channel.id;
+      const currentChannel = guildMusicData.getTextUpdateChannel();
+
+      if (channel === currentChannel) {
+        interaction.reply({
+          content: '❓ | That is already the current announce channel.',
+          ephemeral: true
+        });
+        return;
+      }
+
+      guildMusicData.setTextUpdateChannel(channel);
 
       interaction.reply(
-        `✅ | Music announcements will now be sent to <#${channel.id}>.`
+        `✅ | Music announcements will now be sent to ${channelMention(
+          channel.id
+        )}.`
+      );
+
+      guildMusicData.sendUpdateMessage(
+        'ℹ️ | Music announcements will now be sent to this channel.'
       );
     }
     if (interaction.options.getSubcommand() === 'style') {

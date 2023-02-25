@@ -1,5 +1,3 @@
-import { container } from '@sapphire/framework';
-import { TextChannel } from 'discord.js';
 import { Duration } from 'luxon';
 import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { getGuildMusicData } from '../guildMusicDataManager';
@@ -18,14 +16,10 @@ export function sendRadioUpdate(
     throw Error('Guild does not have music data!');
   }
 
-  const textUpdateChannel = container.client.channels.cache.get(
-    guildMusicData.textUpdateChannelId
-  ) as TextChannel;
-
   if (guildMusicData.musicAnnounceStyle === 'full') {
     const embed = createRadioSongEmbed(data.song);
 
-    textUpdateChannel.send({ embeds: [embed] });
+    guildMusicData.sendUpdateMessage({ embeds: [embed] });
   } else if (guildMusicData.musicAnnounceStyle === 'minimal') {
     const artistNames = data.song.artists
       .map((artist) => artist.name)
@@ -35,7 +29,7 @@ export function sendRadioUpdate(
       seconds: data.song.duration
     }).toFormat('mm:ss');
 
-    textUpdateChannel.send(
+    guildMusicData.sendUpdateMessage(
       `Now playing: ${data.song.title} by ${artistNames} | ${formattedDuration}`
     );
   }

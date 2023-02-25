@@ -11,8 +11,6 @@ import {
 
 import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 
-import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
-
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { storeTrackInCache } from '../../../functions/music-utilities/queue-system/trackCacheManager';
 import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
@@ -71,9 +69,28 @@ export class SearchVideosCommand extends Command {
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
+    if (interaction.channel === null) {
+      interaction.reply({
+        content: 'Cannot find channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const voiceChannel = (interaction.member as GuildMember).voice.channel;
+
+    if (voiceChannel === null) {
+      interaction.reply({
+        content: 'Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
-      interaction.channelId
+      voiceChannel,
+      interaction.channel
     ).queueSystemData;
 
     const source = interaction.options.getSubcommand() as
@@ -210,11 +227,6 @@ export class SearchVideosCommand extends Command {
 
     interaction.editReply({ embeds: [replyEmbed] });
 
-    if (getPlayingType(interaction.guildId as string) !== 'queued_track') {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const voiceChannel = (interaction.member as GuildMember)!.voice.channel!;
-
-      startQueuePlayback(interaction.guildId as string, voiceChannel);
-    }
+    startQueuePlayback(interaction.guildId as string);
   }
 }

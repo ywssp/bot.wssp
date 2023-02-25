@@ -6,6 +6,7 @@ import {
   DiscordGatewayAdapterCreator,
   joinVoiceChannel
 } from '@discordjs/voice';
+import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
 export class MoveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -62,22 +63,27 @@ export class MoveVCCommand extends Command {
         .voiceAdapterCreator as DiscordGatewayAdapterCreator
     });
 
-    attemptedConnection.once('error', (error) => {
+    const errorHandler = (error: unknown) => {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
       interaction.editReply({
-        content: `There was an error connecting to the voice channel: ${error.message}`
+        content: `There was an error connecting to the voice channel: ${errorMessage}`
       });
-    });
+    };
+
+    attemptedConnection.once('error', errorHandler);
 
     attemptedConnection.once('ready', () => {
+      const guildMusicData = getGuildMusicData(interaction.guildId as string);
+
+      guildMusicData?.setVoiceChannel(voiceChannel);
+
       interaction.editReply({
         content: `✅ | Successfully moved to \`🔊 ${voiceChannel.name}\``
       });
 
-      attemptedConnection.removeListener('error', (error) => {
-        interaction.editReply({
-          content: `There was an error connecting to the voice channel: ${error.message}`
-        });
-      });
+      attemptedConnection.removeListener('error', errorHandler);
     });
   }
 }

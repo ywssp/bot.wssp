@@ -8,9 +8,11 @@
   "main": "./out/main.js",
   "license": "MPL-2.0",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=16.0.0",
+    "pnpm": ">=6.0.0"
   },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "start": "node out/main.js",
     "build": "tsc",
     "delete-slash-commands": "node out/Utilities/deleteSlashCommands.js",
