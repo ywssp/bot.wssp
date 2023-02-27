@@ -1,17 +1,16 @@
 import { Precondition } from '@sapphire/framework';
-import type { CommandInteraction, Message } from 'discord.js';
+import type { CommandInteraction } from 'discord.js';
 
 export class OwnerOnlyPrecondition extends Precondition {
-  public override messageRun(message: Message) {
-    return this.checkOwner(message.author.id);
-  }
-
   public override chatInputRun(interaction: CommandInteraction) {
     return this.checkOwner(interaction.user.id);
   }
 
   private checkOwner(userId: string) {
-    if (process.env.OWNER?.split(',').includes(userId)) {
+    const ownerUserIds =
+      process.env.OWNER_USER_IDS?.split(',').map((id) => id.trim()) ?? [];
+
+    if (ownerUserIds.includes(userId)) {
       return this.ok();
     }
 

@@ -4,8 +4,8 @@ import { REST, Routes } from 'discord.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 
-const token = process.env.TOKEN;
-const clientId = process.env.CLIENT_ID;
+const token = process.env.BOT_TOKEN;
+const clientId = process.env.BOT_CLIENT_ID;
 
 if (token === undefined) {
   throw new Error('Please provide a token in the .env file.');

@@ -23,10 +23,10 @@
     "@types/inquirer": "^9.0.3",
     "@types/lodash": "^4.14.191",
     "@types/luxon": "^3.2.0",
-    "@types/node": "^18.14.0",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.52.0",
-    "eslint": "^8.34.0",
+    "@types/node": "^18.14.2",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
@@ -38,9 +38,9 @@
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.14.0",
-    "@sapphire/discord.js-utilities": "^6.0.1",
+    "@sapphire/discord.js-utilities": "^6.0.2",
     "@sapphire/fetch": "^2.4.1",
-    "@sapphire/framework": "^4.1.0",
+    "@sapphire/framework": "^4.2.0",
     "@sapphire/pieces": "^3.6.0",
     "chalk": "^4.1.2",
     "discord.js": "^14.7.1",
@@ -49,12 +49,20 @@
     "i18n-iso-countries": "^7.5.0",
     "inquirer": "^8.2.5",
     "lodash": "^4.17.21",
-    "lru-cache": "^7.16.1",
+    "lru-cache": "^7.17.0",
     "luxon": "^3.2.1",
     "play-dl": "^1.9.6",
-    "sequelize": "^6.29.0",
     "sodium-native": "^3.4.1",
     "sqlite3": "^5.1.4",
     "ws": "^8.12.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "undici@<5.19.1": ">=5.19.1",
+      "sequelize@<6.28.1": ">=6.28.1",
+      "sequelize@<6.29.0": ">=6.29.0",
+      "undici@>=2.0.0 <5.19.1": ">=5.19.1",
+      "discord-api-types": "0.37.20"
+    }
   }
 }

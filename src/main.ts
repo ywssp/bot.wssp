@@ -8,12 +8,10 @@ const client = new SapphireClient({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.MessageContent
-  ],
-  loadMessageCommandListeners: true,
-  defaultPrefix: process.env.PREFIX?.split('|')
+  ]
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.BOT_TOKEN);
 
 declare module '@sapphire/framework' {
   interface Preconditions {

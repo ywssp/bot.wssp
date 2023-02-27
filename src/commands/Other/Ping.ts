@@ -1,5 +1,6 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import type { Message } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import { ColorPalette } from '../../settings/ColorPalette';
 
 export class PingCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -7,32 +8,35 @@ export class PingCommand extends Command {
       ...options,
       name: 'ping',
       aliases: ['pong'],
-      description: 'Gets the '
+      description: "Gets the bot's latency"
     });
   }
 
-  public async messageRun(message: Message) {
-    const msg = await message.channel.send('Loading...');
-
-    const BotLatency = Math.round(this.container.client.ws.ping);
-    const APILatency = msg.createdTimestamp - message.createdTimestamp;
-
-    msg.edit(
-      `Pong!\nBot Latency ${BotLatency} ms.\nAPI Latency ${APILatency} ms.`
+  public override registerApplicationCommands(
+    registry: ChatInputCommand.Registry
+  ) {
+    registry.registerChatInputCommand((builder) =>
+      builder.setName(this.name).setDescription(this.description)
     );
   }
 
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
-    const reply = await interaction.reply({
-      content: 'Loading...',
+    const reply = await interaction.deferReply({
       fetchReply: true
     });
 
     const BotLatency = Math.round(this.container.client.ws.ping);
     const APILatency = reply.createdTimestamp - interaction.createdTimestamp;
 
-    interaction.editReply(
-      `Pong!\nBot Latency ${BotLatency} ms.\nAPI Latency ${APILatency} ms.`
-    );
+    const embed = new EmbedBuilder()
+      .setColor(ColorPalette.Default)
+      .setTitle('Pong!')
+      .setDescription(
+        `Bot Latency: ${BotLatency} ms\nAPI Latency: ${APILatency} ms`
+      );
+
+    interaction.editReply({
+      embeds: [embed]
+    });
   }
 }

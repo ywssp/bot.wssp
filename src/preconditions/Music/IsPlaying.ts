@@ -1,12 +1,7 @@
 import { getVoiceConnection } from '@discordjs/voice';
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
-import type { Message } from 'discord.js';
 
 export class IsPlayingPrecondition extends Precondition {
-  public override messageRun(message: Message) {
-    return this.check(message.guildId);
-  }
-
   public override chatInputRun(interaction: ChatInputCommand.Interaction) {
     return this.check(interaction.guildId);
   }

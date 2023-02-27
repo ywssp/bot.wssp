@@ -1,11 +1,7 @@
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
-import { ChannelType, GuildMember, Message } from 'discord.js';
+import { ChannelType, GuildMember } from 'discord.js';
 
 export class InVoiceChannelPrecondition extends Precondition {
-  public override messageRun(message: Message) {
-    return this.check(message.member);
-  }
-
   public override chatInputRun(interaction: ChatInputCommand.Interaction) {
     return this.check(interaction.member as GuildMember);
   }

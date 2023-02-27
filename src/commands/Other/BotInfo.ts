@@ -1,5 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import type { Client, Message } from 'discord.js';
+import type { Client } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 
 import { DateTime, Duration } from 'luxon';
@@ -20,12 +20,6 @@ export class BotInfoCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder.setName(this.name).setDescription(this.description)
     );
-  }
-
-  public messageRun(message: Message) {
-    const embed = this.createEmbed(message.client);
-
-    message.channel.send({ embeds: [embed] });
   }
 
   public chatInputRun(interaction: ChatInputCommand.Interaction) {
