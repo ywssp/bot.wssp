@@ -12,27 +12,28 @@ export function createEmbedFieldFromTrack(
   prefix?: string
 ): EmbedField {
   let name = '';
+
   if (prefix) {
     name += prefix + ' ';
   }
 
   name += track.title;
 
-  let value = '';
-  value += `${hyperlink('Link', track.url)} | `;
-
-  if (typeof track.duration === 'string') {
-    value += track.duration;
-  } else {
-    value += track.duration.toFormat('m:ss');
-  }
+  const linkString = hyperlink('Link', track.url);
 
   const uploaderString =
     track.uploader.url !== undefined
       ? hyperlink(track.uploader.name, track.uploader.url)
       : track.uploader.name;
 
-  value += ` | By ${uploaderString}`;
+  let durationString: string;
+  if (typeof track.duration === 'string') {
+    durationString = track.duration;
+  } else {
+    durationString = track.duration.toFormat('m:ss');
+  }
+
+  const value = `${linkString} | By ${uploaderString} | ${durationString}`;
 
   return {
     name,

@@ -20,6 +20,8 @@ import { Duration } from 'luxon';
 import { GuildMusicData } from '../../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 import { disposeAudioPlayer } from '../disposeAudioPlayer';
+import { getTrackNamings } from './getTrackNamings';
+import _ from 'lodash';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   const currentTrack = guildMusicData.queueSystemData.currentTrack();
@@ -45,11 +47,16 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       }
     ]);
 
-    if (nextTrack) {
+    if (nextTrack !== undefined) {
       let nextString = '';
 
+      let nextTrackIdentifier = _.capitalize(
+        getTrackNamings(nextTrack).trackIdentifier
+      );
+
       if (guildMusicData.queueSystemData.shuffle) {
-        nextString = '🔀 | The next song is a random song from the queue.';
+        nextString = `🔀 | The next track will be randomly picked from the queue.`;
+        nextTrackIdentifier = 'Track';
       } else {
         // Creates a string with a hyperlink to the next track, and a hyperlink to the next track's uploader.        / /
         // If the uploader doesn't have a URL, it will just use the uploader's name.
@@ -72,7 +79,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
           value: '\u200B'
         },
         {
-          name: 'Next Track',
+          name: `Next ${nextTrackIdentifier}`,
           value: nextString
         }
       ]);
@@ -88,9 +95,12 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     if (nextTrack) {
       if (guildMusicData.queueSystemData.shuffle) {
-        text += '\n🔀 | The next song is a random song from the queue.';
+        text += '\n🔀 | The next track will be randomly picked from the queue.';
       } else {
-        text += `\n\nNext Video\n${nextTrack.title} - <${nextTrack.url}>\nBy ${nextTrack.uploader.name}`;
+        const nextTrackIdentifier = _.capitalize(
+          getTrackNamings(nextTrack).trackIdentifier
+        );
+        text += `\n\nNext ${nextTrackIdentifier}\n${nextTrack.title} - <${nextTrack.url}>\nBy ${nextTrack.uploader.name}`;
       }
     }
 
@@ -161,8 +171,12 @@ export function startQueuePlayback(guildId: string) {
 
   // Handles the switch of the source of the audio player
   if (playingType === 'radio') {
+    const currentTrackIdentifier = getTrackNamings(
+      queueData.currentTrack()
+    ).fullIdentifier;
+
     guildMusicData.sendUpdateMessage(
-      'Disconnecting from the radio to play a YouTube video...'
+      `Disconnecting from the radio to play a ${currentTrackIdentifier}...`
     );
 
     // Removes the old audio player used for radio playback

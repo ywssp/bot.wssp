@@ -13,6 +13,10 @@ import { startQueuePlayback } from '../../../functions/music-utilities/queue-sys
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { Duration } from 'luxon';
+import {
+  SoundCloudTrackNaming,
+  YouTubeVideoNaming
+} from '../../../settings/TrackNaming';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -61,7 +65,7 @@ export class AddPlaylistCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     if (interaction.channel === null) {
       interaction.reply({
-        content: 'Cannot find channel.',
+        content: '❓ | Cannot find channel.',
         ephemeral: true
       });
       return;
@@ -71,7 +75,7 @@ export class AddPlaylistCommand extends Command {
 
     if (voiceChannel === null) {
       interaction.reply({
-        content: 'Cannot find voice channel.',
+        content: '❓ | Cannot find voice channel.',
         ephemeral: true
       });
       return;
@@ -98,8 +102,10 @@ export class AddPlaylistCommand extends Command {
     }
 
     const source = linkType === 'yt_playlist' ? 'YouTube' : 'SoundCloud';
+    const namings =
+      source === 'YouTube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
 
-    interaction.reply(`Processing playlist from ${source}...`);
+    interaction.reply(`Processing ${namings.source} Playlist...`);
 
     console.log(`Getting playlist info for ${link}...`);
 
@@ -125,7 +131,7 @@ export class AddPlaylistCommand extends Command {
         });
       } catch (error) {
         interaction.editReply({
-          content: '❌ | An error occurred while getting the playlist info.'
+          content: `❌ | An error occurred while getting the ${source} playlist info.`
         });
         console.error(error);
         return;
@@ -166,7 +172,7 @@ export class AddPlaylistCommand extends Command {
         playlist = (await play.soundcloud(link)) as SoundCloudPlaylist;
       } catch (error) {
         interaction.editReply({
-          content: '❌ | An error occurred while getting the playlist info.'
+          content: `❌ | An error occurred while getting the ${source} playlist info.`
         });
         console.error(error);
         return;
@@ -178,8 +184,7 @@ export class AddPlaylistCommand extends Command {
         foundTracks = await playlist.all_tracks();
       } catch (error) {
         interaction.editReply({
-          content:
-            '❌ | An error occurred while getting the tracks of the playlist.'
+          content: `❌ | An error occurred while getting the ${namings.trackIdentifier}s of the playlist.`
         });
         console.error(error);
         return;
@@ -205,7 +210,7 @@ export class AddPlaylistCommand extends Command {
 
     if (tracks.length === 0) {
       interaction.editReply({
-        content: '❌ | No tracks were found in the playlist.'
+        content: `❌ | No ${namings.trackIdentifier}s were found in the playlist.`
       });
       return;
     }
@@ -247,7 +252,7 @@ export class AddPlaylistCommand extends Command {
             playlistMetadata.playlistLength !== undefined &&
             tracks.length === playlistMetadata.playlistLength
               ? ''
-              : `${tracks.length}/${playlistMetadata.playlistLength} playable tracks | `
+              : `${tracks.length}/${playlistMetadata.playlistLength} playable ${namings.trackIdentifier}s | `
           }Duration: ${playlistDuration.normalize().toFormat('hh:mm:ss')}`
         }
       ]);

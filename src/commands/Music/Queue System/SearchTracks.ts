@@ -22,6 +22,10 @@ import {
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
+import {
+  SoundCloudTrackNaming,
+  YouTubeVideoNaming
+} from '../../../settings/TrackNaming';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -44,7 +48,7 @@ export class SearchVideosCommand extends Command {
         .addSubcommand((subcommand) =>
           subcommand
             .setName('youtube')
-            .setDescription('Search tracks on YouTube')
+            .setDescription('Search videos on YouTube')
             .addStringOption((option) =>
               option
                 .setName('query')
@@ -71,7 +75,7 @@ export class SearchVideosCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     if (interaction.channel === null) {
       interaction.reply({
-        content: 'Cannot find channel.',
+        content: '❓ | Cannot find channel.',
         ephemeral: true
       });
       return;
@@ -81,7 +85,7 @@ export class SearchVideosCommand extends Command {
 
     if (voiceChannel === null) {
       interaction.reply({
-        content: 'Cannot find voice channel.',
+        content: '❓ | Cannot find voice channel.',
         ephemeral: true
       });
       return;
@@ -105,6 +109,9 @@ export class SearchVideosCommand extends Command {
       });
       return;
     }
+
+    const namings =
+      source === 'youtube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
 
     interaction.deferReply();
 
@@ -131,7 +138,7 @@ export class SearchVideosCommand extends Command {
       choices = searchResult.map((item) => new TrackInfo(item));
     } catch (error) {
       interaction.editReply({
-        content: '❌ | An error occurred while searching for tracks.'
+        content: `❌ | An error occurred while searching for ${namings.trackIdentifier}s.`
       });
       return;
     }
@@ -158,14 +165,14 @@ export class SearchVideosCommand extends Command {
 
     const selectionEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Selection)
-      .setTitle('Select a video')
+      .setTitle(`Select a ${namings.trackIdentifier}`)
       .addFields(
         choices.map((item, index) =>
           createEmbedFieldFromTrack(item, String(index + 1))
         )
       )
       .setFooter({
-        text: `You have ${selectionTimeSeconds} seconds to select a track.`
+        text: `You have ${selectionTimeSeconds} seconds to select a ${namings.trackIdentifier}.`
       });
 
     const selectionMessage = await interaction.channel?.send({
@@ -190,7 +197,7 @@ export class SearchVideosCommand extends Command {
         componentType: ComponentType.Button
       });
     } catch (e) {
-      interaction.editReply('🛑 | No track selected.');
+      interaction.editReply(`🛑 | No ${namings.trackIdentifier} selected.`);
       selectionMessage.delete();
       return;
     }
@@ -217,7 +224,7 @@ export class SearchVideosCommand extends Command {
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle('Added track to queue');
+      .setTitle(`Added ${namings.trackIdentifier} to queue`);
 
     const replyEmbed = createEmbedFromTrack(baseEmbed, queuedTrack);
 

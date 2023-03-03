@@ -36,7 +36,7 @@ export class NowPlayingCommand extends Command {
 
     if (playType === undefined || guildMusicData === undefined) {
       interaction.reply({
-        content: 'There is nothing playing.',
+        content: '❓ | Nothing is playing.',
         ephemeral: true
       });
       return;
@@ -65,7 +65,7 @@ export class NowPlayingCommand extends Command {
         audioPlayer.state.status !== 'paused')
     ) {
       return {
-        content: '❓ | There is no track playing.',
+        content: '❓ | Nothing is playing.',
         ephemeral: true
       };
     }
@@ -95,7 +95,7 @@ export class NowPlayingCommand extends Command {
     ]);
 
     embed.spliceFields(2, 1, {
-      name: 'Duration',
+      name: 'Length',
       value: durationVisual
     });
 
@@ -147,7 +147,7 @@ export class NowPlayingCommand extends Command {
     const durationVisual = this.getDurationVisual(passedTime, totalTime);
 
     embed.spliceFields(-1, 1, {
-      name: 'Duration',
+      name: 'Length',
       value: durationVisual
     });
 

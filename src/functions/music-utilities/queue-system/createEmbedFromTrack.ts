@@ -1,5 +1,6 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { getTrackNamings } from './getTrackNamings';
 
 /**
  * Creates an embed from a track.
@@ -11,20 +12,22 @@ export function createEmbedFromTrack(
   baseEmbed: EmbedBuilder,
   track: TrackInfo
 ) {
+  const namings = getTrackNamings(track);
+
   const embed = baseEmbed.setFields([
     {
       name: 'Title',
       value: hyperlink(track.title, track.url)
     },
     {
-      name: 'Artist',
+      name: namings.creator,
       value:
         track.uploader.url !== undefined
           ? hyperlink(track.uploader.name, track.uploader.url)
           : track.uploader.name
     },
     {
-      name: 'Duration',
+      name: 'Length',
       value:
         typeof track.duration === 'string'
           ? track.duration

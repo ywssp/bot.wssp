@@ -37,7 +37,7 @@ export function createRadioSongEmbed(song: RadioSongInfo) {
   }
 
   embed.addFields({
-    name: 'Duration',
+    name: 'Length',
     value: Duration.fromObject({
       seconds: song.duration
     }).toFormat('m:ss')

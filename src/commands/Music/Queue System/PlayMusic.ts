@@ -1,7 +1,7 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember } from 'discord.js';
 
-import play from 'play-dl';
+import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import {
@@ -17,6 +17,7 @@ import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-s
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
+import { getTrackNamings } from '../../../functions/music-utilities/queue-system/getTrackNamings';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -39,12 +40,12 @@ export class PlayMusicCommand extends Command {
         .addSubcommand((subcommand) =>
           subcommand
             .setName('youtube')
-            .setDescription('Gets the track from YouTube')
+            .setDescription('Plays a video from YouTube')
             .addStringOption((option) =>
               option
                 .setName('link-or-query')
                 .setDescription(
-                  'The link of the track, or the query to use for searching'
+                  'The link of the video, or the query to use for searching'
                 )
                 .setRequired(true)
             )
@@ -52,7 +53,7 @@ export class PlayMusicCommand extends Command {
         .addSubcommand((subcommand) =>
           subcommand
             .setName('soundcloud')
-            .setDescription('Gets the track from SoundCloud')
+            .setDescription('Plays a track from SoundCloud')
             .addStringOption((option) =>
               option
                 .setName('link-or-query')
@@ -68,7 +69,7 @@ export class PlayMusicCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     if (interaction.channel === null) {
       interaction.reply({
-        content: 'Cannot find channel.',
+        content: '❓ | Cannot find channel.',
         ephemeral: true
       });
       return;
@@ -78,7 +79,7 @@ export class PlayMusicCommand extends Command {
 
     if (voiceChannel === null) {
       interaction.reply({
-        content: 'Cannot find voice channel.',
+        content: '❓ | Cannot find voice channel.',
         ephemeral: true
       });
       return;
@@ -106,7 +107,10 @@ export class PlayMusicCommand extends Command {
       linkOrQueryType = 'search';
     }
 
-    if (linkOrQueryType === 'yt_playlist') {
+    if (
+      linkOrQueryType === 'yt_playlist' ||
+      linkOrQueryType === 'so_playlist'
+    ) {
       interaction.reply({
         content: 'Playlist detected. Use the `addplaylist` command instead.',
         ephemeral: true
@@ -141,12 +145,13 @@ export class PlayMusicCommand extends Command {
 
     if (source === 'youtube') {
       if ((await play.validate(linkOrQuery)) === 'yt_video') {
-        const videoId = play.extractID(linkOrQuery);
+        console.log(`Recognized "${linkOrQuery}" as a YouTube video.`);
 
         let videoCacheResult: TrackCacheResult;
         try {
-          videoCacheResult = await getTrackFromCache(videoId);
+          videoCacheResult = await getTrackFromCache(linkOrQuery);
         } catch (error) {
+          console.log(error);
           interaction.editReply({
             content: '❌ | An error occurred while fetching the video.'
           });
@@ -160,12 +165,22 @@ export class PlayMusicCommand extends Command {
 
         cacheStatus = videoCacheResult.cacheData;
       } else {
-        const searchResults = await play.search(linkOrQuery, {
-          source: {
-            youtube: 'video'
-          },
-          limit: 10
-        });
+        console.log(`Recognized "${linkOrQuery}" as a YouTube search query.`);
+
+        let searchResults: YouTubeVideo[];
+        try {
+          searchResults = await play.search(linkOrQuery, {
+            source: {
+              youtube: 'video'
+            },
+            limit: 10
+          });
+        } catch (error) {
+          interaction.editReply({
+            content: '❌ | An error occurred while searching for tracks.'
+          });
+          return;
+        }
 
         if (searchResults.length === 0) {
           interaction.editReply({
@@ -179,6 +194,8 @@ export class PlayMusicCommand extends Command {
         queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
       }
     } else if (linkOrQueryType === 'so_track') {
+      console.log(`Recognized "${linkOrQuery}" as a SoundCloud track.`);
+
       let trackCacheResult: TrackCacheResult;
       try {
         trackCacheResult = await getTrackFromCache(linkOrQuery);
@@ -195,12 +212,23 @@ export class PlayMusicCommand extends Command {
       );
       cacheStatus = trackCacheResult.cacheData;
     } else {
-      const searchResults = await play.search(linkOrQuery, {
-        source: {
-          soundcloud: 'tracks'
-        },
-        limit: 10
-      });
+      console.log(`Recognized "${linkOrQuery}" as a SoundCloud search query.`);
+
+      let searchResults: SoundCloudTrack[];
+
+      try {
+        searchResults = await play.search(linkOrQuery, {
+          source: {
+            soundcloud: 'tracks'
+          },
+          limit: 10
+        });
+      } catch (error) {
+        interaction.editReply({
+          content: '❌ | An error occurred while searching for tracks.'
+        });
+        return;
+      }
 
       if (searchResults.length === 0) {
         interaction.editReply({
@@ -216,9 +244,11 @@ export class PlayMusicCommand extends Command {
 
     guildQueueData.trackList.push(queuedTrack);
 
+    const namings = getTrackNamings(queuedTrack);
+
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle('Added video to queue');
+      .setTitle(`Added ${namings.fullIdentifier} to queue`);
 
     if (cacheStatus !== undefined) {
       baseEmbed.setFooter({
