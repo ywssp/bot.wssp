@@ -174,7 +174,6 @@ export async function getTrackFromCache(
   const isYouTubeURL = String(urlType).slice(0, 3) === 'yt_';
   const isSoundCloudURL = String(urlType).slice(0, 3) === 'so_';
 
-  console.log(`URL type: ${urlType}`);
   // This should never happen, this is just an extra precaution.
   if (isYouTubeURL && isSoundCloudURL) {
     throw new Error(
