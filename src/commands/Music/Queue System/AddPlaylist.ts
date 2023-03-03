@@ -89,8 +89,6 @@ export class AddPlaylistCommand extends Command {
 
     const link = interaction.options.getString('link') as string;
 
-    console.log(`Checking if ${link} is a playlist...`);
-
     const linkType = await play.validate(link);
 
     if (linkType !== 'yt_playlist' && linkType !== 'so_playlist') {
@@ -106,8 +104,6 @@ export class AddPlaylistCommand extends Command {
       source === 'YouTube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
 
     interaction.reply(`Processing ${namings.source} Playlist...`);
-
-    console.log(`Getting playlist info for ${link}...`);
 
     let playlistMetadata: {
       title: string;

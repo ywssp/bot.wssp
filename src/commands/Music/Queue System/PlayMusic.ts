@@ -145,8 +145,6 @@ export class PlayMusicCommand extends Command {
 
     if (source === 'youtube') {
       if ((await play.validate(linkOrQuery)) === 'yt_video') {
-        console.log(`Recognized "${linkOrQuery}" as a YouTube video.`);
-
         let videoCacheResult: TrackCacheResult;
         try {
           videoCacheResult = await getTrackFromCache(linkOrQuery);
@@ -165,8 +163,6 @@ export class PlayMusicCommand extends Command {
 
         cacheStatus = videoCacheResult.cacheData;
       } else {
-        console.log(`Recognized "${linkOrQuery}" as a YouTube search query.`);
-
         let searchResults: YouTubeVideo[];
         try {
           searchResults = await play.search(linkOrQuery, {
@@ -194,8 +190,6 @@ export class PlayMusicCommand extends Command {
         queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
       }
     } else if (linkOrQueryType === 'so_track') {
-      console.log(`Recognized "${linkOrQuery}" as a SoundCloud track.`);
-
       let trackCacheResult: TrackCacheResult;
       try {
         trackCacheResult = await getTrackFromCache(linkOrQuery);
@@ -212,8 +206,6 @@ export class PlayMusicCommand extends Command {
       );
       cacheStatus = trackCacheResult.cacheData;
     } else {
-      console.log(`Recognized "${linkOrQuery}" as a SoundCloud search query.`);
-
       let searchResults: SoundCloudTrack[];
 
       try {

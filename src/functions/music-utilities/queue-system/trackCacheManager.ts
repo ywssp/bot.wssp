@@ -170,8 +170,6 @@ async function fetchSoundCloudTrack(
 export async function getTrackFromCache(
   trackURL: string
 ): Promise<TrackCacheResult> {
-  console.log(`Searching for track in cache: ${trackURL}`);
-
   const urlType = await play.validate(trackURL);
   const isYouTubeURL = String(urlType).slice(0, 3) === 'yt_';
   const isSoundCloudURL = String(urlType).slice(0, 3) === 'so_';

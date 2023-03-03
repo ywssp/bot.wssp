@@ -26,7 +26,6 @@ export class ReadyListener extends Listener {
     );
 
     // Setup the HTTP server if the CREATE_HTTP_SERVER env variable is set to true
-    console.log(process.env.CREATE_HTTP_SERVER);
     if (process.env.CREATE_HTTP_SERVER === 'true') {
       const port = 3000;
 
