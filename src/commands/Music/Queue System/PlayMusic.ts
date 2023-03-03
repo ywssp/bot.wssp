@@ -149,7 +149,7 @@ export class PlayMusicCommand extends Command {
         try {
           videoCacheResult = await getTrackFromCache(linkOrQuery);
         } catch (error) {
-          console.log(error);
+          this.container.logger.error(error);
           interaction.editReply({
             content: '❌ | An error occurred while fetching the video.'
           });

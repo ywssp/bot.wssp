@@ -129,7 +129,7 @@ export class AddPlaylistCommand extends Command {
         interaction.editReply({
           content: `❌ | An error occurred while getting the ${source} playlist info.`
         });
-        console.error(error);
+        this.container.logger.error(error);
         return;
       }
 
@@ -170,7 +170,7 @@ export class AddPlaylistCommand extends Command {
         interaction.editReply({
           content: `❌ | An error occurred while getting the ${source} playlist info.`
         });
-        console.error(error);
+        this.container.logger.error(error);
         return;
       }
 
@@ -182,7 +182,7 @@ export class AddPlaylistCommand extends Command {
         interaction.editReply({
           content: `❌ | An error occurred while getting the ${namings.trackIdentifier}s of the playlist.`
         });
-        console.error(error);
+        this.container.logger.error(error);
         return;
       }
 

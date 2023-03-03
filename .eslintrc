@@ -46,7 +46,7 @@
       }
     ],
     "no-bitwise": "error",
-    "no-console": "off",
+    "no-console": "error",
     "no-else-return": "error",
     "no-empty-function": "error",
     "no-eq-null": "error",

@@ -31,7 +31,7 @@ export class ReadyListener extends Listener {
 
       const server = http.createServer();
       server.listen(port, () => {
-        console.log(
+        this.container.logger.info(
           `Successfully created HTTP server on port ${port}! Ping the URL to keep the bot alive!`
         );
       });

@@ -91,7 +91,6 @@ async function fetchYouTubeTrack(trackURL: string): Promise<TrackCacheResult> {
         await play.video_basic_info(trackURL)
       ).video_details;
     } catch (error) {
-      console.error(error);
       throw new Error(
         `Could not fetch track information for YouTube track ID: ${trackURL}`
       );
@@ -146,7 +145,6 @@ async function fetchSoundCloudTrack(
     try {
       fetchedTrack = (await play.soundcloud(trackURL)) as SoundCloudTrack;
     } catch (error) {
-      console.error(error);
       throw new Error(
         `Could not fetch track information for SoundCloud track ID: ${trackURL}`
       );
