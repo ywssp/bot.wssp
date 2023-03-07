@@ -33,8 +33,9 @@ function getSoundCloudTrackIdentifier(url: string): string | null {
     return null;
   }
 
-  const artist = urlData.pathname.split('/')[0];
-  const track = urlData.pathname.split('/')[1];
+  const urlPaths = urlData.pathname.split('/').filter((path) => path !== '');
+  const artist = urlPaths[0];
+  const track = urlPaths[1];
 
   if (!artist || !track) {
     return null;
