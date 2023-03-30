@@ -137,6 +137,7 @@ export class JoinRadioCommand extends Command {
           return;
         }
 
+        disconnectGuildFromRadioWebsocket(interaction.guildId as string);
         interaction.channel?.send('Switching radio stations...');
       } else {
         if (guildMusicData.queueSystemData.loop.type !== 'track') {
