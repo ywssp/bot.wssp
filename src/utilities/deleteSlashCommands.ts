@@ -50,8 +50,10 @@ async function prompt() {
   if (method.delete === 'all') {
     try {
       await rest.put(Routes.applicationCommands(clientId), { body: [] });
+      // eslint-disable-next-line no-console
       console.log(chalk.green('Successfully deleted all commands.'));
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(chalk.red('Failed to delete all commands.'));
     }
 
@@ -84,9 +86,12 @@ async function prompt() {
     ) as PromiseRejectedResult[];
 
     if (failed.length > 0) {
+      // eslint-disable-next-line no-console
       console.log(chalk.red('Failed to delete the following commands:'));
+      // eslint-disable-next-line no-console
       failed.forEach((command) => console.log(chalk.red(command.reason)));
     } else {
+      // eslint-disable-next-line no-console
       console.log(chalk.green('Successfully deleted all selected commands.'));
     }
   });

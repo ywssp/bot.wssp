@@ -1,5 +1,4 @@
 import { container } from '@sapphire/framework';
-import { TextBasedChannel } from 'discord.js';
 import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 
 /**

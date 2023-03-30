@@ -13,12 +13,12 @@ import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { storeTrackInCache } from '../../../functions/music-utilities/queue-system/trackCacheManager';
-import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
+import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import {
   QueuedTrackInfo,
   TrackInfo
-} from '../../../interfaces/Music/Queue System/TrackInfo';
+} from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
@@ -226,7 +226,7 @@ export class SearchVideosCommand extends Command {
       .setColor(ColorPalette.Success)
       .setTitle(`Added ${namings.trackIdentifier} to queue`);
 
-    const replyEmbed = createEmbedFromTrack(baseEmbed, queuedTrack);
+    const replyEmbed = createFancyEmbedFromTrack(baseEmbed, queuedTrack);
 
     if (queuedTrack.thumbnail) {
       replyEmbed.setThumbnail(queuedTrack.thumbnail);

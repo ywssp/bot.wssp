@@ -6,10 +6,10 @@ import { DateTime, Duration } from 'luxon';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
-import { createEmbedFromTrack } from '../../functions/music-utilities/queue-system/createEmbedFromTrack';
+import { createFancyEmbedFromTrack } from '../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
-import { createRadioSongEmbed } from '../../functions/music-utilities/radio/createEmbedFromRadioSong';
+import { createFancyRadioSongEmbed } from '../../functions/music-utilities/radio/createFancyEmbedFromRadioSong';
 
 import { ColorPalette } from '../../settings/ColorPalette';
 export class NowPlayingCommand extends Command {
@@ -87,7 +87,7 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createEmbedFromTrack(baseEmbed, currentTrack).addFields([
+    const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack).addFields([
       {
         name: 'Requested By',
         value: currentTrack.requestedBy
@@ -130,7 +130,7 @@ export class NowPlayingCommand extends Command {
 
     const currentSong = lastUpdate.song;
 
-    const embed = createRadioSongEmbed(currentSong);
+    const embed = createFancyRadioSongEmbed(currentSong);
     embed.setFooter({
       text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
     });

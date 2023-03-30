@@ -9,10 +9,10 @@ import {
 } from '@discordjs/voice';
 import { EmbedBuilder, hyperlink } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { QueuedTrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { createEmbedFromTrack } from './createEmbedFromTrack';
+import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
 import { getPlayingType } from '../getPlayingType';
 import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
 import { connectToVoiceChannel } from '../connectToVoiceChannel';
@@ -22,6 +22,7 @@ import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMe
 import { disposeAudioPlayer } from '../disposeAudioPlayer';
 import { getTrackNamings } from './getTrackNamings';
 import _ from 'lodash';
+import { createSimpleEmbedFromTrack } from './createSimpleEmbedFromTrack';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   const currentTrack = guildMusicData.queueSystemData.currentTrack();
@@ -35,12 +36,12 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
   let message: Parameters<GuildMusicData['sendUpdateMessage']>[0];
 
-  if (announceStyle === 'full') {
+  if (announceStyle === 'embed_fancy') {
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createEmbedFromTrack(baseEmbed, currentTrack).addFields([
+    const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack).addFields([
       {
         name: 'Requested By',
         value: currentTrack.requestedBy
@@ -86,6 +87,48 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
     }
 
     message = { embeds: [embed] };
+  } else if (announceStyle === 'embed_simple') {
+    const baseEmbed = new EmbedBuilder()
+      .setColor(ColorPalette.Info)
+      .setTitle('Now Playing');
+
+    const embed = createSimpleEmbedFromTrack(baseEmbed, currentTrack);
+    embed.setDescription(
+      embed.data.description + `\nRequested By: ${currentTrack.requestedBy}`
+    );
+
+    if (nextTrack !== undefined) {
+      let nextString = '';
+
+      let nextTrackIdentifier = _.capitalize(
+        getTrackNamings(nextTrack).trackIdentifier
+      );
+
+      if (guildMusicData.queueSystemData.shuffle) {
+        nextString = `🔀 Shuffled`;
+        nextTrackIdentifier = 'Track';
+      } else {
+        // Creates a string with a hyperlink to the next track, and a hyperlink to the next track's uploader.
+        // If the uploader doesn't have a URL, it will just use the uploader's name.
+        // Example: [Next Track Title](<Track URL>) by [Uploader Name](<Optional Uploader URL>)
+
+        const uploaderString =
+          nextTrack.uploader.url !== undefined
+            ? hyperlink(nextTrack.uploader.name, nextTrack.uploader.url)
+            : nextTrack.uploader.name;
+
+        nextString = `${hyperlink(
+          nextTrack.title,
+          nextTrack.url
+        )} by ${uploaderString}`;
+      }
+
+      embed.setDescription(
+        embed.data.description + `\nNext ${nextTrackIdentifier}: ${nextString}`
+      );
+    }
+
+    message = { embeds: [embed] };
   } else {
     let text = `Now Playing\n${currentTrack.title} - <${currentTrack.url}> | ${
       typeof currentTrack.duration === 'string'
@@ -116,6 +159,12 @@ async function playTrack(
   musicData: GuildMusicData
 ) {
   const streamedTrack = await playdl.stream(video.url);
+
+  streamedTrack.stream.on('error', (error) => {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    audioPlayer.stop();
+  });
 
   // Set type as MusicResourceMetadata with property type of 'youtube'
   const metadata: MusicResourceMetadata = {
@@ -208,7 +257,7 @@ export function startQueuePlayback(guildId: string) {
       .setColor(ColorPalette.Error)
       .setTitle('Playback Error');
 
-    const embed = createEmbedFromTrack(baseEmbed, resourceMetadata);
+    const embed = createFancyEmbedFromTrack(baseEmbed, resourceMetadata);
 
     if (resourceMetadata.duration !== 'Live Stream') {
       embed.spliceFields(2, 1, {

@@ -1,4 +1,4 @@
-import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 import {
   YouTubeVideoNaming,
   SoundCloudTrackNaming,

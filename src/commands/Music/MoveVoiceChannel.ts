@@ -1,6 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { GuildMember, VoiceChannel } from 'discord.js';
-import { ChannelType } from 'discord-api-types/v10';
+import { ChannelType, GuildMember, VoiceChannel } from 'discord.js';
 
 import {
   DiscordGatewayAdapterCreator,
@@ -30,7 +29,7 @@ export class MoveVCCommand extends Command {
           option
             .setName('voice-channel')
             .setDescription('The voice channel that the bot will move to.')
-            .addChannelTypes(ChannelType.GuildVoice as 2)
+            .addChannelTypes(ChannelType.GuildVoice)
             .setRequired(false)
         )
     );

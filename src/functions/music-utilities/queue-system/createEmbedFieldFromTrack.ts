@@ -1,5 +1,5 @@
 import { EmbedField, hyperlink } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 
 /**
  * Creates an embed field from a track.

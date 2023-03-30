@@ -1,7 +1,9 @@
+import { container } from '@sapphire/pieces';
 import { Duration } from 'luxon';
 import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { createRadioSongEmbed } from './createEmbedFromRadioSong';
+import { createFancyRadioSongEmbed } from './createFancyEmbedFromRadioSong';
+import { createSimpleRadioSongEmbed } from './createSimpleEmbedFromRadioSong';
 
 export function sendRadioUpdate(
   guildId: string,
@@ -10,17 +12,21 @@ export function sendRadioUpdate(
   const guildMusicData = getGuildMusicData(guildId);
 
   if (guildMusicData === undefined) {
-    console.log(
+    container.logger.error(
       `Guild ${guildId} does not have music data! Removing from radio websocket!`
     );
     throw Error('Guild does not have music data!');
   }
 
-  if (guildMusicData.musicAnnounceStyle === 'full') {
-    const embed = createRadioSongEmbed(data.song);
+  if (guildMusicData.musicAnnounceStyle === 'embed_fancy') {
+    const embed = createFancyRadioSongEmbed(data.song);
 
     guildMusicData.sendUpdateMessage({ embeds: [embed] });
-  } else if (guildMusicData.musicAnnounceStyle === 'minimal') {
+  } else if (guildMusicData.musicAnnounceStyle === 'embed_simple') {
+    const embed = createSimpleRadioSongEmbed(data.song);
+
+    guildMusicData.sendUpdateMessage({ embeds: [embed] });
+  } else if (guildMusicData.musicAnnounceStyle === 'text_simple') {
     const artistNames = data.song.artists
       .map((artist) => artist.name)
       .join(', ');

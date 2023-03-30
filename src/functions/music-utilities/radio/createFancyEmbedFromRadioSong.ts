@@ -8,7 +8,7 @@ import { RadioSongInfo } from '../../../interfaces/Music/Radio/RadioSongInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 
-export function createRadioSongEmbed(song: RadioSongInfo) {
+export function createFancyRadioSongEmbed(song: RadioSongInfo) {
   const embed = new EmbedBuilder()
     .setColor(ColorPalette.Info)
     .setTitle('Now Playing')

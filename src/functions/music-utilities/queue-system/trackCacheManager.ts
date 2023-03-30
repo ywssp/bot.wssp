@@ -3,7 +3,7 @@ import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
 import {
   TrackInfo,
   CachedTrackInfo
-} from '../../../interfaces/Music/Queue System/TrackInfo';
+} from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 
 export type TrackCacheResult = {
   data: TrackInfo;

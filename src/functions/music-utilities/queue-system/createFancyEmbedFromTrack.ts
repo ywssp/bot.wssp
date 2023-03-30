@@ -1,5 +1,5 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 import { getTrackNamings } from './getTrackNamings';
 
 /**
@@ -8,7 +8,7 @@ import { getTrackNamings } from './getTrackNamings';
  * @param track The track to create the embed from.
  * @returns The embed.
  */
-export function createEmbedFromTrack(
+export function createFancyEmbedFromTrack(
   baseEmbed: EmbedBuilder,
   track: TrackInfo
 ) {

@@ -7,13 +7,13 @@ import { createGuildMusicData } from '../../../functions/music-utilities/guildMu
 import {
   QueuedTrackInfo,
   TrackInfo
-} from '../../../interfaces/Music/Queue System/TrackInfo';
+} from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
 import {
   getTrackFromCache,
   storeTrackInCache,
   TrackCacheResult
 } from '../../../functions/music-utilities/queue-system/trackCacheManager';
-import { createEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFromTrack';
+import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -250,7 +250,7 @@ export class PlayMusicCommand extends Command {
       });
     }
 
-    const embed = createEmbedFromTrack(baseEmbed, queuedTrack);
+    const embed = createFancyEmbedFromTrack(baseEmbed, queuedTrack);
 
     interaction.editReply({ content: null, embeds: [embed] });
 

@@ -1,10 +1,5 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import {
-  channelLink,
-  channelMention,
-  TextBasedChannel,
-  TextChannel
-} from 'discord.js';
+import { channelMention, TextBasedChannel } from 'discord.js';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
@@ -49,8 +44,9 @@ export class MusicAnnounceSettingsCommand extends Command {
                 .setDescription('The style of the announcements.')
                 .setRequired(true)
                 .addChoices(
-                  { name: 'Full | Embed', value: 'full' },
-                  { name: 'Minimal | Text only', value: 'minimal' },
+                  { name: 'Embed - Fancy', value: 'embed_fancy' },
+                  { name: 'Embed - Simple', value: 'embed_simple' },
+                  { name: 'Text - Simple', value: 'text_simple' },
                   { name: 'None', value: 'none' }
                 )
             )
@@ -99,10 +95,19 @@ export class MusicAnnounceSettingsCommand extends Command {
     if (interaction.options.getSubcommand() === 'style') {
       guildMusicData.musicAnnounceStyle = interaction.options.getString(
         'style'
-      ) as 'full' | 'minimal' | 'none';
+      ) as 'embed_fancy' | 'embed_simple' | 'text_simple' | 'none';
+
+      const styleDisplayNames = {
+        embed_fancy: 'Embed - Fancy',
+        embed_simple: 'Embed - Simple',
+        text_simple: 'Text - Simple',
+        none: 'None'
+      };
 
       interaction.reply(
-        `✅ | Set the music announce style to \`${guildMusicData.musicAnnounceStyle}\`.`
+        `✅ | Set the music announce style to \`${
+          styleDisplayNames[guildMusicData.musicAnnounceStyle]
+        }\`.`
       );
     }
 

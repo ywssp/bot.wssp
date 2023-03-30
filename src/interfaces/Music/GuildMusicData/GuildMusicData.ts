@@ -6,7 +6,7 @@ import { TextBasedChannel, VoiceBasedChannel } from 'discord.js';
 export class GuildMusicData {
   textUpdateChannelId: string;
   voiceChannelId: string;
-  musicAnnounceStyle: 'full' | 'minimal' | 'none';
+  musicAnnounceStyle: 'embed_fancy' | 'embed_simple' | 'text_simple' | 'none';
   queueSystemData: QueueSystemData;
   radioData: RadioData;
 
@@ -16,7 +16,7 @@ export class GuildMusicData {
   ) {
     this.textUpdateChannelId = textUpdateChannel.id;
     this.voiceChannelId = voiceChannel.id;
-    this.musicAnnounceStyle = 'full';
+    this.musicAnnounceStyle = 'embed_fancy';
     this.queueSystemData = new QueueSystemData();
     this.radioData = new RadioData();
   }
