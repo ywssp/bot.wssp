@@ -106,7 +106,15 @@ export type TetrioUserInfo = {
   user: {
     _id: string;
     username: string;
-    role: 'anon' | 'user' | 'bot' | 'mod' | 'admin' | 'banned';
+    role:
+      | 'anon'
+      | 'user'
+      | 'bot'
+      | 'halfmod'
+      | 'mod'
+      | 'admin'
+      | 'sysop'
+      | 'banned';
     ts?: string;
     botmaster?: string;
     badges: {
