@@ -1,23 +1,23 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, GuildMember } from 'discord.js';
-
-import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
-
+import * as playdl from 'play-dl';
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import {
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
-import {
-  getTrackFromCache,
-  storeTrackInCache,
-  TrackCacheResult
-} from '../../../functions/music-utilities/queue-system/trackCacheManager';
+import { TrackCacheResult } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackCacheResult';
 import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getTrackNamings } from '../../../functions/music-utilities/queue-system/getTrackNamings';
+import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
+import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
+import {
+  SoundCloudTrackNaming,
+  YouTubeVideoNaming
+} from '../../../settings/TrackNaming';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -101,7 +101,7 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    let linkOrQueryType = await play.validate(linkOrQuery);
+    let linkOrQueryType = await playdl.validate(linkOrQuery);
 
     if (linkOrQueryType === false) {
       linkOrQueryType = 'search';
@@ -140,99 +140,62 @@ export class PlayMusicCommand extends Command {
       await interaction.deferReply();
     }
 
-    let queuedTrack: QueuedTrackInfo;
+    let searchResult: TrackInfo;
     let cacheStatus: TrackCacheResult['cacheData'] | undefined;
 
     if (source === 'youtube') {
-      if ((await play.validate(linkOrQuery)) === 'yt_video') {
-        let videoCacheResult: TrackCacheResult;
-        try {
-          videoCacheResult = await getTrackFromCache(linkOrQuery);
-        } catch (error) {
-          this.container.logger.error(error);
-          interaction.editReply({
-            content: '❌ | An error occurred while fetching the video.'
-          });
-          return;
-        }
-
-        queuedTrack = new QueuedTrackInfo(
-          videoCacheResult.data,
-          interaction.user
-        );
-
-        cacheStatus = videoCacheResult.cacheData;
-      } else {
-        let searchResults: YouTubeVideo[];
-        try {
-          searchResults = await play.search(linkOrQuery, {
-            source: {
-              youtube: 'video'
-            },
-            limit: 10
-          });
-        } catch (error) {
-          interaction.editReply({
-            content: '❌ | An error occurred while searching for tracks.'
-          });
-          return;
-        }
-
-        if (searchResults.length === 0) {
-          interaction.editReply({
-            content: '❓ | No videos found.'
-          });
-
-          return;
-        }
-
-        storeTrackInCache(new TrackInfo(searchResults[0]));
-        queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
-      }
-    } else if (linkOrQueryType === 'so_track') {
-      let trackCacheResult: TrackCacheResult;
       try {
-        trackCacheResult = await getTrackFromCache(linkOrQuery);
-      } catch (error) {
-        interaction.editReply({
-          content: '❌ | An error occurred while fetching the track.'
+        const search = await searchYoutube(linkOrQuery, {
+          limit: 1
         });
+
+        if (!Array.isArray(search)) {
+          cacheStatus = search.cacheData;
+          searchResult = search.data;
+        } else {
+          searchResult = search[0];
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          interaction.editReply({
+            content: `❌ | ${error.message}`
+          });
+        } else {
+          interaction.editReply({
+            content: `❌ | An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+          });
+        }
+
         return;
       }
-
-      queuedTrack = new QueuedTrackInfo(
-        trackCacheResult.data,
-        interaction.user
-      );
-      cacheStatus = trackCacheResult.cacheData;
     } else {
-      let searchResults: SoundCloudTrack[];
-
       try {
-        searchResults = await play.search(linkOrQuery, {
-          source: {
-            soundcloud: 'tracks'
-          },
-          limit: 10
+        const search = await searchSoundCloud(linkOrQuery, {
+          limit: 1
         });
+
+        if (!Array.isArray(search)) {
+          cacheStatus = search.cacheData;
+          searchResult = search.data;
+        } else {
+          searchResult = search[0];
+        }
       } catch (error) {
-        interaction.editReply({
-          content: '❌ | An error occurred while searching for tracks.'
-        });
+        if (error instanceof Error) {
+          interaction.editReply({
+            content: `❌ | ${error.message}`
+          });
+        } else {
+          interaction.editReply({
+            content: `❌ | An error occurred while searching for ${SoundCloudTrackNaming.trackIdentifier}s.`
+          });
+        }
+
         return;
       }
-
-      if (searchResults.length === 0) {
-        interaction.editReply({
-          content: '❓ | No tracks found.'
-        });
-
-        return;
-      }
-
-      storeTrackInCache(new TrackInfo(searchResults[0]));
-      queuedTrack = new QueuedTrackInfo(searchResults[0], interaction.user);
     }
+
+    const queuedTrack = new QueuedTrackInfo(searchResult, interaction.user);
 
     guildQueueData.trackList.push(queuedTrack);
 

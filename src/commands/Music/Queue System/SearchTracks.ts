@@ -9,10 +9,7 @@ import {
   ComponentType
 } from 'discord.js';
 
-import play, { SoundCloudTrack, YouTubeVideo } from 'play-dl';
-
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { storeTrackInCache } from '../../../functions/music-utilities/queue-system/trackCacheManager';
 import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import {
@@ -26,6 +23,8 @@ import {
   SoundCloudTrackNaming,
   YouTubeVideoNaming
 } from '../../../settings/TrackNaming';
+import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
+import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -118,24 +117,17 @@ export class SearchVideosCommand extends Command {
     let choices: TrackInfo[];
 
     try {
-      let searchResult: YouTubeVideo[] | SoundCloudTrack[];
       if (source === 'youtube') {
-        searchResult = await play.search(query, {
+        choices = (await searchYoutube(query, {
           limit: 5,
-          source: {
-            youtube: 'video'
-          }
-        });
+          forceSearch: true
+        })) as TrackInfo[];
       } else {
-        searchResult = await play.search(query, {
+        choices = (await searchSoundCloud(query, {
           limit: 5,
-          source: {
-            soundcloud: 'tracks'
-          }
-        });
+          forceSearch: true
+        })) as TrackInfo[];
       }
-
-      choices = searchResult.map((item) => new TrackInfo(item));
     } catch (error) {
       interaction.editReply({
         content: `❌ | An error occurred while searching for ${namings.trackIdentifier}s.`
@@ -219,7 +211,8 @@ export class SearchVideosCommand extends Command {
       interaction.user
     );
 
-    storeTrackInCache(queuedTrack);
+    // TODO: Implement caching of selected track
+    // Previous code: storeTrackInCache(queuedTrack);
     guildQueueData.trackList.push(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
