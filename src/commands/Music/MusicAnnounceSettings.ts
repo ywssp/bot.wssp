@@ -82,15 +82,19 @@ export class MusicAnnounceSettingsCommand extends Command {
 
       guildMusicData.setTextUpdateChannel(channel);
 
-      interaction.reply(
-        `✅ | Music announcements will now be sent to ${channelMention(
-          channel.id
-        )}.`
-      );
+      const interactionMessageString = `✅ | Music announcements will now be sent to ${channelMention(
+        channel.id
+      )}.`;
 
-      guildMusicData.sendUpdateMessage(
-        'ℹ️ | Music announcements will now be sent to this channel.'
-      );
+      const currentChannelMessageString = `ℹ️ | Music announcements will now be sent to this channel.`;
+
+      // Only send one message if the interaction was in the same channel as the set channel.
+      if (channel.id === interaction.channel?.id) {
+        interaction.reply(currentChannelMessageString);
+      } else {
+        interaction.reply(interactionMessageString);
+        guildMusicData.sendUpdateMessage(currentChannelMessageString);
+      }
     }
     if (interaction.options.getSubcommand() === 'style') {
       guildMusicData.musicAnnounceStyle = interaction.options.getString(
