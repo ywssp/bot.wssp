@@ -67,7 +67,10 @@ export async function searchYoutube(
     forceSearch?: boolean;
   }
 ): Promise<TrackCacheResult | TrackInfo[]> {
-  if (playdl.yt_validate(linkOrSearch) === 'video') {
+  if (
+    playdl.yt_validate(linkOrSearch) === 'video' &&
+    linkOrSearch.startsWith('https')
+  ) {
     const id = new URL(linkOrSearch).searchParams.get('v') as string;
 
     let video: TrackCacheResult;
