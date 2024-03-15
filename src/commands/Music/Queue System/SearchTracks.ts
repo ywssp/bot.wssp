@@ -109,8 +109,13 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    const namings =
-      source === 'youtube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
+    let namings: typeof YouTubeVideoNaming | typeof SoundCloudTrackNaming;
+
+    if (source === 'youtube') {
+      namings = YouTubeVideoNaming;
+    } else {
+      namings = SoundCloudTrackNaming;
+    }
 
     interaction.deferReply();
 
