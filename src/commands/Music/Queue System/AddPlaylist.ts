@@ -103,7 +103,7 @@ export class AddPlaylistCommand extends Command {
     const namings =
       source === 'YouTube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
 
-    interaction.reply(`Processing ${namings.source} Playlist...`);
+    await interaction.reply(`Processing ${namings.source} Playlist...`);
 
     let playlistMetadata: {
       title: string;
