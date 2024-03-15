@@ -1,3 +1,7 @@
+// Install source-map-support for easier debugging
+import { install } from 'source-map-support';
+install();
+
 import { SapphireClient } from '@sapphire/framework';
 import { GatewayIntentBits } from 'discord.js';
 import 'dotenv/config';
