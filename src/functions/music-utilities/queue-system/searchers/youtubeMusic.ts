@@ -38,25 +38,37 @@ async function fetchYTMusicTrackFromCache(
 
     track = new TrackInfo(fetchedTrack);
   } else {
-    let fetchedTrack: YTMusicAPI.SongFull | undefined;
+    let fetchedTrack: YTMusicAPI.SongDetailed;
 
     try {
-      fetchedTrack = await ytmusic.getSong(videoId);
+      const initialVideo = await ytmusic.getSong(videoId);
+
+      // Non-song videos will not have a formats property
+      if (initialVideo.formats.length === 0) {
+        throw new Error(
+          `No track information found for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
+        );
+      }
+
+      // Check if there are audio versions of the video
+      const search = await ytmusic.searchSongs(
+        initialVideo.name + ' ' + initialVideo.artist.name
+      );
+
+      if (search.length === 0) {
+        throw new Error(
+          `No track information found for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
+        );
+      }
+
+      fetchedTrack = search[0];
     } catch (error) {
       throw new Error(
         `Could not fetch track information for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
       );
     }
 
-    // Non-song videos will not have a formats property
-    if (fetchedTrack.formats.length === 0) {
-      throw new Error(
-        `No track information found for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
-      );
-    }
-
-    // I'm not even using the album property, and i'm also lazy
-    track = new TrackInfo(fetchedTrack as unknown as YTMusicAPI.SongDetailed);
+    track = new TrackInfo(fetchedTrack);
     storeYTMusicTrackInCache(track);
 
     cacheData = {
