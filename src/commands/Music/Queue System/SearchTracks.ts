@@ -226,7 +226,6 @@ export class SearchVideosCommand extends Command {
     selectionMessage.delete();
 
     if (collected.customId === 'cancel') {
-      selectionMessage.delete();
       interaction.editReply({
         content: '🛑 | Selection cancelled.'
       });
