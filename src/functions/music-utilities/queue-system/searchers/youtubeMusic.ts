@@ -27,7 +27,7 @@ async function fetchYTMusicTrackFromCache(
   };
 
   if (container.caches.ytMusicTracks.has(videoId)) {
-    const fetchedTrack = container.caches.youtubeTracks.get(
+    const fetchedTrack = container.caches.ytMusicTracks.get(
       videoId
     ) as CachedTrackInfo;
 

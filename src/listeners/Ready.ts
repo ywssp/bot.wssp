@@ -64,6 +64,11 @@ export class ReadyListener extends Listener {
         ttl: ttlDuration,
         ttlResolution: ttlDuration / 7
       }),
+      ytMusicTracks: new LRU({
+        max: 100,
+        ttl: ttlDuration,
+        ttlResolution: ttlDuration / 7
+      }),
       soundcloudTracks: new LRU({
         max: 100,
         ttl: ttlDuration,
