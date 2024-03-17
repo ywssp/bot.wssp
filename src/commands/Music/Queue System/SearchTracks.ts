@@ -21,10 +21,13 @@ import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import {
   SoundCloudTrackNaming,
+  TrackNamings,
+  YTMusicTrackNaming,
   YouTubeVideoNaming
 } from '../../../settings/TrackNaming';
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
+import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -56,6 +59,19 @@ export class SearchVideosCommand extends Command {
                 .setMinLength(3)
             )
         )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('yt_music')
+            .setDescription('Search tracks on YouTube Music')
+            .addStringOption((option) =>
+              option
+                .setName('query')
+                .setDescription('The search query.')
+                .setRequired(true)
+                .setMinLength(3)
+            )
+        )
+
         .addSubcommand((subcommand) =>
           subcommand
             .setName('soundcloud')
@@ -98,6 +114,7 @@ export class SearchVideosCommand extends Command {
 
     const source = interaction.options.getSubcommand() as
       | 'youtube'
+      | 'yt_music'
       | 'soundcloud';
     const query = interaction.options.getString('query', true);
 
@@ -109,10 +126,12 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    let namings: typeof YouTubeVideoNaming | typeof SoundCloudTrackNaming;
+    let namings: TrackNamings;
 
     if (source === 'youtube') {
       namings = YouTubeVideoNaming;
+    } else if (source === 'yt_music') {
+      namings = YTMusicTrackNaming;
     } else {
       namings = SoundCloudTrackNaming;
     }
@@ -124,6 +143,11 @@ export class SearchVideosCommand extends Command {
     try {
       if (source === 'youtube') {
         choices = (await searchYoutube(query, {
+          limit: 5,
+          forceSearch: true
+        })) as TrackInfo[];
+      } else if (source === 'yt_music') {
+        choices = (await searchYTMusic(query, {
           limit: 5,
           forceSearch: true
         })) as TrackInfo[];

@@ -154,11 +154,11 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 }
 
 async function playTrack(
-  video: QueuedTrackInfo,
+  track: QueuedTrackInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
-  const streamedTrack = await playdl.stream(video.url);
+  const streamedTrack = await playdl.stream(track.url);
 
   streamedTrack.stream.on('error', (error) => {
     // eslint-disable-next-line no-console
@@ -169,7 +169,7 @@ async function playTrack(
   // Set type as MusicResourceMetadata with property type of 'youtube'
   const metadata: MusicResourceMetadata = {
     type: 'queued_track',
-    data: video
+    data: track
   };
 
   const resource = createAudioResource(streamedTrack.stream, {

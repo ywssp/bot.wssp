@@ -16,15 +16,17 @@ import { searchYoutube } from '../../../functions/music-utilities/queue-system/s
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 import {
   SoundCloudTrackNaming,
+  YTMusicTrackNaming,
   YouTubeVideoNaming
 } from '../../../settings/TrackNaming';
+import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
       name: 'play',
-      description: 'Plays a track from YouTube or SoundCloud',
+      description: 'Plays a track from YouTube, YouTube Music, or SoundCloud',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -54,6 +56,21 @@ export class PlayMusicCommand extends Command {
           subcommand
             .setName('soundcloud')
             .setDescription('Plays a track from SoundCloud')
+            .addStringOption((option) =>
+              option
+                .setName('link-or-query')
+                .setDescription(
+                  'The link of the track, or the query to use for searching'
+                )
+                .setRequired(true)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('yt_music')
+            .setDescription(
+              'Plays a track based from a YouTube video, of by searching'
+            )
             .addStringOption((option) =>
               option
                 .setName('link-or-query')
@@ -93,6 +110,7 @@ export class PlayMusicCommand extends Command {
 
     let source = interaction.options.getSubcommand(true) as
       | 'youtube'
+      | 'yt_music'
       | 'soundcloud';
     const linkOrQuery = interaction.options.getString('link-or-query', true);
 
@@ -118,7 +136,7 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    if (linkOrQueryType.startsWith('yt_') && source !== 'youtube') {
+    if (linkOrQueryType.startsWith('yt_') && source === 'soundcloud') {
       await interaction.reply({
         content:
           'YouTube link detected. Using the `youtube` subcommand instead.'
@@ -163,6 +181,31 @@ export class PlayMusicCommand extends Command {
         } else {
           interaction.editReply({
             content: `❌ | An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+          });
+        }
+
+        return;
+      }
+    } else if (source === 'yt_music') {
+      try {
+        const search = await searchYTMusic(linkOrQuery, {
+          limit: 1
+        });
+
+        if (!Array.isArray(search)) {
+          cacheStatus = search.cacheData;
+          searchResult = search.data;
+        } else {
+          searchResult = search[0];
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          interaction.editReply({
+            content: `❌ | ${error.message}`
+          });
+        } else {
+          interaction.editReply({
+            content: `❌ | An error occurred while searching for ${YTMusicTrackNaming.trackIdentifier}s.`
           });
         }
 
