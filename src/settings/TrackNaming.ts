@@ -18,3 +18,10 @@ export const SoundCloudTrackNaming: TrackNamings = {
   trackIdentifier: 'track',
   creator: 'Artist'
 };
+
+export const YTMusicTrackNaming: TrackNamings = {
+  source: 'YT Music',
+  fullIdentifier: 'YT Music Track',
+  trackIdentifier: 'track',
+  creator: 'Artist'
+};
