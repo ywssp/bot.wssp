@@ -19,5 +19,7 @@ export function createPagedEmbed(
     .setItemsPerPage(10)
     .make();
 
+  pagedEmbed.embedFooterSeparator = '|';
+
   pagedEmbed.run(interaction);
 }

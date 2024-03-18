@@ -67,7 +67,10 @@ export class DisplayQueueCommand extends Command {
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.Default)
       .setTitle('Queue')
-      .setDescription(description);
+      .setDescription(description)
+      .setFooter({
+        text: 'Use "/skip <number>" to go a specific song'
+      });
 
     createPagedEmbed(interaction, queueFields, embed);
     return;
