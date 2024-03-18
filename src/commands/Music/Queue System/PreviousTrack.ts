@@ -71,8 +71,8 @@ export class PreviousTrackCommand extends Command {
 
     const audioPlayer = getAudioPlayer(interaction.guildId as string);
 
-    // Resume playback if the audio player is not playing
-    if (audioPlayer === undefined) {
+    // Resume playback if the guild isn't playing from the queue system
+    if (guildQueueData.playing === false || audioPlayer === undefined) {
       startQueuePlayback(interaction.guildId as string);
 
       let title = `Resuming queue playback from the end`;

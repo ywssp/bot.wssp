@@ -143,6 +143,8 @@ export class JoinRadioCommand extends Command {
           guildMusicData.queueSystemData.modifyIndex(2);
         }
 
+        guildMusicData.queueSystemData.playing = false;
+
         interaction.channel?.send('Switching to radio...');
       }
 
