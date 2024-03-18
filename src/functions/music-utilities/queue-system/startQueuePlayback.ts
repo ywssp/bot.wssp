@@ -43,8 +43,8 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack).addFields([
       {
-        name: 'Requested By',
-        value: currentTrack.requestedBy
+        name: 'Added By',
+        value: currentTrack.addedBy
       }
     ]);
 
@@ -94,7 +94,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     const embed = createSimpleEmbedFromTrack(baseEmbed, currentTrack);
     embed.setDescription(
-      embed.data.description + `\nRequested By: ${currentTrack.requestedBy}`
+      embed.data.description + `\nRequested By: ${currentTrack.addedBy}`
     );
 
     if (nextTrack !== undefined) {

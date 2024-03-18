@@ -48,7 +48,7 @@ export class DisplayQueueCommand extends Command {
 
     if (guildQueueData.shuffle) {
       description =
-        '🔀 | The queue is shuffled. Songs will be played in a random order.';
+        '🔀 | The queue is shuffled. Tracks will be played in a random order.';
     }
 
     if (guildQueueData.loop.type === 'track') {

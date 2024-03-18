@@ -103,11 +103,11 @@ export class TrackInfo {
 }
 
 export class QueuedTrackInfo extends TrackInfo {
-  readonly requestedBy: string;
+  readonly addedBy: string;
 
   constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack, user: User) {
     super(data);
-    this.requestedBy = user.tag;
+    this.addedBy = user.tag;
   }
 }
 

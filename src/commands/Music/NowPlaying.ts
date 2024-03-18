@@ -89,8 +89,8 @@ export class NowPlayingCommand extends Command {
 
     const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack).addFields([
       {
-        name: 'Requested By',
-        value: currentTrack.requestedBy
+        name: 'Added By',
+        value: currentTrack.addedBy
       }
     ]);
 
@@ -104,7 +104,7 @@ export class NowPlayingCommand extends Command {
     embed.setFooter({
       text: `${playingEmoji} ${capitalize(audioPlayer.state.status)} | ${
         queueData.loop.emoji
-      } ${capitalize(queueData.loop.type)}`
+      } Looping ${capitalize(queueData.loop.type)}`
     });
 
     if (currentTrack.thumbnail) {
@@ -123,7 +123,7 @@ export class NowPlayingCommand extends Command {
 
     if (lastUpdate === null) {
       return {
-        content: 'There is no song playing.',
+        content: 'There is no track playing.',
         ephemeral: true
       };
     }
@@ -155,6 +155,7 @@ export class NowPlayingCommand extends Command {
   }
 
   public getDurationVisual(passedTime: Duration, totalTime: Duration) {
+    const remainingTime = totalTime.minus(passedTime);
     const playBackBarLocation = Math.round(
       (passedTime.toMillis() / totalTime.toMillis()) * 10
     );
@@ -165,6 +166,6 @@ export class NowPlayingCommand extends Command {
 
     return `${passedTime.toFormat('m:ss')} | ${totalTime.toFormat(
       'm:ss'
-    )}\n${seekbar}`;
+    )} (-${remainingTime.toFormat('m:ss')})\n${seekbar}`;
   }
 }

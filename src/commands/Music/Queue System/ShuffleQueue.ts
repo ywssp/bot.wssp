@@ -34,7 +34,7 @@ export class ShuffleQueueCommand extends Command {
 
     if (guildMusicData === undefined) {
       interaction.reply({
-        content: '❓ | There is no song playing.',
+        content: '❓ | There is no track playing.',
         ephemeral: true
       });
       return;

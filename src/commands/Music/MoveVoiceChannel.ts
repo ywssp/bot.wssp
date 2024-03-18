@@ -12,7 +12,7 @@ export class MoveVCCommand extends Command {
     super(context, {
       ...options,
       name: 'move',
-      description: 'Moves song playback to another Voice Channel',
+      description: 'Moves music playback to another Voice Channel',
       runIn: 'GUILD_ANY',
       preconditions: ['InVoiceChannel', 'IsPlaying']
     });

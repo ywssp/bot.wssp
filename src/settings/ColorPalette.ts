@@ -12,7 +12,7 @@
 // Ex. When a track plays
 // Selection (Yellow)
 // - When a command requires a selection
-// Ex. When the user is selecting a song to play
+// Ex. When the user is selecting a track to play
 
 export enum ColorPalette {
   Default = '#88c0d0',
