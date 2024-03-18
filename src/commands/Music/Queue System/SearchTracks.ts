@@ -15,7 +15,7 @@ import { startQueuePlayback } from '../../../functions/music-utilities/queue-sys
 import {
   QueuedTrackInfo,
   TrackInfo
-} from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+} from '../../../interfaces/Music/Queue System/TrackInfo';
 
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';

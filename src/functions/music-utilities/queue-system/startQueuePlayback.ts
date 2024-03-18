@@ -9,7 +9,7 @@ import {
 } from '@discordjs/voice';
 import { EmbedBuilder, hyperlink } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
@@ -278,6 +278,7 @@ export function startQueuePlayback(guildId: string) {
 
   voiceConnection.subscribe(audioPlayer);
 
+  queueData.playing = true;
   playTrack(queueData.currentTrack(), audioPlayer, guildMusicData);
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
@@ -297,25 +298,30 @@ export function startQueuePlayback(guildId: string) {
       localQueueData.trackListIndex++;
     }
 
-    if (
+    const isVCEmpty =
       localMusicData
         .getVoiceChannel()
-        .members.filter((member) => !member.user.bot).size === 0
-    ) {
+        .members.filter((member) => !member.user.bot).size === 0;
+
+    const isQueueEmpty =
+      localQueueData.trackList.length === localQueueData.trackListIndex;
+
+    const ifStopping = isVCEmpty || isQueueEmpty;
+
+    if (isVCEmpty) {
       localMusicData.sendUpdateMessage(
         'No users are inside the voice channel. Stopping...'
       );
-
-      disposeAudioPlayer(guildId);
-      voiceConnection.destroy();
-      return;
     }
 
-    if (localQueueData.trackList.length === localQueueData.trackListIndex) {
+    if (isQueueEmpty) {
       localMusicData.sendUpdateMessage(
         'No more tracks in the queue. Stopping...'
       );
+    }
 
+    if (ifStopping) {
+      localQueueData.playing = false;
       disposeAudioPlayer(guildId);
       voiceConnection.destroy();
       return;

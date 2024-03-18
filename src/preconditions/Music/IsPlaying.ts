@@ -19,7 +19,7 @@ export class IsPlayingPrecondition extends Precondition {
       voiceConnection === undefined ||
       voiceConnection.state.status !== 'ready'
     ) {
-      return this.error({ message: 'There is no video playing!' });
+      return this.error({ message: 'There is no track playing!' });
     }
 
     return this.ok();

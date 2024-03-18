@@ -6,6 +6,7 @@ import { getGuildMusicData } from '../../../functions/music-utilities/guildMusic
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 
 export class PreviousTrackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -14,7 +15,7 @@ export class PreviousTrackCommand extends Command {
       name: 'previous',
       description: 'Plays a track from the music history.',
       runIn: 'GUILD_ANY',
-      preconditions: ['InVoiceChannel', 'IsPlaying']
+      preconditions: ['InVoiceChannel']
     });
   }
 
@@ -28,7 +29,7 @@ export class PreviousTrackCommand extends Command {
         .addIntegerOption((option) =>
           option
             .setName('number')
-            .setDescription('The number of tracks to skip. Defaults to 1')
+            .setDescription('The number of tracks to backtrack. Defaults to 1')
             .setMinValue(1)
             .setRequired(false)
         )
@@ -48,16 +49,6 @@ export class PreviousTrackCommand extends Command {
 
     const guildQueueData = guildMusicData.queueSystemData;
 
-    const audioPlayer = getAudioPlayer(interaction.guildId as string);
-
-    if (audioPlayer === undefined) {
-      interaction.reply({
-        content: '❓ | There is no track playing.',
-        ephemeral: true
-      });
-      return;
-    }
-
     const skipNumber = interaction.options.getInteger('number') ?? 1;
 
     if (skipNumber < 1 || skipNumber > guildQueueData.trackListIndex) {
@@ -73,18 +64,35 @@ export class PreviousTrackCommand extends Command {
       guildQueueData.trackListIndex + 1
     );
 
-    const embed = new EmbedBuilder()
-      .setColor(ColorPalette.Error)
-      .setTitle(
-        `Skipped ${skippedTracks.length} track${
-          skippedTracks.length > 1 ? 's' : ''
-        } from the queue`
-      );
+    const embed = new EmbedBuilder().setColor(ColorPalette.Error);
 
     guildQueueData.modifyIndex(-skipNumber);
     guildQueueData.skipped = true;
 
-    audioPlayer.stop();
+    const audioPlayer = getAudioPlayer(interaction.guildId as string);
+
+    // Resume playback if the audio player is not playing
+    if (audioPlayer === undefined) {
+      startQueuePlayback(interaction.guildId as string);
+
+      let title = `Resuming queue playback from the end`;
+
+      if (skippedTracks.length !== 0) {
+        title += `, backtracking ${skippedTracks.length} track${
+          skippedTracks.length > 1 ? 's' : ''
+        }`;
+      }
+
+      embed.setTitle(title);
+    } else {
+      audioPlayer.stop();
+      embed.setTitle(
+        `Backtracked ${skippedTracks.length} track${
+          skippedTracks.length > 1 ? 's' : ''
+        } from the queue`
+      );
+    }
+
     interaction.reply({
       embeds: [createEmbedFromTrackArray(embed, skippedTracks)]
     });

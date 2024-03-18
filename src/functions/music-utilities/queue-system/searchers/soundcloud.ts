@@ -3,9 +3,9 @@ import * as playdl from 'play-dl';
 import {
   TrackInfo,
   CachedTrackInfo
-} from '../../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+} from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SoundCloudTrackNaming } from '../../../../settings/TrackNaming';
-import { TrackCacheResult } from '../../../../interfaces/Music/GuildMusicData/Queue System/TrackCacheResult';
+import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 
 function getSoundCloudTrackIdentifier(url: string): string | null {
   // The identifier is the part of the URL after the domain name.

@@ -5,8 +5,8 @@ import { createGuildMusicData } from '../../../functions/music-utilities/guildMu
 import {
   QueuedTrackInfo,
   TrackInfo
-} from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
-import { TrackCacheResult } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackCacheResult';
+} from '../../../interfaces/Music/Queue System/TrackInfo';
+import { TrackCacheResult } from '../../../interfaces/Music/Queue System/TrackCacheResult';
 import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 

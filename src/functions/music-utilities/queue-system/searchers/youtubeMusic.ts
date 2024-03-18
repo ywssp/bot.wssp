@@ -6,9 +6,9 @@ ytmusic.initialize();
 import {
   TrackInfo,
   CachedTrackInfo
-} from '../../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+} from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { YTMusicTrackNaming } from '../../../../settings/TrackNaming';
-import { TrackCacheResult } from '../../../../interfaces/Music/GuildMusicData/Queue System/TrackCacheResult';
+import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 
 function storeYTMusicTrackInCache(track: TrackInfo) {
   container.caches.ytMusicTracks.set(

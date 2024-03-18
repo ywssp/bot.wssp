@@ -1,8 +1,9 @@
-import { QueuedTrackInfo } from './Queue System/TrackInfo';
+import { QueuedTrackInfo } from '../Queue System/TrackInfo';
 
 export class QueueSystemData {
   trackList: QueuedTrackInfo[];
   trackListIndex: number;
+  playing: boolean;
   /**
    * Whether the current track was skipped
    */
@@ -23,6 +24,7 @@ export class QueueSystemData {
   constructor() {
     this.trackList = [];
     this.trackListIndex = 0;
+    this.playing = false;
     this.skipped = false;
     this.shuffle = false;
     this.loop = {
@@ -67,7 +69,7 @@ export class QueueSystemData {
   modifyIndex(amount: number) {
     this.trackListIndex += amount;
 
-    if (this.loop.type !== 'track') {
+    if (this.loop.type !== 'track' && this.playing) {
       this.trackListIndex--;
     }
   }

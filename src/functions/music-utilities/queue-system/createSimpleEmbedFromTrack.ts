@@ -1,5 +1,5 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
 /**
  * Creates an embed from a track.

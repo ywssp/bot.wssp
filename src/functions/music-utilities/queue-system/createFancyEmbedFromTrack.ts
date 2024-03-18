@@ -1,5 +1,5 @@
 import { EmbedBuilder, hyperlink } from 'discord.js';
-import { TrackInfo } from '../../../interfaces/Music/GuildMusicData/Queue System/TrackInfo';
+import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import { getTrackNamings } from './getTrackNamings';
 
 /**
