@@ -21,7 +21,6 @@ import { getPlayingType } from '../../../functions/music-utilities/getPlayingTyp
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
 import { connectToVoiceChannel } from '../../../functions/music-utilities/connectToVoiceChannel';
-import internal from 'stream';
 import {
   RadioStationNames,
   RadioStations
@@ -150,7 +149,7 @@ export class JoinRadioCommand extends Command {
       disposeAudioPlayer(interaction.guildId as string);
     }
 
-    interaction.deferReply();
+    await interaction.deferReply();
 
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);
@@ -178,10 +177,8 @@ export class JoinRadioCommand extends Command {
       });
     });
 
-    audioPlayer.on(AudioPlayerStatus.Idle, async () => {
-      const radioStationResource = await this.createRadioStationResource(
-        stationURL
-      );
+    audioPlayer.on(AudioPlayerStatus.Idle, () => {
+      const radioStationResource = this.createRadioStationResource(stationURL);
 
       if (radioStationResource === null) {
         disposeAudioPlayer(interaction.guildId as string);
@@ -212,9 +209,7 @@ export class JoinRadioCommand extends Command {
 
     voiceConnection.subscribe(audioPlayer);
 
-    const radioStationResource = await this.createRadioStationResource(
-      stationURL
-    );
+    const radioStationResource = this.createRadioStationResource(stationURL);
 
     if (radioStationResource === null) {
       disposeAudioPlayer(interaction.guildId as string);
@@ -269,14 +264,8 @@ export class JoinRadioCommand extends Command {
     });
   }
 
-  private async createRadioStationResource(stationURL: string) {
-    const radioStream = (await fetch(stationURL)).body;
-
-    if (radioStream === null) {
-      return null;
-    }
-
-    return createAudioResource(radioStream as unknown as internal.Readable, {
+  private createRadioStationResource(stationURL: string) {
+    return createAudioResource(stationURL, {
       metadata: {
         type: 'radio',
         data: {
