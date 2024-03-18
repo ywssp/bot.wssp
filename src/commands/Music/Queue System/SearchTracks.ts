@@ -189,7 +189,7 @@ export class SearchVideosCommand extends Command {
       .setTitle(`Select a ${namings.trackIdentifier}`)
       .addFields(
         choices.map((item, index) =>
-          createEmbedFieldFromTrack(item, String(index + 1))
+          createEmbedFieldFromTrack(item, `${index + 1}. `)
         )
       )
       .setFooter({
