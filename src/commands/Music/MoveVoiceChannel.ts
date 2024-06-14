@@ -1,5 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { ChannelType, GuildMember, VoiceChannel } from 'discord.js';
+import {
+  ChannelType,
+  GuildMember,
+  PermissionFlagsBits,
+  VoiceChannel,
+  channelMention
+} from 'discord.js';
 
 import {
   DiscordGatewayAdapterCreator,
@@ -48,6 +54,22 @@ export class MoveVCCommand extends Command {
     if (voiceChannel === interaction.guild?.members.me?.voice.channel) {
       interaction.reply({
         content: 'I am already in that voice channel!',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const botMember = interaction.guild?.members.me;
+    if (
+      botMember === null ||
+      botMember === undefined ||
+      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Connect)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
         ephemeral: true
       });
       return;
