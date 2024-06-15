@@ -144,12 +144,19 @@ export class NowPlayingCommand extends Command {
       seconds: currentSong.duration
     });
 
-    const durationVisual = this.getDurationVisual(passedTime, totalTime);
+    if (currentSong.duration === 0) {
+      embed.spliceFields(-1, 1, {
+        name: 'Time Passed',
+        value: passedTime.toFormat('m:ss')
+      });
+    } else {
+      const durationVisual = this.getDurationVisual(passedTime, totalTime);
 
-    embed.spliceFields(-1, 1, {
-      name: 'Length',
-      value: durationVisual
-    });
+      embed.spliceFields(-1, 1, {
+        name: 'Estimated Length',
+        value: durationVisual
+      });
+    }
 
     return { embeds: [embed] };
   }

@@ -13,28 +13,23 @@ export function createSimpleRadioSongEmbed(song: RadioSongInfo) {
     .setColor(ColorPalette.Info)
     .setTitle('Now Playing');
 
-  if (song.albums[0] !== undefined && song.albums[0].image !== undefined) {
+  if (song.albums[0]?.image !== undefined) {
     embed.setThumbnail('https://cdn.listen.moe/covers/' + song.albums[0].image);
   }
 
-  const artistText = parseRadioSongArtists(song).join(',\n');
+  const artistText = parseRadioSongArtists(song).join(', ');
 
   const albumText =
     song.albums.length > 0
-      ? createRadioHyperlink(song.albums[0], 'albums')
-      : 'Unknown Album';
+      ? '\nIn ' + createRadioHyperlink(song.albums[0], 'albums')
+      : '';
 
   const lengthText = Duration.fromObject({
     seconds: song.duration
   }).toFormat('m:ss');
 
   embed.setDescription(
-    `${song.title}
-
-Length: ${lengthText}
-Artists:
-${artistText}
-Album: ${albumText}`
+    `${song.title}\nBy ${artistText}\n${albumText}\nLength: ${lengthText}`
   );
 
   return embed;
