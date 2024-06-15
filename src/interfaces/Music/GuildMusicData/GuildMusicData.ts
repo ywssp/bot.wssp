@@ -16,7 +16,7 @@ export class GuildMusicData {
   ) {
     this.textUpdateChannelId = textUpdateChannel.id;
     this.voiceChannelId = voiceChannel.id;
-    this.musicAnnounceStyle = 'embed_fancy';
+    this.musicAnnounceStyle = 'embed_simple';
     this.queueSystemData = new QueueSystemData();
     this.radioData = new RadioData();
   }
