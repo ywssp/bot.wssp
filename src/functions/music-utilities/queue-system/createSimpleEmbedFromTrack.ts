@@ -12,11 +12,11 @@ export function createSimpleEmbedFromTrack(
   track: TrackInfo
 ) {
   const embed = baseEmbed.setDescription(
-    `${hyperlink(track.title, track.url)}\n\nBy ${
+    `${hyperlink(track.title, track.url)}\nBy ${
       track.uploader.url !== undefined
         ? hyperlink(track.uploader.name, track.uploader.url)
         : track.uploader.name
-    }\nLength: ${
+    }\n\nLength: ${
       typeof track.duration === 'string'
         ? track.duration
         : track.duration.toFormat('m:ss')

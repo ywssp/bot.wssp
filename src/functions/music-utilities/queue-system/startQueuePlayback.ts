@@ -7,11 +7,12 @@ import {
   createAudioResource,
   NoSubscriberBehavior
 } from '@discordjs/voice';
-import { EmbedBuilder, hyperlink } from 'discord.js';
+import { EmbedBuilder, hideLinkEmbed, hyperlink, inlineCode } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import { ColorPalette } from '../../../settings/ColorPalette';
+
 import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
 import { getPlayingType } from '../getPlayingType';
 import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
@@ -94,7 +95,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     const embed = createSimpleEmbedFromTrack(baseEmbed, currentTrack);
     embed.setDescription(
-      embed.data.description + `\nRequested By: ${currentTrack.addedBy}`
+      embed.data.description + `\nAdded By: ${currentTrack.addedBy}`
     );
 
     if (nextTrack !== undefined) {
@@ -130,11 +131,22 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     message = { embeds: [embed] };
   } else {
-    let text = `Now Playing\n${currentTrack.title} - <${currentTrack.url}> | ${
+    const uploaderString =
+      currentTrack.uploader.url !== undefined
+        ? hyperlink(
+            currentTrack.uploader.name,
+            hideLinkEmbed(currentTrack.uploader.url)
+          )
+        : currentTrack.uploader.name;
+
+    let text = `Now Playing:\n${hyperlink(
+      currentTrack.title,
+      hideLinkEmbed(currentTrack.url)
+    )} | By ${uploaderString} | ${
       typeof currentTrack.duration === 'string'
         ? currentTrack.duration
         : currentTrack.duration.toFormat('m:ss')
-    } | By ${currentTrack.uploader.name}`;
+    } | Added by ${inlineCode(currentTrack.addedBy)}`;
 
     if (nextTrack) {
       if (guildMusicData.queueSystemData.shuffle) {
@@ -143,7 +155,19 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
         const nextTrackIdentifier = _.capitalize(
           getTrackNamings(nextTrack).trackIdentifier
         );
-        text += `\n\nNext ${nextTrackIdentifier}\n${nextTrack.title} - <${nextTrack.url}>\nBy ${nextTrack.uploader.name}`;
+
+        const nextUploaderString =
+          nextTrack.uploader.url !== undefined
+            ? hyperlink(
+                nextTrack.uploader.name,
+                hideLinkEmbed(nextTrack.uploader.url)
+              )
+            : nextTrack.uploader.name;
+
+        text += `\n\nNext ${nextTrackIdentifier}:\n${hyperlink(
+          nextTrack.title,
+          hideLinkEmbed(nextTrack.url)
+        )} | By ${nextUploaderString}`;
       }
     }
 
@@ -159,7 +183,7 @@ async function playTrack(
   musicData: GuildMusicData
 ) {
   const streamedTrack = await playdl.stream(track.url, {
-    quality: 2,
+    // Quality: 2,
     discordPlayerCompatibility: false
   });
 
