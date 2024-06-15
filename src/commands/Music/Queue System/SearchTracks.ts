@@ -6,7 +6,10 @@ import {
   MessageComponentInteraction,
   EmbedBuilder,
   ButtonStyle,
-  ComponentType
+  ComponentType,
+  PermissionFlagsBits,
+  TextChannel,
+  channelMention
 } from 'discord.js';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
@@ -96,11 +99,40 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
+    const textChannel = interaction.channel as TextChannel;
+    const botMember = interaction.guild?.members.me;
+    if (
+      botMember === null ||
+      botMember === undefined ||
+      !textChannel
+        .permissionsFor(botMember)
+        ?.has(PermissionFlagsBits.SendMessages)
+    ) {
+      interaction.reply({
+        content: '❌ | Cannot send update messages to this channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const voiceChannel = (interaction.member as GuildMember).voice.channel;
 
     if (voiceChannel === null) {
       interaction.reply({
         content: '❓ | Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (
+      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Connect)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
         ephemeral: true
       });
       return;

@@ -1,6 +1,6 @@
 import { RadioData } from './RadioData';
 import { QueueSystemData } from './QueueSystemData';
-import { container } from '@sapphire/pieces';
+import { container } from '@sapphire/framework';
 import { TextBasedChannel, VoiceBasedChannel } from 'discord.js';
 
 export class GuildMusicData {

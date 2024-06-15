@@ -1,5 +1,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { EmbedBuilder, GuildMember } from 'discord.js';
+import {
+  EmbedBuilder,
+  GuildMember,
+  PermissionFlagsBits,
+  TextChannel,
+  channelMention
+} from 'discord.js';
 import * as playdl from 'play-dl';
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import {
@@ -92,11 +98,39 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
+    const textChannel = interaction.channel as TextChannel;
+    const botMember = interaction.guild?.members.me;
+    if (
+      botMember === null ||
+      botMember === undefined ||
+      !textChannel
+        .permissionsFor(botMember)
+        ?.has(PermissionFlagsBits.SendMessages)
+    ) {
+      interaction.reply({
+        content: '❌ | Cannot send update messages to this channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const voiceChannel = (interaction.member as GuildMember).voice.channel;
 
     if (voiceChannel === null) {
       interaction.reply({
         content: '❓ | Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (
+      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Speak)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
         ephemeral: true
       });
       return;
