@@ -14,6 +14,9 @@ importers:
       '@discordjs/voice':
         specifier: ^0.17.0
         version: 0.17.0(@discordjs/opus@0.9.0)(ffmpeg-static@5.2.0)
+      '@distube/ytdl-core':
+        specifier: ^4.13.4
+        version: 4.13.4
       '@sapphire/discord.js-utilities':
         specifier: ^7.3.0
         version: 7.3.0
@@ -167,6 +170,10 @@ packages:
   '@discordjs/ws@1.1.1':
     resolution: {integrity: sha512-PZ+vLpxGCRtmr2RMkqh8Zp+BenUaJqlS6xhgWKEZcgC/vfHLEzpHtKkB0sl3nZWpwtcKk6YWy+pU3okL2I97FA==}
     engines: {node: '>=16.11.0'}
+
+  '@distube/ytdl-core@4.13.4':
+    resolution: {integrity: sha512-AMuKFWN8MHq+gtlhMq2O4jMm7KNtFbXpFMxK6NgDsyMxZT+obH+wVCu/2sj+ZBn6HOnGofvrmb6kAx0P59+lFw==}
+    engines: {node: '>=16'}
 
   '@eslint-community/eslint-utils@4.4.0':
     resolution: {integrity: sha512-1/sA4dwrzBAyeUoQ6oxahHKmrZvsnLCg4RfxW3ZFGGmQkSNQPFNLV9CUEFQP1x9EYXHTo5p6xdhZM1Ne9p/AfA==}
@@ -385,6 +392,10 @@ packages:
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
+
+  agent-base@7.1.1:
+    resolution: {integrity: sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==}
+    engines: {node: '>= 14'}
 
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -935,6 +946,16 @@ packages:
     resolution: {integrity: sha512-vUptKVTpIJhcczKBbgnS+RtcuYMB8+oNzPK2/Hp3hanz8JmpATdmmgLgSaadVREkDm+e2giHwY3ZRkyjSIDDFA==}
     engines: {node: '>= 0.4'}
 
+  http-cookie-agent@6.0.5:
+    resolution: {integrity: sha512-sfZ8fDgDP3B1YB+teqSnAK1aPgBu8reUUGxSsndP2XnYN6cM29EURXWXZqQQiaRdor3B4QjpkUNfv21syaO4DA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      tough-cookie: ^4.0.0
+      undici: ^5.11.0 || ^6.0.0
+    peerDependenciesMeta:
+      undici:
+        optional: true
+
   http-response-object@3.0.2:
     resolution: {integrity: sha512-bqX0XTF6fnXSQcEJ2Iuyr75yVakyjIDCqroJQ/aHfSdlM743Cwqoi2nDYMzLGWUcuTWGWy8AAvOKXTfiv6q9RA==}
 
@@ -1153,6 +1174,10 @@ packages:
     resolution: {integrity: sha512-zobTr7akeGHnv7eBOXcRgMeCP6+uyYsczwmeRCauvpvaAltgNyTbLH/+VaEAPUeWBT+1GuNmz4wC/6jtQzbbVA==}
     engines: {node: '>=12'}
 
+  m3u8stream@0.8.6:
+    resolution: {integrity: sha512-LZj8kIVf9KCphiHmH7sbFQTVe4tOemb202fWwvJwR9W5ENW/1hxJN6ksAWGhQgSBSa3jyWhnjKU1Fw1GaOdbyA==}
+    engines: {node: '>=12'}
+
   magic-bytes.js@1.10.0:
     resolution: {integrity: sha512-/k20Lg2q8LE5xiaaSkMXk4sfvI+9EGEykFS4b0CHHGWqDYU0bGUFSwchNOMA56D7TCs9GwVTkqe9als1/ns8UQ==}
 
@@ -1185,6 +1210,10 @@ packages:
 
   mimic-fn@4.0.0:
     resolution: {integrity: sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw==}
+    engines: {node: '>=12'}
+
+  miniget@4.2.3:
+    resolution: {integrity: sha512-SjbDPDICJ1zT+ZvQwK0hUcRY4wxlhhNpHL9nJOB2MEAXRGagTljsO8MEDzQMTFf0Q8g4QNi8P9lEm/g7e+qgzA==}
     engines: {node: '>=12'}
 
   minimatch@3.1.2:
@@ -1466,6 +1495,9 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
+  sax@1.4.1:
+    resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
+
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
@@ -1593,6 +1625,10 @@ packages:
     resolution: {integrity: sha512-aX/y5pVRkfRnfmuX+OdbSdXvPe6ieKX/G2s7e98f4poJHnqH3281gDPm/metm6E/WRamfx7WC4HUqkWHfQHprw==}
     engines: {node: '>=6'}
 
+  tough-cookie@4.1.4:
+    resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
+    engines: {node: '>=6'}
+
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
@@ -1665,6 +1701,10 @@ packages:
   undici@6.13.0:
     resolution: {integrity: sha512-Q2rtqmZWrbP8nePMq7mOJIN98M0fYvSgV89vwl/BQRT4mDOeY2GXZngfGpcBBhtky3woM7G24wZV3Q304Bv6cw==}
     engines: {node: '>=18.0'}
+
+  undici@6.19.2:
+    resolution: {integrity: sha512-JfjKqIauur3Q6biAtHJ564e3bWa8VvT+7cSiOJHFbX4Erv6CLGDpg8z+Fmg/1OI/47RA+GI2QZaF48SSaLvyBA==}
+    engines: {node: '>=18.17'}
 
   universalify@0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}
@@ -1835,6 +1875,17 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@distube/ytdl-core@4.13.4':
+    dependencies:
+      http-cookie-agent: 6.0.5(tough-cookie@4.1.4)(undici@6.19.2)
+      m3u8stream: 0.8.6
+      miniget: 4.2.3
+      sax: 1.4.1
+      tough-cookie: 4.1.4
+      undici: 6.19.2
+    transitivePeerDependencies:
+      - supports-color
 
   '@eslint-community/eslint-utils@4.4.0(eslint@8.54.0)':
     dependencies:
@@ -2075,6 +2126,12 @@ snapshots:
   acorn@8.11.2: {}
 
   agent-base@6.0.2:
+    dependencies:
+      debug: 4.3.4
+    transitivePeerDependencies:
+      - supports-color
+
+  agent-base@7.1.1:
     dependencies:
       debug: 4.3.4
     transitivePeerDependencies:
@@ -2736,6 +2793,15 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  http-cookie-agent@6.0.5(tough-cookie@4.1.4)(undici@6.19.2):
+    dependencies:
+      agent-base: 7.1.1
+      tough-cookie: 4.1.4
+    optionalDependencies:
+      undici: 6.19.2
+    transitivePeerDependencies:
+      - supports-color
+
   http-response-object@3.0.2:
     dependencies:
       '@types/node': 10.17.60
@@ -2958,6 +3024,11 @@ snapshots:
 
   luxon@3.4.4: {}
 
+  m3u8stream@0.8.6:
+    dependencies:
+      miniget: 4.2.3
+      sax: 1.4.1
+
   magic-bytes.js@1.10.0: {}
 
   make-dir@3.1.0:
@@ -2982,6 +3053,8 @@ snapshots:
   mimic-fn@2.1.0: {}
 
   mimic-fn@4.0.0: {}
+
+  miniget@4.2.3: {}
 
   minimatch@3.1.2:
     dependencies:
@@ -3228,6 +3301,8 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
+  sax@1.4.1: {}
+
   semver@6.3.1: {}
 
   semver@7.6.2: {}
@@ -3363,6 +3438,13 @@ snapshots:
       universalify: 0.2.0
       url-parse: 1.5.10
 
+  tough-cookie@4.1.4:
+    dependencies:
+      psl: 1.9.0
+      punycode: 2.3.1
+      universalify: 0.2.0
+      url-parse: 1.5.10
+
   tr46@0.0.3: {}
 
   ts-mixer@6.0.4: {}
@@ -3436,6 +3518,8 @@ snapshots:
   undici-types@5.26.5: {}
 
   undici@6.13.0: {}
+
+  undici@6.19.2: {}
 
   universalify@0.2.0: {}
 

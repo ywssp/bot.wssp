@@ -3,6 +3,7 @@ import { container } from '@sapphire/framework';
 import {
   AudioPlayer,
   AudioPlayerStatus,
+  AudioResource,
   createAudioPlayer,
   createAudioResource,
   NoSubscriberBehavior
@@ -11,6 +12,7 @@ import { EmbedBuilder, hideLinkEmbed, hyperlink, inlineCode } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
+import ytdl from '@distube/ytdl-core';
 import { ColorPalette } from '../../../settings/ColorPalette';
 
 import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
@@ -182,26 +184,48 @@ async function playTrack(
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
-  const streamedTrack = await playdl.stream(track.url, {
-    // Quality: 2,
-    discordPlayerCompatibility: false
-  });
-
-  streamedTrack.stream.on('error', (error) => {
-    // eslint-disable-next-line no-console
-    console.error(error);
-    audioPlayer.stop();
-  });
-
   const metadata: MusicResourceMetadata = {
     type: 'queued_track',
     data: track
   };
 
-  const resource = createAudioResource(streamedTrack.stream, {
-    inputType: streamedTrack.type,
-    metadata
-  });
+  let resource: AudioResource;
+  if (track.source === 'youtube' || track.source === 'youtube_music') {
+    const streamedTrack = ytdl(track.url, {
+      filter: 'audioonly',
+      quality: 'highestaudio',
+      highWaterMark: 1 << 62,
+      liveBuffer: 1 << 62,
+      dlChunkSize: 0
+    });
+
+    streamedTrack.on('error', (error) => {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      streamedTrack.destroy();
+      audioPlayer.stop();
+    });
+
+    resource = createAudioResource(streamedTrack, {
+      metadata
+    });
+  } else {
+    const streamedTrack = await playdl.stream(track.url, {
+      quality: 2,
+      discordPlayerCompatibility: false
+    });
+
+    streamedTrack.stream.on('error', (error) => {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      audioPlayer.stop();
+    });
+
+    resource = createAudioResource(streamedTrack.stream, {
+      inputType: streamedTrack.type,
+      metadata
+    });
+  }
 
   audioPlayer.play(resource);
 

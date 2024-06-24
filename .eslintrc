@@ -45,7 +45,6 @@
         "max": 2
       }
     ],
-    "no-bitwise": "error",
     "no-console": "error",
     "no-else-return": "error",
     "no-empty-function": "error",
