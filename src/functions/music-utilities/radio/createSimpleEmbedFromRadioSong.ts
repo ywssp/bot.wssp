@@ -24,9 +24,12 @@ export function createSimpleRadioSongEmbed(song: RadioSongInfo) {
       ? '\nIn ' + createRadioHyperlink(song.albums[0], 'albums')
       : '';
 
-  const lengthText = Duration.fromObject({
-    seconds: song.duration
-  }).toFormat('m:ss');
+  let lengthText = 'Unknown';
+  if (song.duration !== 0) {
+    lengthText = Duration.fromObject({
+      seconds: song.duration
+    }).toFormat('m:ss');
+  }
 
   embed.setDescription(
     `${song.title}\nBy ${artistText}\n${albumText}\nLength: ${lengthText}`

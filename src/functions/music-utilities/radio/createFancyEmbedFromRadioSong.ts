@@ -38,9 +38,12 @@ export function createFancyRadioSongEmbed(song: RadioSongInfo) {
 
   embed.addFields({
     name: 'Length',
-    value: Duration.fromObject({
-      seconds: song.duration
-    }).toFormat('m:ss')
+    value:
+      song.duration !== 0
+        ? Duration.fromObject({
+            seconds: song.duration
+          }).toFormat('m:ss')
+        : 'Unknown'
   });
 
   return embed;
