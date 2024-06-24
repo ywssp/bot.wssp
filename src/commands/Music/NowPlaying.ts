@@ -135,7 +135,14 @@ export class NowPlayingCommand extends Command {
       text: `${radioData.station === 'jpop' ? '🇯🇵 J-Pop' : '🇰🇷 K-Pop'} Station`
     });
 
-    const startTime = DateTime.fromISO(lastUpdate.startTime);
+    let startTime = DateTime.fromISO(lastUpdate.startTime);
+    if (
+      lastUpdate.localStartTime !== undefined &&
+      lastUpdate.localStartTime !== null
+    ) {
+      startTime = lastUpdate.localStartTime;
+    }
+
     const currentTime = DateTime.now();
 
     const passedTime = currentTime.diff(startTime);

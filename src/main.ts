@@ -32,6 +32,7 @@ import { CachedTrackInfo } from './interfaces/Music/Queue System/TrackInfo';
 import { RadioWebsocketUpdate } from './interfaces/Music/Radio/RadioWebsocketUpdate';
 import type WebSocket from 'ws';
 import LRU from 'lru-cache';
+
 declare module '@sapphire/pieces' {
   interface Container {
     guildMusicDataMap: Map<string, GuildMusicData>;
@@ -46,6 +47,7 @@ declare module '@sapphire/pieces' {
       RadioStationNames,
       {
         connection: WebSocket | null;
+        firstUpdate: boolean;
         heartbeat: NodeJS.Timeout | null;
         lastUpdate: Exclude<RadioWebsocketUpdate, { op: 0 | 10 }>['d'] | null;
         guildIdSet: Set<string>;

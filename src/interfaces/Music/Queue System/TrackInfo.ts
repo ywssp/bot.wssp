@@ -1,11 +1,16 @@
 import { User } from 'discord.js';
 import { Duration } from 'luxon';
-import { extractID, YouTubeVideo, SoundCloudTrack } from 'play-dl';
+import {
+  extractID,
+  YouTubeVideo,
+  SoundCloudTrack,
+  SpotifyTrack
+} from 'play-dl';
 import { SongDetailed as YTMusicSong } from 'ytmusic-api';
 
 export class TrackInfo {
   readonly type = 'queue_track';
-  readonly source: 'youtube' | 'soundcloud' | 'youtube_music';
+  readonly source: 'youtube' | 'soundcloud' | 'youtube_music' | 'spotify';
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
   readonly url: string;
@@ -16,7 +21,14 @@ export class TrackInfo {
   };
   readonly thumbnail?: string;
 
-  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack | YTMusicSong) {
+  constructor(
+    data:
+      | TrackInfo
+      | YouTubeVideo
+      | SoundCloudTrack
+      | YTMusicSong
+      | SpotifyTrack
+  ) {
     if (data instanceof TrackInfo) {
       this.source = data.source;
       this.title = data.title;
@@ -95,6 +107,21 @@ export class TrackInfo {
       this.thumbnail = data.thumbnails[data.thumbnails.length - 1]?.url;
     }
 
+    // Spotify Track handling
+    else if (data instanceof SpotifyTrack) {
+      this.source = 'spotify';
+      this.title = data.name;
+      this.url = data.url;
+      this.id = data.id.toString();
+      this.uploader = {
+        name: data.artists[0].name,
+        url: data.artists[0].url
+      };
+      this.duration = Duration.fromMillis(data.durationInMs);
+      this.thumbnail = data.thumbnail?.url;
+      return;
+    }
+
     // If the data is not a valid type
     else {
       throw new Error('Invalid data type provided to TrackInfo constructor.');
@@ -119,6 +146,54 @@ export class CachedTrackInfo extends TrackInfo {
     cachedAt: Date
   ) {
     super(data);
+    this.cachedAt = cachedAt;
+  }
+}
+
+export class AdaptedTrackInfo extends TrackInfo {
+  readonly matchedTrack: TrackInfo;
+  readonly isAdapted = true;
+  readonly source: 'spotify';
+
+  constructor(
+    data:
+      | AdaptedTrackInfo
+      | {
+          data: TrackInfo;
+          matchedTrack: TrackInfo;
+        }
+  ) {
+    let trackData: TrackInfo;
+    let matchedTrack: TrackInfo;
+
+    if (data instanceof AdaptedTrackInfo) {
+      trackData = data;
+      matchedTrack = data.matchedTrack;
+    } else {
+      trackData = data.data;
+      matchedTrack = data.matchedTrack;
+    }
+
+    super(trackData);
+    this.source = 'spotify';
+    this.matchedTrack = matchedTrack;
+  }
+}
+
+export class QueuedAdaptedTrackInfo extends AdaptedTrackInfo {
+  readonly addedBy: string;
+
+  constructor(track: AdaptedTrackInfo, user: User) {
+    super(track);
+    this.addedBy = user.tag;
+  }
+}
+
+export class CachedAdaptedTrackInfo extends AdaptedTrackInfo {
+  readonly cachedAt: Date;
+
+  constructor(track: AdaptedTrackInfo, cachedAt: Date) {
+    super(track);
     this.cachedAt = cachedAt;
   }
 }

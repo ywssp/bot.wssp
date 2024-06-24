@@ -1,8 +1,10 @@
+import { DateTime } from 'luxon';
 import { RadioSongInfo } from './RadioSongInfo';
 
 export type RadioWebsocketUpdateData = {
   song: RadioSongInfo;
   startTime: string;
+  localStartTime: DateTime | undefined;
   lastPlayed: RadioSongInfo[];
   requester: {
     name: string;
