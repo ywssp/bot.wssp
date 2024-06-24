@@ -7,7 +7,7 @@ export function createRadioHyperlink(
 ) {
   let text = info.name;
 
-  if (info.nameRomaji !== null) {
+  if (info.nameRomaji !== null && info.nameRomaji !== info.name) {
     text += ` (${info.nameRomaji})`;
   }
 
