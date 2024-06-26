@@ -21,19 +21,26 @@ export function createFancyEmbedFromTrack(
     },
     {
       name: namings.creator,
-      value:
-        track.uploader.url !== undefined
-          ? hyperlink(track.uploader.name, track.uploader.url)
-          : track.uploader.name
-    },
-    {
-      name: 'Length',
-      value:
-        typeof track.duration === 'string'
-          ? track.duration
-          : track.duration.toFormat('m:ss')
+      value: track.getArtistHyperlinks()
     }
   ]);
+
+  if (track.album !== undefined) {
+    embed.addFields({
+      name: namings.album,
+      value: track.album.url
+        ? hyperlink(track.album.name, track.album.url)
+        : track.album.name
+    });
+  }
+
+  baseEmbed.addFields({
+    name: 'Length',
+    value:
+      typeof track.duration === 'string'
+        ? track.duration
+        : track.duration.toFormat('m:ss')
+  });
 
   if (track.thumbnail) {
     embed.setThumbnail(track.thumbnail);

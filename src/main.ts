@@ -40,6 +40,7 @@ declare module '@sapphire/pieces' {
       youtubeTracks: LRU<string, CachedTrackInfo>;
       soundcloudTracks: LRU<string, CachedTrackInfo>;
       ytMusicTracks: LRU<string, CachedTrackInfo>;
+      spotifyTracks: LRU<string, CachedTrackInfo>;
       tetrioUserInfos: LRU<string, TetrioUserInfo>;
       tetrioUserRecords: LRU<string, TetrioUserRecords>;
     };

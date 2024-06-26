@@ -66,10 +66,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
         // If the uploader doesn't have a URL, it will just use the uploader's name.
         // Example: [Next Track Title](<Track URL>) by [Uploader Name](<Optional Uploader URL>)
 
-        const uploaderString =
-          nextTrack.uploader.url !== undefined
-            ? hyperlink(nextTrack.uploader.name, nextTrack.uploader.url)
-            : nextTrack.uploader.name;
+        const uploaderString = nextTrack.getArtistHyperlinks();
 
         nextString = `${hyperlink(
           nextTrack.title,
@@ -115,10 +112,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
         // If the uploader doesn't have a URL, it will just use the uploader's name.
         // Example: [Next Track Title](<Track URL>) by [Uploader Name](<Optional Uploader URL>)
 
-        const uploaderString =
-          nextTrack.uploader.url !== undefined
-            ? hyperlink(nextTrack.uploader.name, nextTrack.uploader.url)
-            : nextTrack.uploader.name;
+        const uploaderString = nextTrack.getArtistHyperlinks();
 
         nextString = `${hyperlink(
           nextTrack.title,
@@ -133,13 +127,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 
     message = { embeds: [embed] };
   } else {
-    const uploaderString =
-      currentTrack.uploader.url !== undefined
-        ? hyperlink(
-            currentTrack.uploader.name,
-            hideLinkEmbed(currentTrack.uploader.url)
-          )
-        : currentTrack.uploader.name;
+    const uploaderString = currentTrack.getArtistHyperlinks();
 
     let text = `Now Playing:\n${hyperlink(
       currentTrack.title,
@@ -158,13 +146,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
           getTrackNamings(nextTrack).trackIdentifier
         );
 
-        const nextUploaderString =
-          nextTrack.uploader.url !== undefined
-            ? hyperlink(
-                nextTrack.uploader.name,
-                hideLinkEmbed(nextTrack.uploader.url)
-              )
-            : nextTrack.uploader.name;
+        const nextUploaderString = nextTrack.getArtistHyperlinks();
 
         text += `\n\nNext ${nextTrackIdentifier}:\n${hyperlink(
           nextTrack.title,

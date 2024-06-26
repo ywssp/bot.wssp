@@ -87,16 +87,15 @@ export class NowPlayingCommand extends Command {
       .setColor(ColorPalette.Info)
       .setTitle('Now Playing');
 
-    const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack).addFields([
-      {
-        name: 'Added By',
-        value: currentTrack.addedBy
-      }
-    ]);
-
-    embed.spliceFields(2, 1, {
+    const embed = createFancyEmbedFromTrack(baseEmbed, currentTrack);
+    embed.spliceFields(-1, 1, {
       name: 'Length',
       value: durationVisual
+    });
+
+    embed.addFields({
+      name: 'Added By',
+      value: currentTrack.addedBy
     });
 
     const playingEmoji = audioPlayer.state.status === 'playing' ? '▶️' : '⏸';

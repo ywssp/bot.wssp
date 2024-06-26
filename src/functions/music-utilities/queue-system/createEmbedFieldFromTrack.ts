@@ -21,10 +21,7 @@ export function createEmbedFieldFromTrack(
 
   const linkString = hyperlink('Link', track.url);
 
-  const uploaderString =
-    track.uploader.url !== undefined
-      ? hyperlink(track.uploader.name, track.uploader.url)
-      : track.uploader.name;
+  const uploaderString = track.getArtistHyperlinks();
 
   let durationString: string;
   if (typeof track.duration === 'string') {

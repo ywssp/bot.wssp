@@ -1,4 +1,4 @@
-import { User } from 'discord.js';
+import { User, hideLinkEmbed, hyperlink } from 'discord.js';
 import { Duration } from 'luxon';
 import {
   extractID,
@@ -8,17 +8,24 @@ import {
 } from 'play-dl';
 import { SongDetailed as YTMusicSong } from 'ytmusic-api';
 
+type TrackSource = 'youtube' | 'soundcloud' | 'youtube_music' | 'spotify';
+type TrackArtist = {
+  name: string;
+  url: string | undefined;
+};
+type TrackAlbum = {
+  name: string;
+  url: string | undefined;
+};
 export class TrackInfo {
   readonly type = 'queue_track';
-  readonly source: 'youtube' | 'soundcloud' | 'youtube_music' | 'spotify';
+  readonly source: TrackSource;
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
   readonly url: string;
   readonly id: string;
-  readonly uploader: {
-    name: string;
-    url: string | undefined;
-  };
+  readonly artist: TrackArtist[];
+  readonly album?: TrackAlbum;
   readonly thumbnail?: string;
 
   constructor(
@@ -34,7 +41,8 @@ export class TrackInfo {
       this.title = data.title;
       this.url = data.url;
       this.id = data.id;
-      this.uploader = data.uploader;
+      this.artist = data.artist;
+      this.album = data.album;
       this.duration = data.duration;
       this.thumbnail = data.thumbnail;
       return;
@@ -46,10 +54,12 @@ export class TrackInfo {
       this.title = data.name;
       this.url = data.permalink;
       this.id = data.id.toString();
-      this.uploader = {
-        name: data.user.name,
-        url: data.user.url
-      };
+      this.artist = [
+        {
+          name: data.user.name,
+          url: data.user.url
+        }
+      ];
       this.duration = Duration.fromMillis(data.durationInMs);
       this.thumbnail = data.thumbnail;
       return;
@@ -63,10 +73,12 @@ export class TrackInfo {
 
       this.id = data.id ?? extractID(data.url);
 
-      this.uploader = {
-        name: data.channel?.name ?? 'Unknown',
-        url: data.channel?.url
-      };
+      this.artist = [
+        {
+          name: data.channel?.name ?? 'Unknown',
+          url: data.channel?.url
+        }
+      ];
 
       this.duration = data.live
         ? 'Live Stream'
@@ -91,12 +103,21 @@ export class TrackInfo {
       this.title = data.name;
       this.url = `https://music.youtube.com/watch?v=${data.videoId}`;
       this.id = data.videoId;
-      this.uploader = {
-        name: data.artist.name,
-        url: data.artist.artistId
-          ? `https://music.youtube.com/channel/${data.artist.artistId}`
-          : undefined
-      };
+      this.artist = [
+        {
+          name: data.artist.name,
+          url: data.artist.artistId
+            ? `https://music.youtube.com/channel/${data.artist.artistId}`
+            : undefined
+        }
+      ];
+
+      if (data.album !== null) {
+        this.album = {
+          name: data.album.name,
+          url: `https://music.youtube.com/browse/${data.album.albumId}`
+        };
+      }
 
       if (data.duration === null) {
         this.duration = Duration.fromMillis(0);
@@ -112,11 +133,23 @@ export class TrackInfo {
       this.source = 'spotify';
       this.title = data.name;
       this.url = data.url;
-      this.id = data.id.toString();
-      this.uploader = {
-        name: data.artists[0].name,
-        url: data.artists[0].url
-      };
+      this.id = data.id;
+
+      this.artist = [];
+      for (const artist of data.artists) {
+        this.artist.push({
+          name: artist.name,
+          url: artist.url
+        });
+      }
+
+      if (data.album) {
+        this.album = {
+          name: data.album.name,
+          url: data.album.url
+        };
+      }
+
       this.duration = Duration.fromMillis(data.durationInMs);
       this.thumbnail = data.thumbnail?.url;
       return;
@@ -126,6 +159,16 @@ export class TrackInfo {
     else {
       throw new Error('Invalid data type provided to TrackInfo constructor.');
     }
+  }
+
+  public getArtistHyperlinks(): string {
+    return this.artist
+      .map((artist) =>
+        artist.url
+          ? hyperlink(artist.name, hideLinkEmbed(artist.url))
+          : artist.name
+      )
+      .join(', ');
   }
 }
 

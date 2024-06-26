@@ -60,7 +60,7 @@ export class DisplayQueueCommand extends Command {
 
       const currentTrack = guildQueueData.currentTrack();
       description += `🔂 | ${inlineCode(currentTrack.title)} by ${inlineCode(
-        currentTrack.uploader.name
+        currentTrack.getArtistHyperlinks()
       )} is looping.`;
     }
 
