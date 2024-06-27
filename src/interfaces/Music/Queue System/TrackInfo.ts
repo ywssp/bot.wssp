@@ -202,7 +202,7 @@ export class AdaptedTrackInfo extends TrackInfo {
     data:
       | AdaptedTrackInfo
       | {
-          data: TrackInfo;
+          track: TrackInfo;
           matchedTrack: TrackInfo;
         }
   ) {
@@ -213,7 +213,7 @@ export class AdaptedTrackInfo extends TrackInfo {
       trackData = data;
       matchedTrack = data.matchedTrack;
     } else {
-      trackData = data.data;
+      trackData = data.track;
       matchedTrack = data.matchedTrack;
     }
 

@@ -2,10 +2,77 @@ import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
   TrackInfo,
-  CachedTrackInfo
+  CachedTrackInfo,
+  AdaptedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SpotifyTrackNaming } from '../../../../settings/TrackNaming';
 import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
+import { SpotifySearchSettings } from '../../../../settings/SpotifySearchSettings';
+import { Duration } from 'luxon';
+import { searchYTMusic } from './youtubeMusic';
+
+function createSearchQueryFromTrack(track: TrackInfo): string {
+  let trackArtists = '';
+
+  track.artist.forEach((artist) => {
+    trackArtists += artist.name + ' ';
+  });
+
+  return `${track.title}${trackArtists ? ` by ${trackArtists.trim()}` : ''}`;
+}
+
+function hasSimilarDuration(
+  durationSpotify: Duration,
+  durationYoutube: Duration
+): boolean {
+  const durationDifference = Math.abs(
+    durationSpotify.minus(durationYoutube).as('seconds')
+  );
+
+  return durationDifference <= SpotifySearchSettings.lengthDeviation;
+}
+
+function channelContainsArtistName(
+  spotifyArtists: string[],
+  youtubeArtist: string
+): boolean {
+  for (const artist of spotifyArtists) {
+    if (youtubeArtist.includes(artist)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function getClosestYouTubeSearchResultToSpotifyTrack(
+  spotifyTrack: TrackInfo
+): Promise<TrackInfo | null> {
+  const searchQuery = createSearchQueryFromTrack(spotifyTrack);
+
+  const ytMusicTracks = (await searchYTMusic(searchQuery, {
+    limit: 10
+  })) as TrackInfo[];
+
+  return (
+    ytMusicTracks.find(
+      (ytMusicTrack) =>
+        (hasSimilarDuration(
+          spotifyTrack.duration as Duration,
+          ytMusicTrack.duration as Duration
+        ) &&
+          channelContainsArtistName(
+            spotifyTrack.artist.map((artist) => artist.name),
+            ytMusicTrack.artist[0].name as string
+          )) ||
+        hasSimilarDuration(
+          spotifyTrack.duration as Duration,
+          ytMusicTrack.duration as Duration
+        ) ||
+        null
+    ) ?? null
+  );
+}
 
 export function storeSpotifyTrackInCache(track: TrackInfo) {
   if (track.source === 'spotify') {
@@ -86,7 +153,7 @@ export async function searchSpotify(
     forceSearch?: boolean;
     source?: 'youtube' | 'soundcloud';
   }
-): Promise<TrackCacheResult | TrackInfo[]> {
+): Promise<TrackCacheResult | AdaptedTrackInfo[]> {
   if (
     (await playdl.so_validate(linkOrSearch)) === 'track' &&
     !options?.forceSearch
@@ -127,5 +194,24 @@ export async function searchSpotify(
     throw new Error(`No ${SpotifyTrackNaming.trackIdentifier}s found.`);
   }
 
-  return searchResults.map((item) => new TrackInfo(item));
+  const adaptedSearchResults: AdaptedTrackInfo[] = [];
+
+  for (const searchResult of searchResults) {
+    const matchedTrack = await getClosestYouTubeSearchResultToSpotifyTrack(
+      new TrackInfo(searchResult)
+    );
+
+    if (!matchedTrack) {
+      continue;
+    }
+
+    adaptedSearchResults.push(
+      new AdaptedTrackInfo({
+        track: new TrackInfo(searchResult),
+        matchedTrack
+      })
+    );
+  }
+
+  return adaptedSearchResults;
 }
