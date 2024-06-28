@@ -2,8 +2,8 @@ import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
   TrackInfo,
-  CachedTrackInfo,
-  AdaptedTrackInfo
+  AdaptedTrackInfo,
+  CachedAdaptedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SpotifyTrackNaming } from '../../../../settings/TrackNaming';
 import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
@@ -74,11 +74,11 @@ async function getClosestYouTubeSearchResultToSpotifyTrack(
   );
 }
 
-export function storeSpotifyTrackInCache(track: TrackInfo) {
+export function storeSpotifyTrackInCache(track: AdaptedTrackInfo) {
   if (track.source === 'spotify') {
     container.caches.spotifyTracks.set(
       track.id,
-      new CachedTrackInfo(track, new Date())
+      new CachedAdaptedTrackInfo(track, new Date())
     );
   }
 }
@@ -86,7 +86,7 @@ export function storeSpotifyTrackInCache(track: TrackInfo) {
 async function fetchSpotifyTrackFromCache(
   trackURL: string
 ): Promise<TrackCacheResult> {
-  let track: TrackInfo;
+  let track: AdaptedTrackInfo;
   let cacheData: {
     status: 'hit' | 'miss';
     cachedAt: Date;
@@ -97,14 +97,14 @@ async function fetchSpotifyTrackFromCache(
   if (id && container.caches.spotifyTracks.has(id)) {
     const fetchedTrack = container.caches.spotifyTracks.get(
       id
-    ) as CachedTrackInfo;
+    ) as CachedAdaptedTrackInfo;
 
     cacheData = {
       status: 'hit',
       cachedAt: fetchedTrack.cachedAt
     };
 
-    track = new TrackInfo(fetchedTrack);
+    track = new AdaptedTrackInfo(fetchedTrack);
   } else {
     let fetchedTrack: playdl.SpotifyTrack;
 
@@ -113,25 +113,43 @@ async function fetchSpotifyTrackFromCache(
         await playdl.refreshToken();
       }
 
-      const searchResult = await playdl.search(trackURL, {
-        limit: 1,
-        source: {
-          spotify: 'track'
-        }
-      });
+      const searchResult = await playdl.spotify(trackURL);
 
-      if (searchResult.length === 0) {
+      if (searchResult.type !== 'track') {
         throw new Error();
       }
 
-      fetchedTrack = searchResult[0];
+      fetchedTrack = searchResult as playdl.SpotifyTrack;
     } catch (error) {
       throw new Error(
         `Could not fetch information for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
       );
     }
 
-    track = new TrackInfo(fetchedTrack);
+    const baseTrack = new TrackInfo(fetchedTrack);
+    let matchedTrack: TrackInfo;
+
+    try {
+      const searchedTrack = await getClosestYouTubeSearchResultToSpotifyTrack(
+        baseTrack
+      );
+
+      if (!searchedTrack) {
+        throw new Error();
+      }
+
+      matchedTrack = searchedTrack;
+    } catch (error) {
+      throw new Error(
+        `Could not find a suitable match for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
+      );
+    }
+
+    track = new AdaptedTrackInfo({
+      track: baseTrack,
+      matchedTrack
+    });
+
     storeSpotifyTrackInCache(track);
 
     cacheData = {
@@ -154,10 +172,7 @@ export async function searchSpotify(
     source?: 'youtube' | 'soundcloud';
   }
 ): Promise<TrackCacheResult | AdaptedTrackInfo[]> {
-  if (
-    (await playdl.so_validate(linkOrSearch)) === 'track' &&
-    !options?.forceSearch
-  ) {
+  if (playdl.sp_validate(linkOrSearch) === 'track' && !options?.forceSearch) {
     const url = linkOrSearch;
 
     let track: TrackCacheResult;
@@ -178,6 +193,10 @@ export async function searchSpotify(
   let searchResults: playdl.SpotifyTrack[];
 
   try {
+    if (playdl.is_expired()) {
+      await playdl.refreshToken();
+    }
+
     searchResults = await playdl.search(linkOrSearch, {
       limit,
       source: {

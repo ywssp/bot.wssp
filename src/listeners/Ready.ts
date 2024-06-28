@@ -74,6 +74,11 @@ export class ReadyListener extends Listener {
         ttl: ttlDuration,
         ttlResolution: ttlDuration / 7
       }),
+      spotifyTracks: new LRU({
+        max: 100,
+        ttl: ttlDuration,
+        ttlResolution: ttlDuration / 7
+      }),
       tetrioUserInfos: new LRU({
         max: 50
       }),
@@ -87,12 +92,14 @@ export class ReadyListener extends Listener {
         connection: null,
         heartbeat: null,
         lastUpdate: null,
+        firstUpdate: true,
         guildIdSet: new Set()
       },
       jpop: {
         connection: null,
         heartbeat: null,
         lastUpdate: null,
+        firstUpdate: true,
         guildIdSet: new Set()
       }
     };

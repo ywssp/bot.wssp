@@ -10,7 +10,11 @@ import {
 } from '@discordjs/voice';
 import { EmbedBuilder, hideLinkEmbed, hyperlink, inlineCode } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import {
+  QueuedAdaptedTrackInfo,
+  QueuedTrackInfo,
+  TrackInfo
+} from '../../../interfaces/Music/Queue System/TrackInfo';
 import * as playdl from 'play-dl';
 import ytdl from '@distube/ytdl-core';
 import { ColorPalette } from '../../../settings/ColorPalette';
@@ -162,7 +166,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
 }
 
 async function playTrack(
-  track: QueuedTrackInfo,
+  track: QueuedTrackInfo | QueuedAdaptedTrackInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
@@ -171,9 +175,20 @@ async function playTrack(
     data: track
   };
 
+  let audioTrack: TrackInfo;
+
+  if (track instanceof QueuedAdaptedTrackInfo) {
+    audioTrack = track.matchedTrack;
+  } else {
+    audioTrack = track;
+  }
+
   let resource: AudioResource;
-  if (track.source === 'youtube' || track.source === 'youtube_music') {
-    const streamedTrack = ytdl(track.url, {
+  if (
+    audioTrack.source === 'youtube' ||
+    audioTrack.source === 'youtube_music'
+  ) {
+    const streamedTrack = ytdl(audioTrack.url, {
       filter: 'audioonly',
       quality: 'highestaudio',
       highWaterMark: 1 << 62,
@@ -192,7 +207,7 @@ async function playTrack(
       metadata
     });
   } else {
-    const streamedTrack = await playdl.stream(track.url, {
+    const streamedTrack = await playdl.stream(audioTrack.url, {
       quality: 2,
       discordPlayerCompatibility: false
     });

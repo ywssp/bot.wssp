@@ -3,7 +3,8 @@ import {
   YouTubeVideoNaming,
   SoundCloudTrackNaming,
   YTMusicTrackNaming,
-  TrackNamings
+  TrackNamings,
+  SpotifyTrackNaming
 } from '../../../settings/TrackNaming';
 
 export function getTrackNamings(track: TrackInfo): TrackNamings {
@@ -11,7 +12,11 @@ export function getTrackNamings(track: TrackInfo): TrackNamings {
     return YouTubeVideoNaming;
   } else if (track.source === 'soundcloud') {
     return SoundCloudTrackNaming;
+  } else if (track.source === 'youtube_music') {
+    return YTMusicTrackNaming;
+  } else if (track.source === 'spotify') {
+    return SpotifyTrackNaming;
   }
 
-  return YTMusicTrackNaming;
+  throw new Error('Unknown track source');
 }
