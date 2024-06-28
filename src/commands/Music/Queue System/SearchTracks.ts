@@ -16,6 +16,8 @@ import { createGuildMusicData } from '../../../functions/music-utilities/guildMu
 import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import {
+  AdaptedTrackInfo,
+  QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
@@ -24,6 +26,7 @@ import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import {
   SoundCloudTrackNaming,
+  SpotifyTrackNaming,
   TrackNamings,
   YTMusicTrackNaming,
   YouTubeVideoNaming
@@ -31,13 +34,14 @@ import {
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
+import { searchSpotify } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
       name: 'search',
-      description: 'Searches for multiple videos on YouTube.',
+      description: 'Searches for multiple videos on different platforms.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -74,11 +78,22 @@ export class SearchVideosCommand extends Command {
                 .setMinLength(3)
             )
         )
-
         .addSubcommand((subcommand) =>
           subcommand
             .setName('soundcloud')
             .setDescription('Search tracks on SoundCloud')
+            .addStringOption((option) =>
+              option
+                .setName('query')
+                .setDescription('The search query.')
+                .setRequired(true)
+                .setMinLength(3)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('spotify')
+            .setDescription('Search tracks on Spotify')
             .addStringOption((option) =>
               option
                 .setName('query')
@@ -147,7 +162,8 @@ export class SearchVideosCommand extends Command {
     const source = interaction.options.getSubcommand() as
       | 'youtube'
       | 'yt_music'
-      | 'soundcloud';
+      | 'soundcloud'
+      | 'spotify';
     const query = interaction.options.getString('query', true);
 
     if (query.length < 3) {
@@ -164,13 +180,15 @@ export class SearchVideosCommand extends Command {
       namings = YouTubeVideoNaming;
     } else if (source === 'yt_music') {
       namings = YTMusicTrackNaming;
-    } else {
+    } else if (source === 'soundcloud') {
       namings = SoundCloudTrackNaming;
+    } else {
+      namings = SpotifyTrackNaming;
     }
 
     interaction.deferReply();
 
-    let choices: TrackInfo[];
+    let choices: (TrackInfo | AdaptedTrackInfo)[];
 
     try {
       if (source === 'youtube') {
@@ -183,11 +201,16 @@ export class SearchVideosCommand extends Command {
           limit: 5,
           forceSearch: true
         })) as TrackInfo[];
-      } else {
+      } else if (source === 'soundcloud') {
         choices = (await searchSoundCloud(query, {
           limit: 5,
           forceSearch: true
         })) as TrackInfo[];
+      } else {
+        choices = (await searchSpotify(query, {
+          limit: 5,
+          forceSearch: true
+        })) as AdaptedTrackInfo[];
       }
     } catch (error) {
       interaction.editReply({
@@ -264,12 +287,17 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    const videoIndex = parseInt(collected.customId) - 1;
+    const trackIndex = parseInt(collected.customId) - 1;
 
-    const queuedTrack = new QueuedTrackInfo(
-      choices[videoIndex],
-      interaction.user
-    );
+    let queuedTrack: QueuedTrackInfo | QueuedAdaptedTrackInfo;
+    if (choices[trackIndex] instanceof AdaptedTrackInfo) {
+      queuedTrack = new QueuedAdaptedTrackInfo(
+        choices[trackIndex] as AdaptedTrackInfo,
+        interaction.user
+      );
+    } else {
+      queuedTrack = new QueuedTrackInfo(choices[trackIndex], interaction.user);
+    }
 
     // TODO: Implement caching of selected track
     // Previous code: storeTrackInCache(queuedTrack);
