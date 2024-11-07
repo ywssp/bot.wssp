@@ -5,7 +5,6 @@ import {
   EmbedBuilder,
   GuildMember,
   PermissionFlagsBits,
-  TextChannel,
   channelMention
 } from 'discord.js';
 
@@ -78,20 +77,24 @@ export class JoinRadioCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     if (interaction.channel === null) {
       interaction.reply({
-        content: 'Cannot find channel.',
+        content: '❓ | Cannot find channel.',
         ephemeral: true
       });
       return;
     }
 
-    const textChannel = interaction.channel as TextChannel;
     const botMember = interaction.guild?.members.me;
+    const botMemberExists = botMember !== null && botMember !== undefined;
+    const channelInGuild = !interaction.channel.isDMBased();
+    const channelSendable = interaction.channel.isSendable();
+    const canSendMessages = botMember?.permissions.has(
+      PermissionFlagsBits.SendMessages
+    );
     if (
-      botMember === null ||
-      botMember === undefined ||
-      !textChannel
-        .permissionsFor(botMember)
-        ?.has(PermissionFlagsBits.SendMessages)
+      !botMemberExists ||
+      !channelSendable ||
+      !channelInGuild ||
+      !canSendMessages
     ) {
       interaction.reply({
         content: '❌ | Cannot send update messages to this channel.',
@@ -104,17 +107,15 @@ export class JoinRadioCommand extends Command {
 
     if (voiceChannel === null) {
       interaction.reply({
-        content: 'Cannot find voice channel.',
+        content: '❓ | Cannot find voice channel.',
         ephemeral: true
       });
       return;
     }
 
     if (
-      botMember === null ||
-      botMember === undefined ||
-      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Speak) ||
-      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Connect)
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Connect)
     ) {
       interaction.reply({
         content: `❌ | Cannot play music in ${channelMention(

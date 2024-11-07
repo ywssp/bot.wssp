@@ -84,6 +84,7 @@
     "require-await": "error",
     "spaced-comment": "error",
     "strict": "error",
-    "yoda": "error"
+    "yoda": "error",
+    "eslint-plugin-import/no-named-as-default-member": "off"
   }
 }

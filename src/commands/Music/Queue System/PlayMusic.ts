@@ -5,7 +5,6 @@ import {
   EmbedBuilder,
   GuildMember,
   PermissionFlagsBits,
-  TextChannel,
   channelMention
 } from 'discord.js';
 import * as playdl from 'play-dl';
@@ -119,14 +118,18 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
-    const textChannel = interaction.channel as TextChannel;
     const botMember = interaction.guild?.members.me;
+    const botMemberExists = botMember !== null && botMember !== undefined;
+    const channelInGuild = !interaction.channel.isDMBased();
+    const channelSendable = interaction.channel.isSendable();
+    const canSendMessages = botMember?.permissions.has(
+      PermissionFlagsBits.SendMessages
+    );
     if (
-      botMember === null ||
-      botMember === undefined ||
-      !textChannel
-        .permissionsFor(botMember)
-        ?.has(PermissionFlagsBits.SendMessages)
+      !botMemberExists ||
+      !channelSendable ||
+      !channelInGuild ||
+      !canSendMessages
     ) {
       interaction.reply({
         content: '❌ | Cannot send update messages to this channel.',
@@ -146,7 +149,8 @@ export class PlayMusicCommand extends Command {
     }
 
     if (
-      !voiceChannel.permissionsFor(botMember)?.has(PermissionFlagsBits.Speak)
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Connect)
     ) {
       interaction.reply({
         content: `❌ | Cannot play music in ${channelMention(

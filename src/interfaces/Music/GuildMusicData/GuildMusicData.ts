@@ -3,7 +3,7 @@
 import { RadioData } from './RadioData';
 import { QueueSystemData } from './QueueSystemData';
 import { container } from '@sapphire/framework';
-import { TextBasedChannel, VoiceBasedChannel } from 'discord.js';
+import { SendableChannels, VoiceBasedChannel } from 'discord.js';
 
 export class GuildMusicData {
   textUpdateChannelId: string;
@@ -14,7 +14,7 @@ export class GuildMusicData {
 
   constructor(
     voiceChannel: VoiceBasedChannel,
-    textUpdateChannel: TextBasedChannel
+    textUpdateChannel: SendableChannels
   ) {
     this.textUpdateChannelId = textUpdateChannel.id;
     this.voiceChannelId = voiceChannel.id;
@@ -26,14 +26,14 @@ export class GuildMusicData {
   getTextUpdateChannel() {
     return container.client.channels.cache.get(
       this.textUpdateChannelId
-    ) as TextBasedChannel;
+    ) as SendableChannels;
   }
 
-  setTextUpdateChannel(channel: TextBasedChannel) {
+  setTextUpdateChannel(channel: SendableChannels) {
     this.textUpdateChannelId = channel.id;
   }
 
-  sendUpdateMessage(message: Parameters<TextBasedChannel['send']>[0]) {
+  sendUpdateMessage(message: Parameters<SendableChannels['send']>[0]) {
     const textUpdateChannel = this.getTextUpdateChannel();
 
     if (textUpdateChannel === undefined) {
