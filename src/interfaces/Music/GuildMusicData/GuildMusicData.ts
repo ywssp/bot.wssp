@@ -1,3 +1,5 @@
+'use strict';
+
 import { RadioData } from './RadioData';
 import { QueueSystemData } from './QueueSystemData';
 import { container } from '@sapphire/framework';

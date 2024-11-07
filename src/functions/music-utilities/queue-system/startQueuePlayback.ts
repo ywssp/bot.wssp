@@ -1,3 +1,5 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 
 import {

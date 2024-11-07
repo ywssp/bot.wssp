@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { channelMention, PermissionFlagsBits, TextChannel } from 'discord.js';
 

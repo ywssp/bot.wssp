@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 

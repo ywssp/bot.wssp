@@ -1,3 +1,5 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import * as YTMusicAPI from 'ytmusic-api';
@@ -62,7 +64,7 @@ async function fetchYTMusicTrackFromCache(
       }
 
       fetchedTrack = search[0];
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch track information for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
       );
@@ -113,7 +115,7 @@ export async function searchYTMusic(
 
   try {
     searchResults = await ytmusic.searchSongs(linkOrSearch);
-  } catch (error) {
+  } catch {
     throw new Error(
       `An error occurred while searching for ${YTMusicTrackNaming.trackIdentifier}s.`
     );

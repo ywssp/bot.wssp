@@ -1,3 +1,5 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
@@ -39,7 +41,7 @@ async function fetchYoutubeTrackFromCache(
 
     try {
       fetchedTrack = (await playdl.video_basic_info(trackURL)).video_details;
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch track information for ${YouTubeVideoNaming.fullIdentifier} ID: ${trackURL}`
       );
@@ -72,13 +74,13 @@ export async function searchYoutube(
     linkOrSearch.startsWith('https') &&
     !options?.forceSearch
   ) {
-    const id = new URL(linkOrSearch).searchParams.get('v') as string;
+    const id = playdl.extractID(linkOrSearch);
 
     let video: TrackCacheResult;
 
     try {
       video = await fetchYoutubeTrackFromCache(id);
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch information for ${YouTubeVideoNaming.fullIdentifier} ID: ${id}`
       );
@@ -98,7 +100,7 @@ export async function searchYoutube(
         youtube: 'video'
       }
     });
-  } catch (error) {
+  } catch {
     throw new Error(
       `An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
     );

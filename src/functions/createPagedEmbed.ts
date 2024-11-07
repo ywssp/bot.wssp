@@ -1,3 +1,5 @@
+'use strict';
+
 import { PaginatedMessageEmbedFields } from '@sapphire/discord.js-utilities';
 import { ChatInputCommand } from '@sapphire/framework';
 import { EmbedField, EmbedBuilder } from 'discord.js';

@@ -1,3 +1,5 @@
+'use strict';
+
 import { Command, ChatInputCommand } from '@sapphire/framework';
 import { fetch, FetchResultTypes } from '@sapphire/fetch';
 import {

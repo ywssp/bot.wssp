@@ -1,3 +1,5 @@
+'use strict';
+
 import { User, hideLinkEmbed, hyperlink } from 'discord.js';
 import { Duration } from 'luxon';
 import {
@@ -98,7 +100,7 @@ export class TrackInfo {
 
     // YT Music handling
     // Only YTMusicSong has "type" equal to "SONG"
-    else if (data.type === 'SONG') {
+    else if (data.type !== undefined && data.type === 'SONG') {
       this.source = 'youtube_music';
       this.title = data.name;
       this.url = `https://music.youtube.com/watch?v=${data.videoId}`;

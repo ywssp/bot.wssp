@@ -1,3 +1,5 @@
+'use strict';
+
 // Install source-map-support for easier debugging
 import { install } from 'source-map-support';
 install();

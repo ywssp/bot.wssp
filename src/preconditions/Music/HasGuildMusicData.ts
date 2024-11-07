@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
 
 export class HasGuildMusicDataPrecondition extends Precondition {

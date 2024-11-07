@@ -1,3 +1,5 @@
+'use strict';
+
 import { DateTime } from 'luxon';
 import { RadioSongInfo } from './RadioSongInfo';
 

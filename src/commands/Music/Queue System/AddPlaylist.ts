@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
   EmbedBuilder,
@@ -47,7 +49,9 @@ export class AddPlaylistCommand extends Command {
         .addStringOption((option) =>
           option
             .setName('link')
-            .setDescription('The link of a YouTube or SoundCloud playlist.')
+            .setDescription(
+              'The link of a YouTube, SoundCloud, or Spotify playlist.'
+            )
             .setRequired(true)
         )
         .addBooleanOption((option) =>
@@ -127,7 +131,12 @@ export class AddPlaylistCommand extends Command {
 
     const linkType = await play.validate(link);
 
-    if (linkType !== 'yt_playlist' && linkType !== 'so_playlist') {
+    if (
+      linkType !== 'yt_playlist' &&
+      linkType !== 'so_playlist' &&
+      linkType !== 'sp_playlist' &&
+      linkType !== 'sp_album'
+    ) {
       interaction.reply({
         content: '❓ | Invalid playlist link.',
         ephemeral: true

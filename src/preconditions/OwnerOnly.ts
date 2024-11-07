@@ -1,3 +1,5 @@
+'use strict';
+
 import { Precondition } from '@sapphire/framework';
 import type { CommandInteraction } from 'discord.js';
 

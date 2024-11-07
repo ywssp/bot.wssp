@@ -1,3 +1,5 @@
+'use strict';
+
 export interface TrackNamings {
   source: string;
   fullIdentifier: string;

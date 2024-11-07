@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
   EmbedBuilder,
@@ -156,7 +158,6 @@ export class JoinRadioCommand extends Command {
     const playingType = getPlayingType(interaction.guildId as string);
 
     if (playingType !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const oldAudioPlayer = getAudioPlayer(interaction.guildId as string)!;
 
       if (playingType === 'radio') {
@@ -174,7 +175,7 @@ export class JoinRadioCommand extends Command {
         }
 
         disconnectGuildFromRadioWebsocket(interaction.guildId as string);
-        interaction.channel?.send('Switching radio stations...');
+        interaction.reply('Switching radio stations...');
       } else {
         if (guildMusicData.queueSystemData.loop.type !== 'track') {
           guildMusicData.queueSystemData.modifyIndex(2);
@@ -182,13 +183,15 @@ export class JoinRadioCommand extends Command {
 
         guildMusicData.queueSystemData.playing = false;
 
-        interaction.channel?.send('Switching to radio...');
+        interaction.reply('Switching to radio...');
       }
 
       disposeAudioPlayer(interaction.guildId as string);
     }
 
-    await interaction.deferReply();
+    if (!interaction.replied) {
+      await interaction.deferReply();
+    }
 
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);

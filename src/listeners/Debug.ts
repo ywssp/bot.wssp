@@ -1,3 +1,5 @@
+'use strict';
+
 import { Listener } from '@sapphire/framework';
 
 export class DebugListener extends Listener {
@@ -8,6 +10,7 @@ export class DebugListener extends Listener {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public run(message: string) {
     // Just uncomment this line of code to enable debug logging
     // Console.debug(message);

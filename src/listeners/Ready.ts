@@ -1,10 +1,12 @@
+'use strict';
+
 import { Listener } from '@sapphire/framework';
 import type { Client } from 'discord.js';
 
 import LRU from 'lru-cache';
 import { Duration } from 'luxon';
 
-import play from 'play-dl';
+import { getFreeClientID, setToken } from 'play-dl';
 
 import http from 'http';
 
@@ -44,8 +46,8 @@ export class ReadyListener extends Listener {
     }
 
     // Setup the SoundCloud client ID
-    play.getFreeClientID().then((id) => {
-      play.setToken({
+    getFreeClientID().then((id) => {
+      setToken({
         soundcloud: {
           client_id: id
         }

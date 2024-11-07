@@ -1,3 +1,5 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
@@ -90,7 +92,7 @@ async function fetchSoundCloudTrackFromCache(
       fetchedTrack = (await playdl.soundcloud(
         trackURL
       )) as playdl.SoundCloudTrack;
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch information for ${SoundCloudTrackNaming.fullIdentifier} ID: ${trackURL}`
       );
@@ -128,7 +130,7 @@ export async function searchSoundCloud(
 
     try {
       video = await fetchSoundCloudTrackFromCache(url);
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch information for ${SoundCloudTrackNaming.fullIdentifier} ID: ${url}`
       );
@@ -148,7 +150,7 @@ export async function searchSoundCloud(
         soundcloud: 'tracks'
       }
     });
-  } catch (error) {
+  } catch {
     throw new Error(
       `An error occurred while searching for ${SoundCloudTrackNaming.trackIdentifier}s.`
     );

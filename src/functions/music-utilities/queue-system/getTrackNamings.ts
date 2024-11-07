@@ -1,3 +1,5 @@
+'use strict';
+
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import {
   YouTubeVideoNaming,

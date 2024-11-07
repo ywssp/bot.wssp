@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
   GuildMember,
@@ -212,7 +214,7 @@ export class SearchVideosCommand extends Command {
           forceSearch: true
         })) as AdaptedTrackInfo[];
       }
-    } catch (error) {
+    } catch {
       interaction.editReply({
         content: `❌ | An error occurred while searching for ${namings.trackIdentifier}s.`
       });
@@ -251,7 +253,7 @@ export class SearchVideosCommand extends Command {
         text: `You have ${selectionTimeSeconds} seconds to select a ${namings.trackIdentifier}.`
       });
 
-    const selectionMessage = await interaction.channel?.send({
+    const selectionMessage = await interaction.editReply({
       embeds: [selectionEmbed],
       components: buttonRows
     });
@@ -272,13 +274,10 @@ export class SearchVideosCommand extends Command {
         time: selectionTimeSeconds * 1000,
         componentType: ComponentType.Button
       });
-    } catch (e) {
+    } catch {
       interaction.editReply(`🛑 | No ${namings.trackIdentifier} selected.`);
-      selectionMessage.delete();
       return;
     }
-
-    selectionMessage.delete();
 
     if (collected.customId === 'cancel') {
       interaction.editReply({

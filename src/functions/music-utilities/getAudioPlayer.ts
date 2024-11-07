@@ -1,3 +1,5 @@
+'use strict';
+
 import { AudioPlayer, getVoiceConnection } from '@discordjs/voice';
 
 export function getAudioPlayer(guildId: string): AudioPlayer | undefined {

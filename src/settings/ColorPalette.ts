@@ -14,6 +14,8 @@
 // - When a command requires a selection
 // Ex. When the user is selecting a track to play
 
+'use strict';
+
 export enum ColorPalette {
   Default = '#88c0d0',
   Success = '#a3be8c',

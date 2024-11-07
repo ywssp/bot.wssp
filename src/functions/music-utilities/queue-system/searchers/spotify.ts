@@ -1,3 +1,5 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
@@ -6,7 +8,10 @@ import {
   CachedAdaptedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SpotifyTrackNaming } from '../../../../settings/TrackNaming';
-import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
+import {
+  AdaptedTrackCacheResult,
+  TrackCacheResult
+} from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 import { SpotifySearchSettings } from '../../../../settings/SpotifySearchSettings';
 import { Duration } from 'luxon';
 import { searchYTMusic } from './youtubeMusic';
@@ -85,7 +90,7 @@ export function storeSpotifyTrackInCache(track: AdaptedTrackInfo) {
 
 async function fetchSpotifyTrackFromCache(
   trackURL: string
-): Promise<TrackCacheResult> {
+): Promise<AdaptedTrackCacheResult> {
   let track: AdaptedTrackInfo;
   let cacheData: {
     status: 'hit' | 'miss';
@@ -120,7 +125,7 @@ async function fetchSpotifyTrackFromCache(
       }
 
       fetchedTrack = searchResult as playdl.SpotifyTrack;
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch information for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
       );
@@ -139,7 +144,7 @@ async function fetchSpotifyTrackFromCache(
       }
 
       matchedTrack = searchedTrack;
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not find a suitable match for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
       );
@@ -179,7 +184,7 @@ export async function searchSpotify(
 
     try {
       track = await fetchSpotifyTrackFromCache(url);
-    } catch (error) {
+    } catch {
       throw new Error(
         `Could not fetch information for ${SpotifyTrackNaming.fullIdentifier} ID: ${url}`
       );
@@ -203,7 +208,7 @@ export async function searchSpotify(
         spotify: 'track'
       }
     });
-  } catch (error) {
+  } catch {
     throw new Error(
       `An error occurred while searching for ${SpotifyTrackNaming.trackIdentifier}s.`
     );

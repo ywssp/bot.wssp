@@ -1,3 +1,5 @@
+'use strict';
+
 type TetrioRank =
   | 'x'
   | 'u'
