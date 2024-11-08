@@ -114,7 +114,7 @@ export class RemoveTrackCommand extends Command {
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.Error)
+      .setColor(ColorPalette.Notice)
       .setTitle(
         `Removed ${removedTracks.length} track${
           removedTracks.length > 1 ? 's' : ''

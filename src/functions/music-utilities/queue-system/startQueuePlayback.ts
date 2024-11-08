@@ -371,7 +371,7 @@ export function startQueuePlayback(guildId: string) {
     // If the queue is empty or the voice channel is empty, start a timeout to leave the voice channel
     // Only start the timeout if it hasn't been started yet
     if ((isVCEmpty || isQueueEmpty) && localMusicData.leaveTimeout === null) {
-      const embed = new EmbedBuilder().setColor(ColorPalette.Info);
+      const embed = new EmbedBuilder().setColor(ColorPalette.Notice);
 
       if (isQueueEmpty) {
         embed.setTitle('Queue Empty');

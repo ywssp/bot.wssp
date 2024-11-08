@@ -66,7 +66,7 @@ export class PreviousTrackCommand extends Command {
       guildQueueData.trackListIndex + 1
     );
 
-    const embed = new EmbedBuilder().setColor(ColorPalette.Error);
+    const embed = new EmbedBuilder().setColor(ColorPalette.Notice);
 
     guildQueueData.modifyIndex(-skipNumber);
     guildQueueData.skipped = true;

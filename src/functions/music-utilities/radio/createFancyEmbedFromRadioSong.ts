@@ -1,3 +1,5 @@
+'use strict';
+
 import { EmbedBuilder } from 'discord.js';
 
 import { Duration } from 'luxon';

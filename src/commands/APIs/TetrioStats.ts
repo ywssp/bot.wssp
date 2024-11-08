@@ -236,7 +236,7 @@ export class TetrioCommand extends Command {
 
     if (userInfo.role === 'banned') {
       embed = new EmbedBuilder()
-        .setColor(ColorPalette.Error)
+        .setColor(ColorPalette.Notice)
         .setTitle(userInfo.username.toUpperCase())
         .setURL(`https://ch.tetr.io/u/${userInfo.username}`)
         .setThumbnail('https://tetr.io/res/avatar-banned.png')
