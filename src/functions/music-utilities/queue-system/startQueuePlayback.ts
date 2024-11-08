@@ -90,6 +90,10 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
           value: nextString
         }
       ]);
+    } else {
+      embed.setFooter({
+        text: 'The bot will leave 5 minutes after the queue is empty.'
+      });
     }
 
     message = { embeds: [embed] };
@@ -129,6 +133,10 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       embed.setDescription(
         embed.data.description + `\nNext ${nextTrackIdentifier}: ${nextString}`
       );
+    } else {
+      embed.setFooter({
+        text: 'The bot will leave 5 minutes after the queue is empty.'
+      });
     }
 
     message = { embeds: [embed] };
@@ -159,6 +167,8 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
           hideLinkEmbed(nextTrack.url)
         )} | By ${nextUploaderString}`;
       }
+    } else {
+      text += '\n\nThe bot will leave 5 minutes after the queue is empty.';
     }
 
     message = text;
@@ -255,12 +265,18 @@ export function startQueuePlayback(guildId: string) {
     throw new Error(`No guild music data exists for guild ${guildId}`);
   }
 
+  if (guildMusicData.leaveTimeout !== null) {
+    clearTimeout(guildMusicData.leaveTimeout);
+    guildMusicData.leaveTimeout = null;
+  }
+
   const queueData = guildMusicData.queueSystemData;
 
   const voiceConnection = connectToVoiceChannel(
     guildMusicData.getVoiceChannel()
   );
 
+  disposeAudioPlayer(guildId);
   let audioPlayer = createAudioPlayer({
     behaviors: {
       noSubscriber: NoSubscriberBehavior.Play
@@ -276,9 +292,6 @@ export function startQueuePlayback(guildId: string) {
     guildMusicData.sendUpdateMessage(
       `Disconnecting from the radio to play a ${currentTrackIdentifier}...`
     );
-
-    // Removes the old audio player used for radio playback
-    disposeAudioPlayer(guildId);
 
     // Disconnects the guild from the radio websocket
     disconnectGuildFromRadioWebsocket(guildId);
@@ -347,32 +360,72 @@ export function startQueuePlayback(guildId: string) {
       localQueueData.trackListIndex++;
     }
 
+    const isQueueEmpty =
+      localQueueData.trackList.length === localQueueData.trackListIndex;
+
     const isVCEmpty =
       localMusicData
         .getVoiceChannel()
         .members.filter((member) => !member.user.bot).size === 0;
 
-    const isQueueEmpty =
-      localQueueData.trackList.length === localQueueData.trackListIndex;
+    // If the queue is empty or the voice channel is empty, start a timeout to leave the voice channel
+    // Only start the timeout if it hasn't been started yet
+    if ((isVCEmpty || isQueueEmpty) && localMusicData.leaveTimeout === null) {
+      const embed = new EmbedBuilder().setColor(ColorPalette.Info);
 
-    const ifStopping = isVCEmpty || isQueueEmpty;
+      if (isQueueEmpty) {
+        embed.setTitle('Queue Empty');
+        embed.setDescription(
+          'No more tracks in the queue. Leaving in 5 minutes...'
+        );
+      } else {
+        embed.setTitle('No Users in Voice Channel');
+        embed.setDescription(
+          'No users are inside the voice channel. Leaving in 5 minutes...'
+        );
+      }
 
-    if (isVCEmpty) {
-      localMusicData.sendUpdateMessage(
-        'No users are inside the voice channel. Stopping...'
-      );
+      localMusicData.sendUpdateMessage({ embeds: [embed] });
+
+      localMusicData.leaveTimeout = setTimeout(() => {
+        const futureMusicData = getGuildMusicData(guildId);
+
+        const futureQueueEmpty =
+          futureMusicData?.queueSystemData.trackList.length ===
+          futureMusicData?.queueSystemData.trackListIndex;
+
+        const futureVCEmpty =
+          futureMusicData === undefined ||
+          futureMusicData
+            .getVoiceChannel()
+            .members.filter((member) => !member.user.bot).size === 0;
+
+        const timeoutEmbed = new EmbedBuilder().setColor(ColorPalette.Error);
+
+        if (futureQueueEmpty) {
+          timeoutEmbed.setTitle('Queue Empty');
+          timeoutEmbed.setDescription(
+            'No more tracks in the queue. Stopping...'
+          );
+        } else if (futureVCEmpty) {
+          timeoutEmbed.setTitle('No Users in Voice Channel');
+          timeoutEmbed.setDescription(
+            'No users are inside the voice channel. Stopping...'
+          );
+        }
+
+        futureMusicData?.sendUpdateMessage({ embeds: [timeoutEmbed] });
+
+        if (futureQueueEmpty || futureVCEmpty) {
+          localQueueData.playing = false;
+          disposeAudioPlayer(guildId);
+          voiceConnection.destroy();
+        }
+      }, 5 * 60 * 1000);
     }
 
+    // Do not continue if the queue is empty
     if (isQueueEmpty) {
-      localMusicData.sendUpdateMessage(
-        'No more tracks in the queue. Stopping...'
-      );
-    }
-
-    if (ifStopping) {
-      localQueueData.playing = false;
-      disposeAudioPlayer(guildId);
-      voiceConnection.destroy();
       return;
     }
 

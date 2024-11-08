@@ -315,7 +315,7 @@ export class SearchVideosCommand extends Command {
       replyEmbed.setThumbnail(queuedTrack.thumbnail);
     }
 
-    interaction.editReply({ embeds: [replyEmbed] });
+    interaction.editReply({ embeds: [replyEmbed], components: [] });
 
     startQueuePlayback(interaction.guildId as string);
   }

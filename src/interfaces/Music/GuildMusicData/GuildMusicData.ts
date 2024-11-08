@@ -11,6 +11,7 @@ export class GuildMusicData {
   musicAnnounceStyle: 'embed_fancy' | 'embed_simple' | 'text_simple' | 'none';
   queueSystemData: QueueSystemData;
   radioData: RadioData;
+  leaveTimeout: NodeJS.Timeout | null = null;
 
   constructor(
     voiceChannel: VoiceBasedChannel,
