@@ -191,7 +191,7 @@ export class SearchVideosCommand extends Command {
       namings = SpotifyTrackNaming;
     }
 
-    interaction.deferReply();
+    await interaction.deferReply();
 
     let choices: (TrackInfo | AdaptedTrackInfo)[];
 
@@ -278,13 +278,19 @@ export class SearchVideosCommand extends Command {
         componentType: ComponentType.Button
       });
     } catch {
-      interaction.editReply(`🛑 | No ${namings.trackIdentifier} selected.`);
+      interaction.editReply({
+        content: `🛑 | No ${namings.trackIdentifier} selected.`,
+        embeds: [],
+        components: []
+      });
       return;
     }
 
     if (collected.customId === 'cancel') {
       interaction.editReply({
-        content: '🛑 | Selection cancelled.'
+        content: '🛑 | Selection cancelled.',
+        embeds: [],
+        components: []
       });
       return;
     }
@@ -315,7 +321,7 @@ export class SearchVideosCommand extends Command {
       replyEmbed.setThumbnail(queuedTrack.thumbnail);
     }
 
-    interaction.editReply({ embeds: [replyEmbed], components: [] });
+    await interaction.editReply({ embeds: [replyEmbed], components: [] });
 
     startQueuePlayback(interaction.guildId as string);
   }
