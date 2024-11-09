@@ -24,13 +24,13 @@ import { getTrackNamings } from '../../../functions/music-utilities/queue-system
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
-import { searchSpotify } from '../../../functions/music-utilities/queue-system/searchers/spotify';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 import {
-  SoundCloudTrackNaming,
-  SpotifyTrackNaming,
-  YTMusicTrackNaming,
-  YouTubeVideoNaming
-} from '../../../settings/TrackNaming';
+  SoundCloudTerms,
+  SpotifyTerms,
+  YTMusicTerms,
+  YouTubeTerms
+} from '../../../settings/MusicSourceTerms';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -187,7 +187,9 @@ export class PlayMusicCommand extends Command {
 
     if (
       linkOrQueryType === 'yt_playlist' ||
-      linkOrQueryType === 'so_playlist'
+      linkOrQueryType === 'so_playlist' ||
+      linkOrQueryType === 'sp_playlist' ||
+      linkOrQueryType === 'sp_album'
     ) {
       interaction.reply({
         content: 'Playlist detected. Use the `addplaylist` command instead.',
@@ -197,29 +199,14 @@ export class PlayMusicCommand extends Command {
     }
 
     if (linkOrQueryType.startsWith('yt_') && source === 'soundcloud') {
-      await interaction.reply({
-        content:
-          'YouTube link detected. Using the `youtube` subcommand instead.'
-      });
-
       source = 'youtube';
     }
 
     if (linkOrQueryType.startsWith('so_') && source !== 'soundcloud') {
-      await interaction.reply({
-        content:
-          'SoundCloud link detected. Using the `soundcloud` subcommand instead.'
-      });
-
       source = 'soundcloud';
     }
 
     if (linkOrQueryType.startsWith('sp_') && source !== 'spotify') {
-      await interaction.reply({
-        content:
-          'Spotify link detected. Using the `spotify` subcommand instead.'
-      });
-
       source = 'spotify';
     }
 
@@ -251,7 +238,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
           });
         }
 
@@ -278,7 +265,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YTMusicTrackNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YTMusicTerms.trackIdentifier}s.`
           });
         }
 
@@ -305,7 +292,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${SoundCloudTrackNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${SoundCloudTerms.trackIdentifier}s.`
           });
         }
 
@@ -313,7 +300,7 @@ export class PlayMusicCommand extends Command {
       }
     } else {
       try {
-        const search = await searchSpotify(linkOrQuery, {
+        const search = await searchSpotifyAdapt(linkOrQuery, {
           limit: 1
         });
 
@@ -332,7 +319,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${SpotifyTrackNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${SpotifyTerms.trackIdentifier}s.`
           });
         }
 

@@ -11,13 +11,13 @@ import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusic
  */
 export function createGuildMusicData(
   guildId: string,
-  voiceChannel: ConstructorParameters<typeof GuildMusicData>[0],
-  textUpdateChannel: ConstructorParameters<typeof GuildMusicData>[1]
+  voiceChannel: ConstructorParameters<typeof GuildMusicData>[1],
+  textUpdateChannel: ConstructorParameters<typeof GuildMusicData>[2]
 ): GuildMusicData {
   if (!container.guildMusicDataMap.has(guildId)) {
     container.guildMusicDataMap.set(
       guildId,
-      new GuildMusicData(voiceChannel, textUpdateChannel)
+      new GuildMusicData(guildId, voiceChannel, textUpdateChannel)
     );
   }
   return container.guildMusicDataMap.get(guildId) as GuildMusicData;

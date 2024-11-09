@@ -6,7 +6,7 @@ import {
   TrackInfo,
   CachedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
-import { YouTubeVideoNaming } from '../../../../settings/TrackNaming';
+import { YouTubeTerms } from '../../../../settings/MusicSourceTerms';
 import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 
 function storeYoutubeTrackInCache(track: TrackInfo) {
@@ -43,7 +43,7 @@ async function fetchYoutubeTrackFromCache(
       fetchedTrack = (await playdl.video_basic_info(trackURL)).video_details;
     } catch {
       throw new Error(
-        `Could not fetch track information for ${YouTubeVideoNaming.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch track information for ${YouTubeTerms.fullIdentifier} ID: ${trackURL}`
       );
     }
 
@@ -82,7 +82,7 @@ export async function searchYoutube(
       video = await fetchYoutubeTrackFromCache(id);
     } catch {
       throw new Error(
-        `Could not fetch information for ${YouTubeVideoNaming.fullIdentifier} ID: ${id}`
+        `Could not fetch information for ${YouTubeTerms.fullIdentifier} ID: ${id}`
       );
     }
 
@@ -102,12 +102,12 @@ export async function searchYoutube(
     });
   } catch {
     throw new Error(
-      `An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+      `An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${YouTubeVideoNaming.trackIdentifier}s found.`);
+    throw new Error(`No ${YouTubeTerms.trackIdentifier}s found.`);
   }
 
   return searchResults.map((item) => new TrackInfo(item));

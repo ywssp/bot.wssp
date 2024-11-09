@@ -19,6 +19,11 @@ type TrackAlbum = {
   name: string;
   url: string | undefined;
 };
+
+type TrackInfoDataSources =
+  // eslint-disable-next-line no-use-before-define
+  TrackInfo | YouTubeVideo | SoundCloudTrack | YTMusicSong | SpotifyTrack;
+
 export class TrackInfo {
   readonly type = 'queue_track';
   readonly source: TrackSource;
@@ -30,14 +35,7 @@ export class TrackInfo {
   readonly album?: TrackAlbum;
   readonly thumbnail?: string;
 
-  constructor(
-    data:
-      | TrackInfo
-      | YouTubeVideo
-      | SoundCloudTrack
-      | YTMusicSong
-      | SpotifyTrack
-  ) {
+  constructor(data: TrackInfoDataSources) {
     if (data instanceof TrackInfo) {
       this.source = data.source;
       this.title = data.title;
@@ -177,7 +175,7 @@ export class TrackInfo {
 export class QueuedTrackInfo extends TrackInfo {
   readonly addedBy: string;
 
-  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack, user: User) {
+  constructor(data: TrackInfoDataSources, user: User) {
     super(data);
     this.addedBy = user.tag;
   }
@@ -186,10 +184,7 @@ export class QueuedTrackInfo extends TrackInfo {
 export class CachedTrackInfo extends TrackInfo {
   readonly cachedAt: Date;
 
-  constructor(
-    data: TrackInfo | YouTubeVideo | SoundCloudTrack,
-    cachedAt: Date
-  ) {
+  constructor(data: TrackInfoDataSources, cachedAt: Date) {
     super(data);
     this.cachedAt = cachedAt;
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 'use strict';
 
 import { container } from '@sapphire/framework';
@@ -8,9 +9,16 @@ import {
   AudioResource,
   createAudioPlayer,
   createAudioResource,
+  getVoiceConnection,
   NoSubscriberBehavior
 } from '@discordjs/voice';
-import { EmbedBuilder, hideLinkEmbed, hyperlink, inlineCode } from 'discord.js';
+import {
+  EmbedBuilder,
+  hideLinkEmbed,
+  hyperlink,
+  inlineCode,
+  User
+} from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import {
   QueuedAdaptedTrackInfo,
@@ -32,6 +40,8 @@ import { disposeAudioPlayer } from '../disposeAudioPlayer';
 import { getTrackNamings } from './getTrackNamings';
 import _ from 'lodash';
 import { createSimpleEmbedFromTrack } from './createSimpleEmbedFromTrack';
+import { searchSpotifyAdapt } from './searchers/spotify';
+import { getAudioPlayer } from '../getAudioPlayer';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   const currentTrack = guildMusicData.queueSystemData.currentTrack();
@@ -92,7 +102,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       ]);
     } else {
       embed.setFooter({
-        text: 'The bot will leave 5 minutes after the queue is empty.'
+        text: 'Leaving in 5 minutes after the queue is empty.'
       });
     }
 
@@ -135,7 +145,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       );
     } else {
       embed.setFooter({
-        text: 'The bot will leave 5 minutes after the queue is empty.'
+        text: 'Leaving in 5 minutes after the queue is empty.'
       });
     }
 
@@ -168,7 +178,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
         )} | By ${nextUploaderString}`;
       }
     } else {
-      text += '\n\nThe bot will leave 5 minutes after the queue is empty.';
+      text += '\n\nLeaving in 5 minutes after the queue is empty.';
     }
 
     message = text;
@@ -177,11 +187,159 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   guildMusicData.sendUpdateMessage(message);
 }
 
+function handleTrackEnd(guildId: string) {
+  const localMusicData = getGuildMusicData(guildId);
+
+  if (localMusicData === undefined) {
+    return;
+  }
+
+  const localQueueData = localMusicData.queueSystemData;
+
+  if (localQueueData.loop.type === 'queue') {
+    localQueueData.trackList.push(localQueueData.currentTrack());
+  }
+
+  if (localQueueData.loop.type !== 'track') {
+    localQueueData.trackListIndex++;
+  }
+
+  const isQueueEmpty =
+    localQueueData.trackList.length === localQueueData.trackListIndex;
+
+  const isVCEmpty =
+    localMusicData
+      .getVoiceChannel()
+      .members.filter((member) => !member.user.bot).size === 0;
+
+  // If the queue is empty or the voice channel is empty, start a timeout to leave the voice channel
+  // Only start the timeout if it hasn't been started yet
+  if ((isVCEmpty || isQueueEmpty) && localMusicData.leaveTimeout === null) {
+    const embed = new EmbedBuilder().setColor(ColorPalette.Notice);
+
+    if (isQueueEmpty) {
+      embed.setTitle('Queue Empty');
+      embed.setDescription(
+        'No more tracks in the queue. Leaving in 5 minutes...'
+      );
+    } else {
+      embed.setTitle('No Users in Voice Channel');
+      embed.setDescription(
+        'No users are inside the voice channel. Leaving in 5 minutes...'
+      );
+    }
+
+    localMusicData.sendUpdateMessage({ embeds: [embed] });
+
+    localMusicData.leaveTimeout = setTimeout(() => {
+      const futureMusicData = getGuildMusicData(guildId);
+
+      const futureQueueEmpty =
+        futureMusicData?.queueSystemData.trackList.length ===
+        futureMusicData?.queueSystemData.trackListIndex;
+
+      const futureVCEmpty =
+        futureMusicData === undefined ||
+        futureMusicData
+          .getVoiceChannel()
+          .members.filter((member) => !member.user.bot).size === 0;
+
+      const timeoutEmbed = new EmbedBuilder().setColor(ColorPalette.Error);
+
+      if (futureQueueEmpty) {
+        timeoutEmbed.setTitle('Queue Empty');
+        timeoutEmbed.setDescription('No more tracks in the queue. Stopping...');
+      } else if (futureVCEmpty) {
+        timeoutEmbed.setTitle('No Users in Voice Channel');
+        timeoutEmbed.setDescription(
+          'No users are inside the voice channel. Stopping...'
+        );
+      }
+
+      if (futureQueueEmpty || futureVCEmpty) {
+        futureMusicData?.sendUpdateMessage({ embeds: [timeoutEmbed] });
+
+        localQueueData.playing = false;
+        disposeAudioPlayer(guildId);
+        getVoiceConnection(guildId)?.destroy();
+      }
+    }, 5 * 60 * 1000);
+  }
+
+  // Do not continue if the queue is empty
+  if (isQueueEmpty) {
+    return;
+  }
+
+  if (localQueueData.shuffle && localQueueData.loop.type !== 'track') {
+    const randomIndex = Math.floor(
+      Math.random() * localQueueData.getQueue().length
+    );
+
+    const selectedVideo = localQueueData.trackList.splice(randomIndex, 1)[0];
+
+    localQueueData.trackList.splice(
+      localQueueData.trackListIndex,
+      0,
+      selectedVideo
+    );
+  }
+
+  const audioPlayer = getAudioPlayer(guildId);
+
+  if (audioPlayer === undefined) {
+    localMusicData.sendUpdateMessage({
+      content: '❌ | An error occurred while trying to play the next track.'
+    });
+    return;
+  }
+
+  playTrack(localQueueData.currentTrack(), audioPlayer, localMusicData);
+}
+
 async function playTrack(
   track: QueuedTrackInfo | QueuedAdaptedTrackInfo,
   audioPlayer: AudioPlayer,
   musicData: GuildMusicData
 ) {
+  if (
+    track.source === 'spotify' &&
+    !(track instanceof QueuedAdaptedTrackInfo)
+  ) {
+    try {
+      const search = await searchSpotifyAdapt(track.url, {
+        limit: 1
+      });
+
+      if (!Array.isArray(search)) {
+        track = new QueuedAdaptedTrackInfo(search.data, {
+          tag: track.addedBy
+        } as User);
+      } else {
+        track = new QueuedAdaptedTrackInfo(search[0], {
+          tag: track.addedBy
+        } as User);
+      }
+    } catch (error) {
+      container.logger.error(error);
+
+      const errrorEmbed = new EmbedBuilder()
+        .setColor(ColorPalette.Error)
+        .setTitle('Match Error')
+        .setDescription(
+          `An error occurred while trying to match the Spotify track [${track.title}](${track.url}).`
+        );
+
+      musicData.sendUpdateMessage({
+        embeds: [errrorEmbed]
+      });
+
+      handleTrackEnd(musicData.guildId);
+
+      return;
+    }
+  }
+
   const metadata: MusicResourceMetadata = {
     type: 'queued_track',
     data: track
@@ -343,106 +501,5 @@ export function startQueuePlayback(guildId: string) {
   queueData.playing = true;
   playTrack(queueData.currentTrack(), audioPlayer, guildMusicData);
 
-  audioPlayer.on(AudioPlayerStatus.Idle, () => {
-    const localMusicData = getGuildMusicData(guildId);
-
-    if (localMusicData === undefined) {
-      return;
-    }
-
-    const localQueueData = localMusicData.queueSystemData;
-
-    if (localQueueData.loop.type === 'queue') {
-      localQueueData.trackList.push(localQueueData.currentTrack());
-    }
-
-    if (localQueueData.loop.type !== 'track') {
-      localQueueData.trackListIndex++;
-    }
-
-    const isQueueEmpty =
-      localQueueData.trackList.length === localQueueData.trackListIndex;
-
-    const isVCEmpty =
-      localMusicData
-        .getVoiceChannel()
-        .members.filter((member) => !member.user.bot).size === 0;
-
-    // If the queue is empty or the voice channel is empty, start a timeout to leave the voice channel
-    // Only start the timeout if it hasn't been started yet
-    if ((isVCEmpty || isQueueEmpty) && localMusicData.leaveTimeout === null) {
-      const embed = new EmbedBuilder().setColor(ColorPalette.Notice);
-
-      if (isQueueEmpty) {
-        embed.setTitle('Queue Empty');
-        embed.setDescription(
-          'No more tracks in the queue. Leaving in 5 minutes...'
-        );
-      } else {
-        embed.setTitle('No Users in Voice Channel');
-        embed.setDescription(
-          'No users are inside the voice channel. Leaving in 5 minutes...'
-        );
-      }
-
-      localMusicData.sendUpdateMessage({ embeds: [embed] });
-
-      localMusicData.leaveTimeout = setTimeout(() => {
-        const futureMusicData = getGuildMusicData(guildId);
-
-        const futureQueueEmpty =
-          futureMusicData?.queueSystemData.trackList.length ===
-          futureMusicData?.queueSystemData.trackListIndex;
-
-        const futureVCEmpty =
-          futureMusicData === undefined ||
-          futureMusicData
-            .getVoiceChannel()
-            .members.filter((member) => !member.user.bot).size === 0;
-
-        const timeoutEmbed = new EmbedBuilder().setColor(ColorPalette.Error);
-
-        if (futureQueueEmpty) {
-          timeoutEmbed.setTitle('Queue Empty');
-          timeoutEmbed.setDescription(
-            'No more tracks in the queue. Stopping...'
-          );
-        } else if (futureVCEmpty) {
-          timeoutEmbed.setTitle('No Users in Voice Channel');
-          timeoutEmbed.setDescription(
-            'No users are inside the voice channel. Stopping...'
-          );
-        }
-
-        futureMusicData?.sendUpdateMessage({ embeds: [timeoutEmbed] });
-
-        if (futureQueueEmpty || futureVCEmpty) {
-          localQueueData.playing = false;
-          disposeAudioPlayer(guildId);
-          voiceConnection.destroy();
-        }
-      }, 5 * 60 * 1000);
-    }
-
-    // Do not continue if the queue is empty
-    if (isQueueEmpty) {
-      return;
-    }
-
-    if (localQueueData.shuffle && localQueueData.loop.type !== 'track') {
-      const randomIndex = Math.floor(
-        Math.random() * localQueueData.getQueue().length
-      );
-
-      const selectedVideo = localQueueData.trackList.splice(randomIndex, 1)[0];
-
-      localQueueData.trackList.splice(
-        localQueueData.trackListIndex,
-        0,
-        selectedVideo
-      );
-    }
-
-    playTrack(localQueueData.currentTrack(), audioPlayer, localMusicData);
-  });
+  audioPlayer.on(AudioPlayerStatus.Idle, () => handleTrackEnd(guildId));
 }

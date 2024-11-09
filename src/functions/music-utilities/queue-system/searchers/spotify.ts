@@ -7,11 +7,8 @@ import {
   AdaptedTrackInfo,
   CachedAdaptedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
-import { SpotifyTrackNaming } from '../../../../settings/TrackNaming';
-import {
-  AdaptedTrackCacheResult,
-  TrackCacheResult
-} from '../../../../interfaces/Music/Queue System/TrackCacheResult';
+import { SpotifyTerms } from '../../../../settings/MusicSourceTerms';
+import { AdaptedTrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 import { SpotifySearchSettings } from '../../../../settings/SpotifySearchSettings';
 import { Duration } from 'luxon';
 import { searchYTMusic } from './youtubeMusic';
@@ -127,7 +124,7 @@ async function fetchSpotifyTrackFromCache(
       fetchedTrack = searchResult as playdl.SpotifyTrack;
     } catch {
       throw new Error(
-        `Could not fetch information for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch information for ${SpotifyTerms.fullIdentifier} ID: ${trackURL}`
       );
     }
 
@@ -146,7 +143,7 @@ async function fetchSpotifyTrackFromCache(
       matchedTrack = searchedTrack;
     } catch {
       throw new Error(
-        `Could not find a suitable match for ${SpotifyTrackNaming.fullIdentifier} ID: ${trackURL}`
+        `Could not find a suitable match for ${SpotifyTerms.fullIdentifier} ID: ${trackURL}`
       );
     }
 
@@ -169,24 +166,24 @@ async function fetchSpotifyTrackFromCache(
   };
 }
 
-export async function searchSpotify(
+export async function searchSpotifyAdapt(
   linkOrSearch: string,
   options?: {
     limit?: number;
     forceSearch?: boolean;
     source?: 'youtube' | 'soundcloud';
   }
-): Promise<TrackCacheResult | AdaptedTrackInfo[]> {
+): Promise<AdaptedTrackCacheResult | AdaptedTrackInfo[]> {
   if (playdl.sp_validate(linkOrSearch) === 'track' && !options?.forceSearch) {
     const url = linkOrSearch;
 
-    let track: TrackCacheResult;
+    let track: AdaptedTrackCacheResult;
 
     try {
       track = await fetchSpotifyTrackFromCache(url);
     } catch {
       throw new Error(
-        `Could not fetch information for ${SpotifyTrackNaming.fullIdentifier} ID: ${url}`
+        `Could not fetch information for ${SpotifyTerms.fullIdentifier} ID: ${url}`
       );
     }
 
@@ -210,12 +207,12 @@ export async function searchSpotify(
     });
   } catch {
     throw new Error(
-      `An error occurred while searching for ${SpotifyTrackNaming.trackIdentifier}s.`
+      `An error occurred while searching for ${SpotifyTerms.trackIdentifier}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${SpotifyTrackNaming.trackIdentifier}s found.`);
+    throw new Error(`No ${SpotifyTerms.trackIdentifier}s found.`);
   }
 
   const adaptedSearchResults: AdaptedTrackInfo[] = [];

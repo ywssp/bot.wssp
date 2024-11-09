@@ -1,6 +1,6 @@
 'use strict';
 
-export interface TrackNamings {
+export interface MusicSourceTerms {
   source: string;
   fullIdentifier: string;
   trackIdentifier: string;
@@ -8,7 +8,7 @@ export interface TrackNamings {
   album: string;
 }
 
-export const YouTubeVideoNaming: TrackNamings = {
+export const YouTubeTerms: MusicSourceTerms = {
   source: 'YouTube',
   fullIdentifier: 'YouTube Video',
   trackIdentifier: 'video',
@@ -16,7 +16,7 @@ export const YouTubeVideoNaming: TrackNamings = {
   album: 'Album'
 };
 
-export const SoundCloudTrackNaming: TrackNamings = {
+export const SoundCloudTerms: MusicSourceTerms = {
   source: 'SoundCloud',
   fullIdentifier: 'SoundCloud Track',
   trackIdentifier: 'track',
@@ -24,7 +24,7 @@ export const SoundCloudTrackNaming: TrackNamings = {
   album: 'Album'
 };
 
-export const YTMusicTrackNaming: TrackNamings = {
+export const YTMusicTerms: MusicSourceTerms = {
   source: 'YT Music',
   fullIdentifier: 'YT Music Track',
   trackIdentifier: 'track',
@@ -32,7 +32,7 @@ export const YTMusicTrackNaming: TrackNamings = {
   album: 'Album'
 };
 
-export const SpotifyTrackNaming: TrackNamings = {
+export const SpotifyTerms: MusicSourceTerms = {
   source: 'Spotify',
   fullIdentifier: 'Spotify Track',
   trackIdentifier: 'track',

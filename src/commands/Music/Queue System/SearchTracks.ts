@@ -26,16 +26,16 @@ import {
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import {
-  SoundCloudTrackNaming,
-  SpotifyTrackNaming,
-  TrackNamings,
-  YTMusicTrackNaming,
-  YouTubeVideoNaming
-} from '../../../settings/TrackNaming';
+  SoundCloudTerms,
+  SpotifyTerms,
+  MusicSourceTerms,
+  YTMusicTerms,
+  YouTubeTerms
+} from '../../../settings/MusicSourceTerms';
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
-import { searchSpotify } from '../../../functions/music-utilities/queue-system/searchers/spotify';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -179,16 +179,16 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    let namings: TrackNamings;
+    let namings: MusicSourceTerms;
 
     if (source === 'youtube') {
-      namings = YouTubeVideoNaming;
+      namings = YouTubeTerms;
     } else if (source === 'yt_music') {
-      namings = YTMusicTrackNaming;
+      namings = YTMusicTerms;
     } else if (source === 'soundcloud') {
-      namings = SoundCloudTrackNaming;
+      namings = SoundCloudTerms;
     } else {
-      namings = SpotifyTrackNaming;
+      namings = SpotifyTerms;
     }
 
     await interaction.deferReply();
@@ -212,7 +212,7 @@ export class SearchVideosCommand extends Command {
           forceSearch: true
         })) as TrackInfo[];
       } else {
-        choices = (await searchSpotify(query, {
+        choices = (await searchSpotifyAdapt(query, {
           limit: 5,
           forceSearch: true
         })) as AdaptedTrackInfo[];

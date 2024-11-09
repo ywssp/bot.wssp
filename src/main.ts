@@ -5,6 +5,8 @@ import { install } from 'source-map-support';
 install();
 
 import { SapphireClient } from '@sapphire/framework';
+import '@sapphire/plugin-hmr';
+
 import { GatewayIntentBits } from 'discord.js';
 import 'dotenv/config';
 
@@ -13,7 +15,10 @@ const client = new SapphireClient({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildVoiceStates
-  ]
+  ],
+  hmr: {
+    enabled: process.env.HOT_RELOAD === 'true'
+  }
 });
 
 client.login(process.env.BOT_TOKEN);

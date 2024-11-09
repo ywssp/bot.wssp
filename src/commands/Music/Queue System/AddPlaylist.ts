@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 'use strict';
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
@@ -12,6 +13,8 @@ import {
 import play, {
   SoundCloudPlaylist,
   SoundCloudTrack,
+  SpotifyPlaylist,
+  SpotifyTrack,
   YouTubePlayList
 } from 'play-dl';
 
@@ -22,9 +25,11 @@ import { startQueuePlayback } from '../../../functions/music-utilities/queue-sys
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { Duration } from 'luxon';
 import {
-  SoundCloudTrackNaming,
-  YouTubeVideoNaming
-} from '../../../settings/TrackNaming';
+  SoundCloudTerms,
+  SpotifyTerms,
+  MusicSourceTerms,
+  YouTubeTerms
+} from '../../../settings/MusicSourceTerms';
 
 export class AddPlaylistCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -32,7 +37,7 @@ export class AddPlaylistCommand extends Command {
       ...options,
       name: 'addplaylist',
       description:
-        'Adds the contents of a YouTube or SoundCloud playlist to the queue.',
+        'Adds the contents of a YouTube, SoundCloud, or Spotify playlist to the queue.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -59,15 +64,11 @@ export class AddPlaylistCommand extends Command {
             .setDescription('Whether to loop the playlist.')
             .setRequired(false)
         )
-        .addStringOption((option) =>
+        .addBooleanOption((option) =>
           option
-            .setName('modifier')
-            .setDescription('The modifier to use when adding the playlist.')
+            .setName('shuffle')
+            .setDescription('Shuffles the playlist.')
             .setRequired(false)
-            .setChoices({
-              name: 'Reverse',
-              value: 'reverse'
-            })
         )
     );
   }
@@ -137,8 +138,7 @@ export class AddPlaylistCommand extends Command {
     if (
       linkType !== 'yt_playlist' &&
       linkType !== 'so_playlist' &&
-      linkType !== 'sp_playlist' &&
-      linkType !== 'sp_album'
+      linkType !== 'sp_playlist'
     ) {
       interaction.reply({
         content: '❓ | Invalid playlist link.',
@@ -147,9 +147,19 @@ export class AddPlaylistCommand extends Command {
       return;
     }
 
-    const source = linkType === 'yt_playlist' ? 'YouTube' : 'SoundCloud';
-    const namings =
-      source === 'YouTube' ? YouTubeVideoNaming : SoundCloudTrackNaming;
+    let source: 'YouTube' | 'SoundCloud' | 'Spotify';
+    let namings: MusicSourceTerms;
+
+    if (linkType === 'yt_playlist') {
+      source = 'YouTube';
+      namings = YouTubeTerms;
+    } else if (linkType === 'so_playlist') {
+      source = 'SoundCloud';
+      namings = SoundCloudTerms;
+    } else {
+      source = 'Spotify';
+      namings = SpotifyTerms;
+    }
 
     await interaction.reply(`Processing ${namings.source} Playlist...`);
 
@@ -169,6 +179,7 @@ export class AddPlaylistCommand extends Command {
 
     if (source === 'YouTube') {
       let playlist: YouTubePlayList;
+
       try {
         playlist = await play.playlist_info(link, {
           incomplete: true
@@ -181,9 +192,9 @@ export class AddPlaylistCommand extends Command {
         return;
       }
 
-      const foundTracks = await (
-        await playlist.all_videos()
-      ).filter((video) => !video.private);
+      const foundTracks = (await playlist.all_videos()).filter(
+        (video) => !video.private
+      );
 
       tracks = foundTracks.map((video) => {
         const track = new QueuedTrackInfo(video, interaction.user);
@@ -209,7 +220,7 @@ export class AddPlaylistCommand extends Command {
         thumbnail: playlist.thumbnail?.url,
         playlistLength: playlist.videoCount
       };
-    } else {
+    } else if (source === 'SoundCloud') {
       let playlist: SoundCloudPlaylist;
 
       try {
@@ -250,6 +261,54 @@ export class AddPlaylistCommand extends Command {
         thumbnail: undefined,
         playlistLength: playlist.total_tracks
       };
+    } else {
+      let playlist: SpotifyPlaylist;
+
+      try {
+        if (play.is_expired()) {
+          await play.refreshToken();
+        }
+
+        playlist = (await play.spotify(link)) as SpotifyPlaylist;
+      } catch (error) {
+        interaction.editReply({
+          content: `❌ | An error occurred while getting the ${source} playlist info.`
+        });
+        this.container.logger.error(error);
+        return;
+      }
+
+      let foundTracks: SpotifyTrack[];
+
+      try {
+        foundTracks = await playlist.all_tracks();
+        foundTracks = foundTracks.filter((track) => track.playable);
+      } catch (error) {
+        interaction.editReply({
+          content: `❌ | An error occurred while getting the ${namings.trackIdentifier}s of the playlist.`
+        });
+        this.container.logger.error(error);
+        return;
+      }
+
+      tracks = foundTracks.map((track) => {
+        playlistDuration = (playlistDuration as Duration).plus(
+          Duration.fromMillis(track.durationInMs)
+        );
+
+        return new QueuedTrackInfo(track, interaction.user);
+      });
+
+      playlistMetadata = {
+        title: playlist.name,
+        url: undefined,
+        channel: {
+          name: playlist.owner.name,
+          url: playlist.owner.url
+        },
+        thumbnail: playlist.thumbnail.url,
+        playlistLength: playlist.total_tracks
+      };
     }
 
     if (tracks.length === 0) {
@@ -263,12 +322,33 @@ export class AddPlaylistCommand extends Command {
       guildQueueData.setLoopType('queue');
     }
 
-    switch (interaction.options.getString('modifier') as 'reverse' | null) {
-      case 'reverse':
-        tracks.reverse();
-        break;
-      default:
-        break;
+    if (interaction.options.getBoolean('shuffle')) {
+      guildQueueData.shuffle = true;
+    }
+
+    let lengthDescription = '';
+
+    if (playlistDuration instanceof Duration) {
+      // Remove seconds
+      playlistDuration = playlistDuration
+        .shiftTo('hours', 'minutes')
+        .mapUnits((unit) => Math.floor(unit));
+
+      lengthDescription += playlistDuration.toHuman({
+        unitDisplay: 'short'
+      });
+    } else {
+      lengthDescription += 'Duration unknown';
+    }
+
+    lengthDescription += '\n';
+
+    if (playlistMetadata.playlistLength !== undefined) {
+      if (playlistMetadata.playlistLength !== tracks.length) {
+        lengthDescription += `${tracks.length}/${playlistMetadata.playlistLength} playable ${namings.trackIdentifier}s`;
+      } else {
+        lengthDescription += `${tracks.length} ${namings.trackIdentifier}s `;
+      }
     }
 
     const embed = new EmbedBuilder()
@@ -292,17 +372,20 @@ export class AddPlaylistCommand extends Command {
         },
         {
           name: 'Length',
-          value: `${
-            playlistMetadata.playlistLength !== undefined &&
-            tracks.length === playlistMetadata.playlistLength
-              ? ''
-              : `${tracks.length}/${playlistMetadata.playlistLength} playable ${namings.trackIdentifier}s | `
-          }Duration: ${playlistDuration.normalize().toFormat('hh:mm:ss')}`
+          value: lengthDescription
         }
       ]);
 
     if (playlistMetadata.thumbnail !== undefined) {
       embed.setThumbnail(playlistMetadata.thumbnail);
+    }
+
+    if (source === 'Spotify') {
+      embed.setFooter({
+        text:
+          namings.fullIdentifier +
+          's may not have a matching track in other souces.'
+      });
     }
 
     interaction.editReply({

@@ -9,7 +9,7 @@ import {
   TrackInfo,
   CachedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
-import { YTMusicTrackNaming } from '../../../../settings/TrackNaming';
+import { YTMusicTerms } from '../../../../settings/MusicSourceTerms';
 import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 
 function storeYTMusicTrackInCache(track: TrackInfo) {
@@ -48,7 +48,7 @@ async function fetchYTMusicTrackFromCache(
       // Non-song videos will not have a formats property
       if (initialVideo.formats.length === 0) {
         throw new Error(
-          `No track information found for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
+          `No track information found for ${YTMusicTerms.fullIdentifier} ID: ${videoId}`
         );
       }
 
@@ -59,14 +59,14 @@ async function fetchYTMusicTrackFromCache(
 
       if (search.length === 0) {
         throw new Error(
-          `No track information found for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
+          `No track information found for ${YTMusicTerms.fullIdentifier} ID: ${videoId}`
         );
       }
 
       fetchedTrack = search[0];
     } catch {
       throw new Error(
-        `Could not fetch track information for ${YTMusicTrackNaming.fullIdentifier} ID: ${videoId}`
+        `Could not fetch track information for ${YTMusicTerms.fullIdentifier} ID: ${videoId}`
       );
     }
 
@@ -117,12 +117,12 @@ export async function searchYTMusic(
     searchResults = await ytmusic.searchSongs(linkOrSearch);
   } catch {
     throw new Error(
-      `An error occurred while searching for ${YTMusicTrackNaming.trackIdentifier}s.`
+      `An error occurred while searching for ${YTMusicTerms.trackIdentifier}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${YTMusicTrackNaming.trackIdentifier}s found.`);
+    throw new Error(`No ${YTMusicTerms.trackIdentifier}s found.`);
   }
 
   if (options?.limit) {

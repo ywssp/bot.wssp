@@ -49,6 +49,7 @@
     "@sapphire/fetch": "^3.0.4",
     "@sapphire/framework": "^5.3.1",
     "@sapphire/pieces": "^4.3.1",
+    "@sapphire/plugin-hmr": "^3.0.2",
     "chalk": "^4.1.2",
     "discord.js": "^14.16.2",
     "dotenv": "^16.4.5",

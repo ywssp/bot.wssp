@@ -6,6 +6,7 @@ import { container } from '@sapphire/framework';
 import { SendableChannels, VoiceBasedChannel } from 'discord.js';
 
 export class GuildMusicData {
+  guildId: string;
   textUpdateChannelId: string;
   voiceChannelId: string;
   musicAnnounceStyle: 'embed_fancy' | 'embed_simple' | 'text_simple' | 'none';
@@ -14,9 +15,11 @@ export class GuildMusicData {
   leaveTimeout: NodeJS.Timeout | null = null;
 
   constructor(
+    guildId: string,
     voiceChannel: VoiceBasedChannel,
     textUpdateChannel: SendableChannels
   ) {
+    this.guildId = guildId;
     this.textUpdateChannelId = textUpdateChannel.id;
     this.voiceChannelId = voiceChannel.id;
     this.musicAnnounceStyle = 'embed_simple';
