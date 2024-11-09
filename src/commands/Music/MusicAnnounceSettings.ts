@@ -1,5 +1,7 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { channelMention, TextBasedChannel } from 'discord.js';
+import { channelMention, PermissionFlagsBits, TextChannel } from 'discord.js';
 
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
@@ -66,15 +68,31 @@ export class MusicAnnounceSettingsCommand extends Command {
     }
 
     if (interaction.options.getSubcommand() === 'channel') {
-      const channel =
-        (interaction.options.getChannel('channel') as TextBasedChannel) ??
-        (interaction.channel as TextBasedChannel);
+      const channel = (interaction.options.getChannel('channel') ??
+        interaction.channel) as TextChannel;
 
       const currentChannel = guildMusicData.getTextUpdateChannel();
 
       if (channel === currentChannel) {
         interaction.reply({
           content: '❓ | That is already the current announce channel.',
+          ephemeral: true
+        });
+        return;
+      }
+
+      const botMember = interaction.guild?.members.me;
+      if (
+        botMember === null ||
+        botMember === undefined ||
+        !channel
+          .permissionsFor(botMember)
+          ?.has(PermissionFlagsBits.SendMessages)
+      ) {
+        interaction.reply({
+          content: `❌ | Cannot send update messages to ${channelMention(
+            channel.id
+          )}.`,
           ephemeral: true
         });
         return;

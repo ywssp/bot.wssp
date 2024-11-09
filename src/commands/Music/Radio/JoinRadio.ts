@@ -1,5 +1,12 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { EmbedBuilder, GuildMember } from 'discord.js';
+import {
+  EmbedBuilder,
+  GuildMember,
+  PermissionFlagsBits,
+  channelMention
+} from 'discord.js';
 
 import {
   createAudioPlayer,
@@ -70,7 +77,27 @@ export class JoinRadioCommand extends Command {
   public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     if (interaction.channel === null) {
       interaction.reply({
-        content: 'Cannot find channel.',
+        content: '❓ | Cannot find channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const botMember = interaction.guild?.members.me;
+    const botMemberExists = botMember !== null && botMember !== undefined;
+    const channelInGuild = !interaction.channel.isDMBased();
+    const channelSendable = interaction.channel.isSendable();
+    const canSendMessages = botMember?.permissions.has(
+      PermissionFlagsBits.SendMessages
+    );
+    if (
+      !botMemberExists ||
+      !channelSendable ||
+      !channelInGuild ||
+      !canSendMessages
+    ) {
+      interaction.reply({
+        content: '❌ | Cannot send update messages to this channel.',
         ephemeral: true
       });
       return;
@@ -80,7 +107,20 @@ export class JoinRadioCommand extends Command {
 
     if (voiceChannel === null) {
       interaction.reply({
-        content: 'Cannot find voice channel.',
+        content: '❓ | Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Connect)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
         ephemeral: true
       });
       return;
@@ -119,7 +159,6 @@ export class JoinRadioCommand extends Command {
     const playingType = getPlayingType(interaction.guildId as string);
 
     if (playingType !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const oldAudioPlayer = getAudioPlayer(interaction.guildId as string)!;
 
       if (playingType === 'radio') {
@@ -137,7 +176,7 @@ export class JoinRadioCommand extends Command {
         }
 
         disconnectGuildFromRadioWebsocket(interaction.guildId as string);
-        interaction.channel?.send('Switching radio stations...');
+        interaction.reply('Switching radio stations...');
       } else {
         if (guildMusicData.queueSystemData.loop.type !== 'track') {
           guildMusicData.queueSystemData.modifyIndex(2);
@@ -145,13 +184,15 @@ export class JoinRadioCommand extends Command {
 
         guildMusicData.queueSystemData.playing = false;
 
-        interaction.channel?.send('Switching to radio...');
+        interaction.reply('Switching to radio...');
       }
 
       disposeAudioPlayer(interaction.guildId as string);
     }
 
-    await interaction.deferReply();
+    if (!interaction.replied) {
+      await interaction.deferReply();
+    }
 
     audioPlayer.on('error', (error) => {
       this.container.logger.error(error);

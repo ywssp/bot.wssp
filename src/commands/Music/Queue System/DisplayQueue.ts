@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder, inlineCode } from 'discord.js';
 
@@ -60,7 +62,7 @@ export class DisplayQueueCommand extends Command {
 
       const currentTrack = guildQueueData.currentTrack();
       description += `🔂 | ${inlineCode(currentTrack.title)} by ${inlineCode(
-        currentTrack.uploader.name
+        currentTrack.getArtistHyperlinks()
       )} is looping.`;
     }
 

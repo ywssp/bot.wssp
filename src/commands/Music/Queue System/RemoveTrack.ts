@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
@@ -112,7 +114,7 @@ export class RemoveTrackCommand extends Command {
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.Error)
+      .setColor(ColorPalette.Notice)
       .setTitle(
         `Removed ${removedTracks.length} track${
           removedTracks.length > 1 ? 's' : ''

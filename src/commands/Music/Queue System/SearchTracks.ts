@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
   GuildMember,
@@ -6,13 +8,17 @@ import {
   MessageComponentInteraction,
   EmbedBuilder,
   ButtonStyle,
-  ComponentType
+  ComponentType,
+  PermissionFlagsBits,
+  channelMention
 } from 'discord.js';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import {
+  AdaptedTrackInfo,
+  QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
@@ -20,21 +26,23 @@ import {
 import { ColorPalette } from '../../../settings/ColorPalette';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import {
-  SoundCloudTrackNaming,
-  TrackNamings,
-  YTMusicTrackNaming,
-  YouTubeVideoNaming
-} from '../../../settings/TrackNaming';
+  SoundCloudTerms,
+  SpotifyTerms,
+  MusicSourceTerms,
+  YTMusicTerms,
+  YouTubeTerms
+} from '../../../settings/MusicSourceTerms';
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
 import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
       ...options,
       name: 'search',
-      description: 'Searches for multiple videos on YouTube.',
+      description: 'Searches for multiple videos on different platforms.',
       runIn: ['GUILD_TEXT'],
       preconditions: ['InVoiceChannel']
     });
@@ -71,11 +79,22 @@ export class SearchVideosCommand extends Command {
                 .setMinLength(3)
             )
         )
-
         .addSubcommand((subcommand) =>
           subcommand
             .setName('soundcloud')
             .setDescription('Search tracks on SoundCloud')
+            .addStringOption((option) =>
+              option
+                .setName('query')
+                .setDescription('The search query.')
+                .setRequired(true)
+                .setMinLength(3)
+            )
+        )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('spotify')
+            .setDescription('Search tracks on Spotify')
             .addStringOption((option) =>
               option
                 .setName('query')
@@ -96,11 +115,44 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
+    const botMember = interaction.guild?.members.me;
+    const botMemberExists = botMember !== null && botMember !== undefined;
+    const channelInGuild = !interaction.channel.isDMBased();
+    const channelSendable = interaction.channel.isSendable();
+    const canSendMessages = botMember?.permissions.has(
+      PermissionFlagsBits.SendMessages
+    );
+    if (
+      !botMemberExists ||
+      !channelSendable ||
+      !channelInGuild ||
+      !canSendMessages
+    ) {
+      interaction.reply({
+        content: '❌ | Cannot send update messages to this channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
     const voiceChannel = (interaction.member as GuildMember).voice.channel;
 
     if (voiceChannel === null) {
       interaction.reply({
         content: '❓ | Cannot find voice channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Connect)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
         ephemeral: true
       });
       return;
@@ -115,7 +167,8 @@ export class SearchVideosCommand extends Command {
     const source = interaction.options.getSubcommand() as
       | 'youtube'
       | 'yt_music'
-      | 'soundcloud';
+      | 'soundcloud'
+      | 'spotify';
     const query = interaction.options.getString('query', true);
 
     if (query.length < 3) {
@@ -126,19 +179,21 @@ export class SearchVideosCommand extends Command {
       return;
     }
 
-    let namings: TrackNamings;
+    let namings: MusicSourceTerms;
 
     if (source === 'youtube') {
-      namings = YouTubeVideoNaming;
+      namings = YouTubeTerms;
     } else if (source === 'yt_music') {
-      namings = YTMusicTrackNaming;
+      namings = YTMusicTerms;
+    } else if (source === 'soundcloud') {
+      namings = SoundCloudTerms;
     } else {
-      namings = SoundCloudTrackNaming;
+      namings = SpotifyTerms;
     }
 
-    interaction.deferReply();
+    await interaction.deferReply();
 
-    let choices: TrackInfo[];
+    let choices: (TrackInfo | AdaptedTrackInfo)[];
 
     try {
       if (source === 'youtube') {
@@ -151,13 +206,18 @@ export class SearchVideosCommand extends Command {
           limit: 5,
           forceSearch: true
         })) as TrackInfo[];
-      } else {
+      } else if (source === 'soundcloud') {
         choices = (await searchSoundCloud(query, {
           limit: 5,
           forceSearch: true
         })) as TrackInfo[];
+      } else {
+        choices = (await searchSpotifyAdapt(query, {
+          limit: 5,
+          forceSearch: true
+        })) as AdaptedTrackInfo[];
       }
-    } catch (error) {
+    } catch {
       interaction.editReply({
         content: `❌ | An error occurred while searching for ${namings.trackIdentifier}s.`
       });
@@ -196,7 +256,7 @@ export class SearchVideosCommand extends Command {
         text: `You have ${selectionTimeSeconds} seconds to select a ${namings.trackIdentifier}.`
       });
 
-    const selectionMessage = await interaction.channel?.send({
+    const selectionMessage = await interaction.editReply({
       embeds: [selectionEmbed],
       components: buttonRows
     });
@@ -217,27 +277,35 @@ export class SearchVideosCommand extends Command {
         time: selectionTimeSeconds * 1000,
         componentType: ComponentType.Button
       });
-    } catch (e) {
-      interaction.editReply(`🛑 | No ${namings.trackIdentifier} selected.`);
-      selectionMessage.delete();
-      return;
-    }
-
-    selectionMessage.delete();
-
-    if (collected.customId === 'cancel') {
+    } catch {
       interaction.editReply({
-        content: '🛑 | Selection cancelled.'
+        content: `🛑 | No ${namings.trackIdentifier} selected.`,
+        embeds: [],
+        components: []
       });
       return;
     }
 
-    const videoIndex = parseInt(collected.customId) - 1;
+    if (collected.customId === 'cancel') {
+      interaction.editReply({
+        content: '🛑 | Selection cancelled.',
+        embeds: [],
+        components: []
+      });
+      return;
+    }
 
-    const queuedTrack = new QueuedTrackInfo(
-      choices[videoIndex],
-      interaction.user
-    );
+    const trackIndex = parseInt(collected.customId) - 1;
+
+    let queuedTrack: QueuedTrackInfo | QueuedAdaptedTrackInfo;
+    if (choices[trackIndex] instanceof AdaptedTrackInfo) {
+      queuedTrack = new QueuedAdaptedTrackInfo(
+        choices[trackIndex] as AdaptedTrackInfo,
+        interaction.user
+      );
+    } else {
+      queuedTrack = new QueuedTrackInfo(choices[trackIndex], interaction.user);
+    }
 
     // TODO: Implement caching of selected track
     // Previous code: storeTrackInCache(queuedTrack);
@@ -253,7 +321,7 @@ export class SearchVideosCommand extends Command {
       replyEmbed.setThumbnail(queuedTrack.thumbnail);
     }
 
-    interaction.editReply({ embeds: [replyEmbed] });
+    await interaction.editReply({ embeds: [replyEmbed], components: [] });
 
     startQueuePlayback(interaction.guildId as string);
   }

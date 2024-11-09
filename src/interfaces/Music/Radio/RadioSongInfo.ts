@@ -1,3 +1,5 @@
+'use strict';
+
 export interface basicInfo {
   id: number;
   name: string;

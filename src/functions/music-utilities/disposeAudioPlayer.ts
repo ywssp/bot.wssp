@@ -1,3 +1,5 @@
+'use strict';
+
 import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { getAudioPlayer } from './getAudioPlayer';
 

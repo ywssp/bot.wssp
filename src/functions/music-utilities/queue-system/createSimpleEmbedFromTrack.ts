@@ -1,3 +1,5 @@
+'use strict';
+
 import { EmbedBuilder, hyperlink } from 'discord.js';
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
@@ -11,17 +13,25 @@ export function createSimpleEmbedFromTrack(
   baseEmbed: EmbedBuilder,
   track: TrackInfo
 ) {
-  const embed = baseEmbed.setDescription(
-    `${hyperlink(track.title, track.url)}\n\nBy ${
-      track.uploader.url !== undefined
-        ? hyperlink(track.uploader.name, track.uploader.url)
-        : track.uploader.name
-    }\nLength: ${
-      typeof track.duration === 'string'
-        ? track.duration
-        : track.duration.toFormat('m:ss')
-    }`
-  );
+  let text = '';
+  text += hyperlink(track.title, track.url);
+  text += `\nBy ${track.getArtistHyperlinks()}`;
+
+  if (track.album !== undefined) {
+    text += `\nIn ${
+      track.album.url
+        ? hyperlink(track.album.name, track.album.url)
+        : track.album.name
+    }`;
+  }
+
+  text += `\n\nLength: ${
+    typeof track.duration === 'string'
+      ? track.duration
+      : track.duration.toFormat('m:ss')
+  }`;
+
+  const embed = baseEmbed.setDescription(text);
 
   if (track.thumbnail) {
     embed.setThumbnail(track.thumbnail);

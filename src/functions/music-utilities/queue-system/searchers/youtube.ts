@@ -1,10 +1,12 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
 import * as playdl from 'play-dl';
 import {
   TrackInfo,
   CachedTrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
-import { YouTubeVideoNaming } from '../../../../settings/TrackNaming';
+import { YouTubeTerms } from '../../../../settings/MusicSourceTerms';
 import { TrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 
 function storeYoutubeTrackInCache(track: TrackInfo) {
@@ -39,9 +41,9 @@ async function fetchYoutubeTrackFromCache(
 
     try {
       fetchedTrack = (await playdl.video_basic_info(trackURL)).video_details;
-    } catch (error) {
+    } catch {
       throw new Error(
-        `Could not fetch track information for ${YouTubeVideoNaming.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch track information for ${YouTubeTerms.fullIdentifier} ID: ${trackURL}`
       );
     }
 
@@ -72,15 +74,15 @@ export async function searchYoutube(
     linkOrSearch.startsWith('https') &&
     !options?.forceSearch
   ) {
-    const id = new URL(linkOrSearch).searchParams.get('v') as string;
+    const id = playdl.extractID(linkOrSearch);
 
     let video: TrackCacheResult;
 
     try {
       video = await fetchYoutubeTrackFromCache(id);
-    } catch (error) {
+    } catch {
       throw new Error(
-        `Could not fetch information for ${YouTubeVideoNaming.fullIdentifier} ID: ${id}`
+        `Could not fetch information for ${YouTubeTerms.fullIdentifier} ID: ${id}`
       );
     }
 
@@ -98,14 +100,14 @@ export async function searchYoutube(
         youtube: 'video'
       }
     });
-  } catch (error) {
+  } catch {
     throw new Error(
-      `An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+      `An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${YouTubeVideoNaming.trackIdentifier}s found.`);
+    throw new Error(`No ${YouTubeTerms.trackIdentifier}s found.`);
   }
 
   return searchResults.map((item) => new TrackInfo(item));

@@ -1,8 +1,17 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { EmbedBuilder, GuildMember } from 'discord.js';
+import {
+  EmbedBuilder,
+  GuildMember,
+  PermissionFlagsBits,
+  channelMention
+} from 'discord.js';
 import * as playdl from 'play-dl';
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import {
+  AdaptedTrackInfo,
+  QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
@@ -14,12 +23,14 @@ import { ColorPalette } from '../../../settings/ColorPalette';
 import { getTrackNamings } from '../../../functions/music-utilities/queue-system/getTrackNamings';
 import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
 import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
-import {
-  SoundCloudTrackNaming,
-  YTMusicTrackNaming,
-  YouTubeVideoNaming
-} from '../../../settings/TrackNaming';
 import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
+import {
+  SoundCloudTerms,
+  SpotifyTerms,
+  YTMusicTerms,
+  YouTubeTerms
+} from '../../../settings/MusicSourceTerms';
 
 export class PlayMusicCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -80,6 +91,21 @@ export class PlayMusicCommand extends Command {
                 .setRequired(true)
             )
         )
+        .addSubcommand((subcommand) =>
+          subcommand
+            .setName('spotify')
+            .setDescription(
+              '*SEARCH INACCURATE* Plays a track from Spotify, using a song from YouTube Music'
+            )
+            .addStringOption((option) =>
+              option
+                .setName('link-or-query')
+                .setDescription(
+                  'The link of the track, or the query to use for searching'
+                )
+                .setRequired(true)
+            )
+        )
     );
   }
 
@@ -87,6 +113,26 @@ export class PlayMusicCommand extends Command {
     if (interaction.channel === null) {
       interaction.reply({
         content: '❓ | Cannot find channel.',
+        ephemeral: true
+      });
+      return;
+    }
+
+    const botMember = interaction.guild?.members.me;
+    const botMemberExists = botMember !== null && botMember !== undefined;
+    const channelInGuild = !interaction.channel.isDMBased();
+    const channelSendable = interaction.channel.isSendable();
+    const canSendMessages = botMember?.permissions.has(
+      PermissionFlagsBits.SendMessages
+    );
+    if (
+      !botMemberExists ||
+      !channelSendable ||
+      !channelInGuild ||
+      !canSendMessages
+    ) {
+      interaction.reply({
+        content: '❌ | Cannot send update messages to this channel.',
         ephemeral: true
       });
       return;
@@ -102,6 +148,19 @@ export class PlayMusicCommand extends Command {
       return;
     }
 
+    if (
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Speak) ||
+      !voiceChannel.permissionsFor(botMember).has(PermissionFlagsBits.Connect)
+    ) {
+      interaction.reply({
+        content: `❌ | Cannot play music in ${channelMention(
+          voiceChannel.id
+        )}.`,
+        ephemeral: true
+      });
+      return;
+    }
+
     const guildQueueData = createGuildMusicData(
       interaction.guildId as string,
       voiceChannel,
@@ -111,7 +170,8 @@ export class PlayMusicCommand extends Command {
     let source = interaction.options.getSubcommand(true) as
       | 'youtube'
       | 'yt_music'
-      | 'soundcloud';
+      | 'soundcloud'
+      | 'spotify';
     const linkOrQuery = interaction.options.getString('link-or-query', true);
 
     if (linkOrQuery.length < 3) {
@@ -127,7 +187,9 @@ export class PlayMusicCommand extends Command {
 
     if (
       linkOrQueryType === 'yt_playlist' ||
-      linkOrQueryType === 'so_playlist'
+      linkOrQueryType === 'so_playlist' ||
+      linkOrQueryType === 'sp_playlist' ||
+      linkOrQueryType === 'sp_album'
     ) {
       interaction.reply({
         content: 'Playlist detected. Use the `addplaylist` command instead.',
@@ -137,28 +199,22 @@ export class PlayMusicCommand extends Command {
     }
 
     if (linkOrQueryType.startsWith('yt_') && source === 'soundcloud') {
-      await interaction.reply({
-        content:
-          'YouTube link detected. Using the `youtube` subcommand instead.'
-      });
-
       source = 'youtube';
     }
 
     if (linkOrQueryType.startsWith('so_') && source !== 'soundcloud') {
-      await interaction.reply({
-        content:
-          'SoundCloud link detected. Using the `soundcloud` subcommand instead.'
-      });
-
       source = 'soundcloud';
+    }
+
+    if (linkOrQueryType.startsWith('sp_') && source !== 'spotify') {
+      source = 'spotify';
     }
 
     if (!interaction.replied) {
       await interaction.deferReply();
     }
 
-    let searchResult: TrackInfo;
+    let searchResult: TrackInfo | AdaptedTrackInfo;
     let cacheStatus: TrackCacheResult['cacheData'] | undefined;
 
     if (source === 'youtube') {
@@ -174,13 +230,15 @@ export class PlayMusicCommand extends Command {
           searchResult = search[0];
         }
       } catch (error) {
+        this.container.logger.error(error);
+
         if (error instanceof Error) {
           interaction.editReply({
             content: `❌ | ${error.message}`
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YouTubeVideoNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
           });
         }
 
@@ -199,19 +257,21 @@ export class PlayMusicCommand extends Command {
           searchResult = search[0];
         }
       } catch (error) {
+        this.container.logger.error(error);
+
         if (error instanceof Error) {
           interaction.editReply({
             content: `❌ | ${error.message}`
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YTMusicTrackNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YTMusicTerms.trackIdentifier}s.`
           });
         }
 
         return;
       }
-    } else {
+    } else if (source === 'soundcloud') {
       try {
         const search = await searchSoundCloud(linkOrQuery, {
           limit: 1
@@ -224,13 +284,42 @@ export class PlayMusicCommand extends Command {
           searchResult = search[0];
         }
       } catch (error) {
+        this.container.logger.error(error);
+
         if (error instanceof Error) {
           interaction.editReply({
             content: `❌ | ${error.message}`
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${SoundCloudTrackNaming.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${SoundCloudTerms.trackIdentifier}s.`
+          });
+        }
+
+        return;
+      }
+    } else {
+      try {
+        const search = await searchSpotifyAdapt(linkOrQuery, {
+          limit: 1
+        });
+
+        if (!Array.isArray(search)) {
+          cacheStatus = search.cacheData;
+          searchResult = search.data;
+        } else {
+          searchResult = search[0];
+        }
+      } catch (error) {
+        this.container.logger.error(error);
+
+        if (error instanceof Error) {
+          interaction.editReply({
+            content: `❌ | ${error.message}`
+          });
+        } else {
+          interaction.editReply({
+            content: `❌ | An error occurred while searching for ${SpotifyTerms.trackIdentifier}s.`
           });
         }
 
@@ -238,7 +327,13 @@ export class PlayMusicCommand extends Command {
       }
     }
 
-    const queuedTrack = new QueuedTrackInfo(searchResult, interaction.user);
+    let queuedTrack: QueuedTrackInfo | QueuedAdaptedTrackInfo;
+
+    if (searchResult instanceof AdaptedTrackInfo) {
+      queuedTrack = new QueuedAdaptedTrackInfo(searchResult, interaction.user);
+    } else {
+      queuedTrack = new QueuedTrackInfo(searchResult, interaction.user);
+    }
 
     guildQueueData.trackList.push(queuedTrack);
 

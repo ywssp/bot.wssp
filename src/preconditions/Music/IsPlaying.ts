@@ -1,3 +1,5 @@
+'use strict';
+
 import { getVoiceConnection } from '@discordjs/voice';
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
 

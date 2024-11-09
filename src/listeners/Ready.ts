@@ -1,10 +1,12 @@
+'use strict';
+
 import { Listener } from '@sapphire/framework';
 import type { Client } from 'discord.js';
 
 import LRU from 'lru-cache';
 import { Duration } from 'luxon';
 
-import play from 'play-dl';
+import { getFreeClientID, setToken } from 'play-dl';
 
 import http from 'http';
 
@@ -44,8 +46,8 @@ export class ReadyListener extends Listener {
     }
 
     // Setup the SoundCloud client ID
-    play.getFreeClientID().then((id) => {
-      play.setToken({
+    getFreeClientID().then((id) => {
+      setToken({
         soundcloud: {
           client_id: id
         }
@@ -74,6 +76,11 @@ export class ReadyListener extends Listener {
         ttl: ttlDuration,
         ttlResolution: ttlDuration / 7
       }),
+      spotifyTracks: new LRU({
+        max: 100,
+        ttl: ttlDuration,
+        ttlResolution: ttlDuration / 7
+      }),
       tetrioUserInfos: new LRU({
         max: 50
       }),
@@ -87,12 +94,14 @@ export class ReadyListener extends Listener {
         connection: null,
         heartbeat: null,
         lastUpdate: null,
+        firstUpdate: true,
         guildIdSet: new Set()
       },
       jpop: {
         connection: null,
         heartbeat: null,
         lastUpdate: null,
+        firstUpdate: true,
         guildIdSet: new Set()
       }
     };

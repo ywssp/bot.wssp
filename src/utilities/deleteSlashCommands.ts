@@ -1,3 +1,5 @@
+'use strict';
+
 import 'dotenv/config';
 
 import { REST, Routes } from 'discord.js';
@@ -52,7 +54,7 @@ async function prompt() {
       await rest.put(Routes.applicationCommands(clientId), { body: [] });
       // eslint-disable-next-line no-console
       console.log(chalk.green('Successfully deleted all commands.'));
-    } catch (e) {
+    } catch {
       // eslint-disable-next-line no-console
       console.log(chalk.red('Failed to delete all commands.'));
     }

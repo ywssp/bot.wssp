@@ -1,17 +1,24 @@
+'use strict';
+
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import {
-  YouTubeVideoNaming,
-  SoundCloudTrackNaming,
-  YTMusicTrackNaming,
-  TrackNamings
-} from '../../../settings/TrackNaming';
+  YouTubeTerms,
+  SoundCloudTerms,
+  YTMusicTerms,
+  MusicSourceTerms,
+  SpotifyTerms
+} from '../../../settings/MusicSourceTerms';
 
-export function getTrackNamings(track: TrackInfo): TrackNamings {
+export function getTrackNamings(track: TrackInfo): MusicSourceTerms {
   if (track.source === 'youtube') {
-    return YouTubeVideoNaming;
+    return YouTubeTerms;
   } else if (track.source === 'soundcloud') {
-    return SoundCloudTrackNaming;
+    return SoundCloudTerms;
+  } else if (track.source === 'youtube_music') {
+    return YTMusicTerms;
+  } else if (track.source === 'spotify') {
+    return SpotifyTerms;
   }
 
-  return YTMusicTrackNaming;
+  throw new Error('Unknown track source');
 }

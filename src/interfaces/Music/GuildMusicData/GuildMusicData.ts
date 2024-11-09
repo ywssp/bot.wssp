@@ -1,22 +1,28 @@
+'use strict';
+
 import { RadioData } from './RadioData';
 import { QueueSystemData } from './QueueSystemData';
-import { container } from '@sapphire/pieces';
-import { TextBasedChannel, VoiceBasedChannel } from 'discord.js';
+import { container } from '@sapphire/framework';
+import { SendableChannels, VoiceBasedChannel } from 'discord.js';
 
 export class GuildMusicData {
+  guildId: string;
   textUpdateChannelId: string;
   voiceChannelId: string;
   musicAnnounceStyle: 'embed_fancy' | 'embed_simple' | 'text_simple' | 'none';
   queueSystemData: QueueSystemData;
   radioData: RadioData;
+  leaveTimeout: NodeJS.Timeout | null = null;
 
   constructor(
+    guildId: string,
     voiceChannel: VoiceBasedChannel,
-    textUpdateChannel: TextBasedChannel
+    textUpdateChannel: SendableChannels
   ) {
+    this.guildId = guildId;
     this.textUpdateChannelId = textUpdateChannel.id;
     this.voiceChannelId = voiceChannel.id;
-    this.musicAnnounceStyle = 'embed_fancy';
+    this.musicAnnounceStyle = 'embed_simple';
     this.queueSystemData = new QueueSystemData();
     this.radioData = new RadioData();
   }
@@ -24,14 +30,14 @@ export class GuildMusicData {
   getTextUpdateChannel() {
     return container.client.channels.cache.get(
       this.textUpdateChannelId
-    ) as TextBasedChannel;
+    ) as SendableChannels;
   }
 
-  setTextUpdateChannel(channel: TextBasedChannel) {
+  setTextUpdateChannel(channel: SendableChannels) {
     this.textUpdateChannelId = channel.id;
   }
 
-  sendUpdateMessage(message: Parameters<TextBasedChannel['send']>[0]) {
+  sendUpdateMessage(message: Parameters<SendableChannels['send']>[0]) {
     const textUpdateChannel = this.getTextUpdateChannel();
 
     if (textUpdateChannel === undefined) {

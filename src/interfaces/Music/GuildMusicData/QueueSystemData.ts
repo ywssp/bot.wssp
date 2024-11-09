@@ -1,7 +1,12 @@
-import { QueuedTrackInfo } from '../Queue System/TrackInfo';
+'use strict';
+
+import {
+  QueuedAdaptedTrackInfo,
+  QueuedTrackInfo
+} from '../Queue System/TrackInfo';
 
 export class QueueSystemData {
-  trackList: QueuedTrackInfo[];
+  trackList: (QueuedTrackInfo | QueuedAdaptedTrackInfo)[];
   trackListIndex: number;
   playing: boolean;
   /**
@@ -36,21 +41,21 @@ export class QueueSystemData {
   /**
    * Returns the track in the list at the current index
    */
-  currentTrack(): QueuedTrackInfo {
+  currentTrack(): (typeof this.trackList)[number] {
     return this.trackList[this.trackListIndex];
   }
 
   /**
    * Returns the array of tracks after the current track
    */
-  getQueue(): QueuedTrackInfo[] {
+  getQueue(): typeof this.trackList {
     return this.trackList.slice(this.trackListIndex + 1);
   }
 
   /**
    * Returns the array of tracks before the current track
    */
-  getHistory(): QueuedTrackInfo[] {
+  getHistory(): typeof this.trackList {
     return this.trackList.slice(0, this.trackListIndex);
   }
 

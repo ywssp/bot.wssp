@@ -31,12 +31,17 @@ export function sendRadioUpdate(
       .map((artist) => artist.name)
       .join(', ');
 
-    const formattedDuration = Duration.fromObject({
-      seconds: data.song.duration
-    }).toFormat('mm:ss');
+    let formattedDuration;
+    if (data.song.duration !== 0) {
+      formattedDuration = Duration.fromObject({
+        seconds: data.song.duration
+      }).toFormat('mm:ss');
+    }
 
     guildMusicData.sendUpdateMessage(
-      `Now playing: ${data.song.title} by ${artistNames} | ${formattedDuration}`
+      `Now playing: ${data.song.title} by ${artistNames} | ${
+        formattedDuration ? formattedDuration : 'Unknown Length'
+      }`
     );
   }
 }

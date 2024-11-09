@@ -1,3 +1,5 @@
+'use strict';
+
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
@@ -83,7 +85,7 @@ export class SkipTrackCommand extends Command {
     );
 
     const embed = new EmbedBuilder()
-      .setColor(ColorPalette.Error)
+      .setColor(ColorPalette.Notice)
       .setTitle(
         `Skipped ${skippedTracks.length} track${
           skippedTracks.length > 1 ? 's' : ''

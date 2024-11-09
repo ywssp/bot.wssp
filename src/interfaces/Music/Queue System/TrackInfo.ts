@@ -1,28 +1,48 @@
-import { User } from 'discord.js';
+'use strict';
+
+import { User, hideLinkEmbed, hyperlink } from 'discord.js';
 import { Duration } from 'luxon';
-import { extractID, YouTubeVideo, SoundCloudTrack } from 'play-dl';
+import {
+  extractID,
+  YouTubeVideo,
+  SoundCloudTrack,
+  SpotifyTrack
+} from 'play-dl';
 import { SongDetailed as YTMusicSong } from 'ytmusic-api';
+
+type TrackSource = 'youtube' | 'soundcloud' | 'youtube_music' | 'spotify';
+type TrackArtist = {
+  name: string;
+  url: string | undefined;
+};
+type TrackAlbum = {
+  name: string;
+  url: string | undefined;
+};
+
+type TrackInfoDataSources =
+  // eslint-disable-next-line no-use-before-define
+  TrackInfo | YouTubeVideo | SoundCloudTrack | YTMusicSong | SpotifyTrack;
 
 export class TrackInfo {
   readonly type = 'queue_track';
-  readonly source: 'youtube' | 'soundcloud' | 'youtube_music';
+  readonly source: TrackSource;
   readonly title: string;
   readonly duration: Duration | 'Live Stream';
   readonly url: string;
   readonly id: string;
-  readonly uploader: {
-    name: string;
-    url: string | undefined;
-  };
+  readonly artist: TrackArtist[];
+  readonly album?: TrackAlbum;
   readonly thumbnail?: string;
 
-  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack | YTMusicSong) {
+  constructor(data: TrackInfoDataSources) {
     if (data instanceof TrackInfo) {
       this.source = data.source;
       this.title = data.title;
       this.url = data.url;
       this.id = data.id;
-      this.uploader = data.uploader;
+      this.artist = data.artist;
+      this.album = data.album;
       this.duration = data.duration;
       this.thumbnail = data.thumbnail;
       return;
@@ -34,10 +54,12 @@ export class TrackInfo {
       this.title = data.name;
       this.url = data.permalink;
       this.id = data.id.toString();
-      this.uploader = {
-        name: data.user.name,
-        url: data.user.url
-      };
+      this.artist = [
+        {
+          name: data.user.name,
+          url: data.user.url
+        }
+      ];
       this.duration = Duration.fromMillis(data.durationInMs);
       this.thumbnail = data.thumbnail;
       return;
@@ -51,10 +73,12 @@ export class TrackInfo {
 
       this.id = data.id ?? extractID(data.url);
 
-      this.uploader = {
-        name: data.channel?.name ?? 'Unknown',
-        url: data.channel?.url
-      };
+      this.artist = [
+        {
+          name: data.channel?.name ?? 'Unknown',
+          url: data.channel?.url
+        }
+      ];
 
       this.duration = data.live
         ? 'Live Stream'
@@ -74,17 +98,26 @@ export class TrackInfo {
 
     // YT Music handling
     // Only YTMusicSong has "type" equal to "SONG"
-    else if (data.type === 'SONG') {
+    else if (data.type !== undefined && data.type === 'SONG') {
       this.source = 'youtube_music';
       this.title = data.name;
       this.url = `https://music.youtube.com/watch?v=${data.videoId}`;
       this.id = data.videoId;
-      this.uploader = {
-        name: data.artist.name,
-        url: data.artist.artistId
-          ? `https://music.youtube.com/channel/${data.artist.artistId}`
-          : undefined
-      };
+      this.artist = [
+        {
+          name: data.artist.name,
+          url: data.artist.artistId
+            ? `https://music.youtube.com/channel/${data.artist.artistId}`
+            : undefined
+        }
+      ];
+
+      if (data.album !== null) {
+        this.album = {
+          name: data.album.name,
+          url: `https://music.youtube.com/browse/${data.album.albumId}`
+        };
+      }
 
       if (data.duration === null) {
         this.duration = Duration.fromMillis(0);
@@ -95,17 +128,54 @@ export class TrackInfo {
       this.thumbnail = data.thumbnails[data.thumbnails.length - 1]?.url;
     }
 
+    // Spotify Track handling
+    else if (data instanceof SpotifyTrack) {
+      this.source = 'spotify';
+      this.title = data.name;
+      this.url = data.url;
+      this.id = data.id;
+
+      this.artist = [];
+      for (const artist of data.artists) {
+        this.artist.push({
+          name: artist.name,
+          url: artist.url
+        });
+      }
+
+      if (data.album) {
+        this.album = {
+          name: data.album.name,
+          url: data.album.url
+        };
+      }
+
+      this.duration = Duration.fromMillis(data.durationInMs);
+      this.thumbnail = data.thumbnail?.url;
+      return;
+    }
+
     // If the data is not a valid type
     else {
       throw new Error('Invalid data type provided to TrackInfo constructor.');
     }
+  }
+
+  public getArtistHyperlinks(): string {
+    return this.artist
+      .map((artist) =>
+        artist.url
+          ? hyperlink(artist.name, hideLinkEmbed(artist.url))
+          : artist.name
+      )
+      .join(', ');
   }
 }
 
 export class QueuedTrackInfo extends TrackInfo {
   readonly addedBy: string;
 
-  constructor(data: TrackInfo | YouTubeVideo | SoundCloudTrack, user: User) {
+  constructor(data: TrackInfoDataSources, user: User) {
     super(data);
     this.addedBy = user.tag;
   }
@@ -114,11 +184,56 @@ export class QueuedTrackInfo extends TrackInfo {
 export class CachedTrackInfo extends TrackInfo {
   readonly cachedAt: Date;
 
-  constructor(
-    data: TrackInfo | YouTubeVideo | SoundCloudTrack,
-    cachedAt: Date
-  ) {
+  constructor(data: TrackInfoDataSources, cachedAt: Date) {
     super(data);
+    this.cachedAt = cachedAt;
+  }
+}
+
+export class AdaptedTrackInfo extends TrackInfo {
+  readonly matchedTrack: TrackInfo;
+  readonly isAdapted = true;
+  readonly source: 'spotify';
+
+  constructor(
+    data:
+      | AdaptedTrackInfo
+      | {
+          track: TrackInfo;
+          matchedTrack: TrackInfo;
+        }
+  ) {
+    let trackData: TrackInfo;
+    let matchedTrack: TrackInfo;
+
+    if (data instanceof AdaptedTrackInfo) {
+      trackData = data;
+      matchedTrack = data.matchedTrack;
+    } else {
+      trackData = data.track;
+      matchedTrack = data.matchedTrack;
+    }
+
+    super(trackData);
+    this.source = 'spotify';
+    this.matchedTrack = matchedTrack;
+  }
+}
+
+export class QueuedAdaptedTrackInfo extends AdaptedTrackInfo {
+  readonly addedBy: string;
+
+  constructor(track: AdaptedTrackInfo, user: User) {
+    super(track);
+    this.addedBy = user.tag;
+  }
+}
+
+export class CachedAdaptedTrackInfo extends AdaptedTrackInfo {
+  readonly cachedAt: Date;
+
+  constructor(track: AdaptedTrackInfo, cachedAt: Date) {
+    super(track);
     this.cachedAt = cachedAt;
   }
 }
