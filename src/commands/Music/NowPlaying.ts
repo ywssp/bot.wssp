@@ -1,7 +1,13 @@
 'use strict';
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import { EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageComponentInteraction
+} from 'discord.js';
 
 import { capitalize } from 'lodash';
 import { DateTime, Duration } from 'luxon';
@@ -14,6 +20,7 @@ import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import { createFancyRadioSongEmbed } from '../../functions/music-utilities/radio/createFancyEmbedFromRadioSong';
 
 import { ColorPalette } from '../../settings/ColorPalette';
+import { QueuedAdaptedTrackInfo } from '../../interfaces/Music/Queue System/TrackInfo';
 export class NowPlayingCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {
@@ -32,7 +39,7 @@ export class NowPlayingCommand extends Command {
     );
   }
 
-  public chatInputRun(interaction: ChatInputCommand.Interaction) {
+  public async chatInputRun(interaction: ChatInputCommand.Interaction) {
     const guildMusicData = getGuildMusicData(interaction.guildId as string);
     const playType = getPlayingType(interaction.guildId as string);
 
@@ -45,7 +52,53 @@ export class NowPlayingCommand extends Command {
     }
 
     if (playType === 'queued_track') {
-      interaction.reply(this.getTrackEmbed(interaction, guildMusicData));
+      const messageData = this.getTrackEmbed(interaction, guildMusicData);
+
+      const currentTrack = guildMusicData.queueSystemData.currentTrack();
+
+      if (currentTrack instanceof QueuedAdaptedTrackInfo) {
+        const viewSourceRow =
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId('view_source')
+              .setLabel('View Source')
+              .setStyle(ButtonStyle.Secondary)
+          );
+
+        const reply = await interaction.reply({
+          ...messageData,
+          components: [viewSourceRow]
+        });
+
+        try {
+          await reply.awaitMessageComponent({
+            filter: (i: MessageComponentInteraction) => {
+              i.deferUpdate();
+              return i.user.id === interaction.user.id;
+            },
+            time: 60_000
+          });
+
+          const baseEmbed = new EmbedBuilder()
+            .setColor(ColorPalette.Notice)
+            .setTitle('Music Source');
+
+          interaction.followUp({
+            embeds: [
+              createFancyEmbedFromTrack(baseEmbed, currentTrack.matchedTrack)
+            ],
+            components: [],
+            ephemeral: true
+          });
+        } finally {
+          reply.edit({
+            ...messageData,
+            components: []
+          });
+        }
+      } else {
+        interaction.reply(messageData);
+      }
     } else if (playType === 'radio') {
       interaction.reply(this.getRadioEmbed(guildMusicData));
     }
@@ -107,10 +160,6 @@ export class NowPlayingCommand extends Command {
         queueData.loop.emoji
       } Looping ${capitalize(queueData.loop.type)}`
     });
-
-    if (currentTrack.thumbnail) {
-      embed.setThumbnail(currentTrack.thumbnail);
-    }
 
     return { embeds: [embed] };
   }
