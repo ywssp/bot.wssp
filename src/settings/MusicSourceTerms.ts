@@ -2,40 +2,40 @@
 
 export interface MusicSourceTerms {
   source: string;
-  fullIdentifier: string;
-  trackIdentifier: string;
+  fullTrackTerm: string;
+  trackTerm: string;
   creator: string;
   album: string;
 }
 
 export const YouTubeTerms: MusicSourceTerms = {
   source: 'YouTube',
-  fullIdentifier: 'YouTube Video',
-  trackIdentifier: 'video',
+  fullTrackTerm: 'YouTube Video',
+  trackTerm: 'video',
   creator: 'Uploader',
   album: 'Album'
 };
 
 export const SoundCloudTerms: MusicSourceTerms = {
   source: 'SoundCloud',
-  fullIdentifier: 'SoundCloud Track',
-  trackIdentifier: 'track',
+  fullTrackTerm: 'SoundCloud Track',
+  trackTerm: 'track',
   creator: 'Artist',
   album: 'Album'
 };
 
 export const YTMusicTerms: MusicSourceTerms = {
   source: 'YT Music',
-  fullIdentifier: 'YT Music Track',
-  trackIdentifier: 'track',
+  fullTrackTerm: 'YT Music Track',
+  trackTerm: 'track',
   creator: 'Artist',
   album: 'Album'
 };
 
 export const SpotifyTerms: MusicSourceTerms = {
   source: 'Spotify',
-  fullIdentifier: 'Spotify Track',
-  trackIdentifier: 'track',
+  fullTrackTerm: 'Spotify Track',
+  trackTerm: 'track',
   creator: 'Artist',
   album: 'Album'
 };

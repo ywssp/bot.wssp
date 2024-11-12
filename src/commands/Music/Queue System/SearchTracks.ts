@@ -219,7 +219,7 @@ export class SearchVideosCommand extends Command {
       }
     } catch {
       interaction.editReply({
-        content: `❌ | An error occurred while searching for ${namings.trackIdentifier}s.`
+        content: `❌ | An error occurred while searching for ${namings.trackTerm}s.`
       });
       return;
     }
@@ -246,14 +246,14 @@ export class SearchVideosCommand extends Command {
 
     const selectionEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Selection)
-      .setTitle(`Select a ${namings.trackIdentifier}`)
+      .setTitle(`Select a ${namings.trackTerm}`)
       .addFields(
         choices.map((item, index) =>
           createEmbedFieldFromTrack(item, `${index + 1}. `)
         )
       )
       .setFooter({
-        text: `You have ${selectionTimeSeconds} seconds to select a ${namings.trackIdentifier}.`
+        text: `You have ${selectionTimeSeconds} seconds to select a ${namings.trackTerm}.`
       });
 
     const selectionMessage = await interaction.editReply({
@@ -279,7 +279,7 @@ export class SearchVideosCommand extends Command {
       });
     } catch {
       interaction.editReply({
-        content: `🛑 | No ${namings.trackIdentifier} selected.`,
+        content: `🛑 | No ${namings.trackTerm} selected.`,
         embeds: [],
         components: []
       });
@@ -313,7 +313,7 @@ export class SearchVideosCommand extends Command {
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle(`Added ${namings.trackIdentifier} to queue`);
+      .setTitle(`Added ${namings.trackTerm} to queue`);
 
     const replyEmbed = createFancyEmbedFromTrack(baseEmbed, queuedTrack);
 

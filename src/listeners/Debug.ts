@@ -10,9 +10,11 @@ export class DebugListener extends Listener {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public run(message: string) {
-    // Just uncomment this line of code to enable debug logging
-    // Console.debug(message);
+    if (!process.env.DEBUG) {
+      return;
+    }
+
+    this.container.logger.debug(message);
   }
 }

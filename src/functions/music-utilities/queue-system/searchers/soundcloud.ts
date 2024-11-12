@@ -94,7 +94,7 @@ async function fetchSoundCloudTrackFromCache(
       )) as playdl.SoundCloudTrack;
     } catch {
       throw new Error(
-        `Could not fetch information for ${SoundCloudTerms.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch information for ${SoundCloudTerms.fullTrackTerm} ID: ${trackURL}`
       );
     }
 
@@ -132,7 +132,7 @@ export async function searchSoundCloud(
       video = await fetchSoundCloudTrackFromCache(url);
     } catch {
       throw new Error(
-        `Could not fetch information for ${SoundCloudTerms.fullIdentifier} ID: ${url}`
+        `Could not fetch information for ${SoundCloudTerms.fullTrackTerm} ID: ${url}`
       );
     }
 
@@ -152,12 +152,12 @@ export async function searchSoundCloud(
     });
   } catch {
     throw new Error(
-      `An error occurred while searching for ${SoundCloudTerms.trackIdentifier}s.`
+      `An error occurred while searching for ${SoundCloudTerms.trackTerm}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${SoundCloudTerms.trackIdentifier}s found.`);
+    throw new Error(`No ${SoundCloudTerms.trackTerm}s found.`);
   }
 
   return searchResults.map((item) => new TrackInfo(item));

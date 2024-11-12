@@ -1,5 +1,6 @@
 'use strict';
 
-export enum SpotifySearchSettings {
-  lengthDeviation = 5
-}
+export const SpotifySearchSettings = {
+  durationDeviation: 5,
+  debugMatch: false
+} as const;

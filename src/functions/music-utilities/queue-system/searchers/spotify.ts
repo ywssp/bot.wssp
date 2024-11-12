@@ -14,40 +14,102 @@ import { Duration } from 'luxon';
 import { searchYTMusic } from './youtubeMusic';
 
 function createSearchQueryFromTrack(track: TrackInfo): string {
-  let trackArtists = '';
-
-  track.artist.forEach((artist) => {
-    trackArtists += artist.name + ' ';
-  });
+  const trackArtists = track.artist.map((artist) => artist.name).join(', ');
 
   return `${track.title}${trackArtists ? ` by ${trackArtists.trim()}` : ''}`;
 }
 
-function hasSimilarDuration(
-  durationSpotify: Duration,
-  durationYoutube: Duration
+function matchDuration(
+  spotifyTrack: TrackInfo,
+  youtubeTrack: TrackInfo
 ): boolean {
+  const spDuration = spotifyTrack.duration as Duration;
+  const ytDuration = youtubeTrack.duration as Duration;
+
   const durationDifference = Math.abs(
-    durationSpotify.minus(durationYoutube).as('seconds')
+    spDuration.minus(ytDuration).as('seconds')
   );
 
-  return durationDifference <= SpotifySearchSettings.lengthDeviation;
+  return durationDifference <= SpotifySearchSettings.durationDeviation;
 }
 
-function channelContainsArtistName(
-  spotifyArtists: string[],
-  youtubeArtist: string
+type detailMatch = 'none' | 'includes' | 'equals';
+
+function matchTitle(
+  spotifyTrack: TrackInfo,
+  youtubeTrack: TrackInfo
+): detailMatch {
+  const spTitle = spotifyTrack.title.toLowerCase();
+  const ytTitle = youtubeTrack.title.toLowerCase();
+
+  if (ytTitle === spTitle) {
+    return 'equals';
+  }
+
+  return ytTitle.includes(spTitle) || spTitle.includes(ytTitle)
+    ? 'includes'
+    : 'none';
+}
+
+function matchArtists(
+  spotifyTrack: TrackInfo,
+  youtubeTrack: TrackInfo
 ): boolean {
-  for (const artist of spotifyArtists) {
-    if (youtubeArtist.includes(artist)) {
-      return true;
+  const spotifyArtists = spotifyTrack.artist.map((artist) =>
+    artist.name.toLowerCase()
+  );
+  const youtubeArtists = youtubeTrack.artist.map((artist) =>
+    artist.name.toLowerCase()
+  );
+
+  for (const ytArtist of youtubeArtists) {
+    for (const spArtist of spotifyArtists) {
+      if (
+        ytArtist === spArtist ||
+        ytArtist.includes(spArtist) ||
+        spArtist.includes(ytArtist)
+      ) {
+        return true;
+      }
     }
   }
 
   return false;
 }
 
-async function getClosestYouTubeSearchResultToSpotifyTrack(
+function matchAlbum(
+  spotifyTrack: TrackInfo,
+  youtubeTrack: TrackInfo
+): detailMatch {
+  const spotifyAlbum = spotifyTrack.album?.name.toLowerCase() ?? '';
+  const youtubeAlbum = youtubeTrack.album?.name.toLowerCase() ?? '';
+
+  if (!spotifyAlbum || !youtubeAlbum) {
+    return 'none';
+  }
+
+  if (spotifyAlbum === youtubeAlbum) {
+    return 'equals';
+  }
+
+  return youtubeAlbum.includes(spotifyAlbum) ||
+    spotifyAlbum.includes(youtubeAlbum)
+    ? 'includes'
+    : 'none';
+}
+
+function formatTrackToConsole(track: TrackInfo) {
+  let str = '';
+
+  str += `Title:\t${track.title}\n`;
+  str += `Artist:\t${track.artist.map((artist) => artist.name)}\n`;
+  str += `Album:\t${track.album?.name}\n`;
+  str += `Duration:\t${(track.duration as Duration).toFormat('mm:ss')}\n`;
+
+  return str;
+}
+
+export async function matchYTMusicToSpotify(
   spotifyTrack: TrackInfo
 ): Promise<TrackInfo | null> {
   const searchQuery = createSearchQueryFromTrack(spotifyTrack);
@@ -56,24 +118,80 @@ async function getClosestYouTubeSearchResultToSpotifyTrack(
     limit: 10
   })) as TrackInfo[];
 
-  return (
-    ytMusicTracks.find(
-      (ytMusicTrack) =>
-        (hasSimilarDuration(
-          spotifyTrack.duration as Duration,
-          ytMusicTrack.duration as Duration
-        ) &&
-          channelContainsArtistName(
-            spotifyTrack.artist.map((artist) => artist.name),
-            ytMusicTrack.artist[0].name as string
-          )) ||
-        hasSimilarDuration(
-          spotifyTrack.duration as Duration,
-          ytMusicTrack.duration as Duration
-        ) ||
-        null
-    ) ?? null
-  );
+  type songMatchPoints = {
+    title: number;
+    titleEquals: number;
+    artists: number;
+    album: number;
+    albumEquals: number;
+    duration: number;
+  };
+
+  const matchPoints: number[] = [];
+
+  const weights: songMatchPoints = {
+    title: 1,
+    titleEquals: 0.2,
+    artists: 1,
+    album: 1,
+    albumEquals: 0.1,
+    duration: 0.5
+  };
+
+  if (SpotifySearchSettings.debugMatch) {
+    container.logger.info('========================');
+    container.logger.info(
+      `Matching Spotify track to YouTube Music tracks...\n`
+    );
+
+    container.logger.info(formatTrackToConsole(spotifyTrack));
+
+    container.logger.info(`\nSearch query used: ${searchQuery}`);
+    container.logger.info('Displaying songs with matches');
+  }
+
+  for (let i = 0; i < ytMusicTracks.length; i++) {
+    const ytMusicTrack = ytMusicTracks[i];
+
+    const titleMatch = matchTitle(spotifyTrack, ytMusicTrack);
+    const artistMatch = matchArtists(spotifyTrack, ytMusicTrack);
+    const albumMatch =
+      spotifyTrack.album && matchAlbum(spotifyTrack, ytMusicTrack);
+    const durationMatch = matchDuration(spotifyTrack, ytMusicTrack);
+
+    const currentPoints: songMatchPoints = {
+      title: titleMatch === 'none' ? 0 : weights.title,
+      titleEquals: titleMatch === 'equals' ? weights.titleEquals : 0,
+      artists: artistMatch ? 0 : weights.artists,
+      album: albumMatch === 'none' ? 0 : weights.album,
+      albumEquals: albumMatch === 'equals' ? weights.albumEquals : 0,
+      duration: durationMatch ? weights.duration : 0
+    };
+
+    const totalPoints = Object.values(currentPoints).reduce(
+      (acc, curr) => acc + curr
+    );
+
+    matchPoints[i] = totalPoints;
+
+    // Match debug
+    if (SpotifySearchSettings.debugMatch && totalPoints > 0) {
+      container.logger.info('------------------------');
+
+      container.logger.info(formatTrackToConsole(ytMusicTrack));
+
+      const matchPointsString = Object.entries(currentPoints)
+        .filter(([, value]) => value > 0)
+        .map(([key]) => key)
+        .join(', ');
+
+      container.logger.info('Matched: ' + matchPointsString);
+      container.logger.info('Total points: ' + totalPoints);
+    }
+  }
+
+  const highestMatchIndex = Math.max(...matchPoints);
+  return ytMusicTracks[matchPoints.indexOf(highestMatchIndex)];
 }
 
 export function storeSpotifyTrackInCache(track: AdaptedTrackInfo) {
@@ -124,7 +242,7 @@ async function fetchSpotifyTrackFromCache(
       fetchedTrack = searchResult as playdl.SpotifyTrack;
     } catch {
       throw new Error(
-        `Could not fetch information for ${SpotifyTerms.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch information for ${SpotifyTerms.fullTrackTerm} ID: ${trackURL}`
       );
     }
 
@@ -132,9 +250,7 @@ async function fetchSpotifyTrackFromCache(
     let matchedTrack: TrackInfo;
 
     try {
-      const searchedTrack = await getClosestYouTubeSearchResultToSpotifyTrack(
-        baseTrack
-      );
+      const searchedTrack = await matchYTMusicToSpotify(baseTrack);
 
       if (!searchedTrack) {
         throw new Error();
@@ -143,7 +259,7 @@ async function fetchSpotifyTrackFromCache(
       matchedTrack = searchedTrack;
     } catch {
       throw new Error(
-        `Could not find a suitable match for ${SpotifyTerms.fullIdentifier} ID: ${trackURL}`
+        `Could not find a suitable match for ${SpotifyTerms.fullTrackTerm} ID: ${trackURL}`
       );
     }
 
@@ -183,7 +299,7 @@ export async function searchSpotifyAdapt(
       track = await fetchSpotifyTrackFromCache(url);
     } catch {
       throw new Error(
-        `Could not fetch information for ${SpotifyTerms.fullIdentifier} ID: ${url}`
+        `Could not fetch information for ${SpotifyTerms.fullTrackTerm} ID: ${url}`
       );
     }
 
@@ -207,18 +323,18 @@ export async function searchSpotifyAdapt(
     });
   } catch {
     throw new Error(
-      `An error occurred while searching for ${SpotifyTerms.trackIdentifier}s.`
+      `An error occurred while searching for ${SpotifyTerms.trackTerm}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${SpotifyTerms.trackIdentifier}s found.`);
+    throw new Error(`No ${SpotifyTerms.trackTerm}s found.`);
   }
 
   const adaptedSearchResults: AdaptedTrackInfo[] = [];
 
   for (const searchResult of searchResults) {
-    const matchedTrack = await getClosestYouTubeSearchResultToSpotifyTrack(
+    const matchedTrack = await matchYTMusicToSpotify(
       new TrackInfo(searchResult)
     );
 

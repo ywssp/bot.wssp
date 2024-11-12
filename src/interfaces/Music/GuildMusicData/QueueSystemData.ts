@@ -46,6 +46,14 @@ export class QueueSystemData {
   }
 
   /**
+   * Updates the current track with the given track
+   * @param track The track to update the current track with
+   */
+  updateCurrentTrack(track: (typeof this.trackList)[number]) {
+    this.trackList[this.trackListIndex] = track;
+  }
+
+  /**
    * Returns the array of tracks after the current track
    */
   getQueue(): typeof this.trackList {

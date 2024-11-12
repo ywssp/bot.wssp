@@ -21,6 +21,7 @@ import {
 } from 'discord.js';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import {
+  AdaptedTrackInfo,
   QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
@@ -40,7 +41,7 @@ import { disposeAudioPlayer } from '../disposeAudioPlayer';
 import { getTrackNamings } from './getTrackNamings';
 import _ from 'lodash';
 import { createSimpleEmbedFromTrack } from './createSimpleEmbedFromTrack';
-import { searchSpotifyAdapt } from './searchers/spotify';
+import { matchYTMusicToSpotify } from './searchers/spotify';
 import { getAudioPlayer } from '../getAudioPlayer';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
@@ -71,7 +72,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       let nextString = '';
 
       let nextTrackIdentifier = _.capitalize(
-        getTrackNamings(nextTrack).trackIdentifier
+        getTrackNamings(nextTrack).trackTerm
       );
 
       if (guildMusicData.queueSystemData.shuffle) {
@@ -121,7 +122,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
       let nextString = '';
 
       let nextTrackIdentifier = _.capitalize(
-        getTrackNamings(nextTrack).trackIdentifier
+        getTrackNamings(nextTrack).trackTerm
       );
 
       if (guildMusicData.queueSystemData.shuffle) {
@@ -167,7 +168,7 @@ function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
         text += '\n🔀 | The next track will be randomly picked from the queue.';
       } else {
         const nextTrackIdentifier = _.capitalize(
-          getTrackNamings(nextTrack).trackIdentifier
+          getTrackNamings(nextTrack).trackTerm
         );
 
         const nextUploaderString = nextTrack.getArtistHyperlinks();
@@ -306,24 +307,10 @@ async function playTrack(
     track.source === 'spotify' &&
     !(track instanceof QueuedAdaptedTrackInfo)
   ) {
-    try {
-      const search = await searchSpotifyAdapt(track.url, {
-        limit: 1
-      });
+    const matchedTrack = await matchYTMusicToSpotify(track);
 
-      if (!Array.isArray(search)) {
-        track = new QueuedAdaptedTrackInfo(search.data, {
-          tag: track.addedBy
-        } as User);
-      } else {
-        track = new QueuedAdaptedTrackInfo(search[0], {
-          tag: track.addedBy
-        } as User);
-      }
-    } catch (error) {
-      container.logger.error(error);
-
-      const errrorEmbed = new EmbedBuilder()
+    if (matchedTrack === null) {
+      const errorEmbed = new EmbedBuilder()
         .setColor(ColorPalette.Error)
         .setTitle('Match Error')
         .setDescription(
@@ -331,13 +318,25 @@ async function playTrack(
         );
 
       musicData.sendUpdateMessage({
-        embeds: [errrorEmbed]
+        embeds: [errorEmbed]
       });
 
       handleTrackEnd(musicData.guildId);
 
       return;
     }
+
+    track = new QueuedAdaptedTrackInfo(
+      new AdaptedTrackInfo({
+        track: new TrackInfo(track),
+        matchedTrack
+      }),
+      {
+        tag: track.addedBy
+      } as User
+    );
+
+    musicData.queueSystemData.updateCurrentTrack(track);
   }
 
   const metadata: MusicResourceMetadata = {
@@ -367,8 +366,7 @@ async function playTrack(
     });
 
     streamedTrack.on('error', (error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      container.logger.error(error);
       streamedTrack.destroy();
       audioPlayer.stop();
     });
@@ -383,8 +381,7 @@ async function playTrack(
     });
 
     streamedTrack.stream.on('error', (error) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      container.logger.error(error);
       audioPlayer.stop();
     });
 
@@ -445,7 +442,7 @@ export function startQueuePlayback(guildId: string) {
   if (playingType === 'radio') {
     const currentTrackIdentifier = getTrackNamings(
       queueData.currentTrack()
-    ).fullIdentifier;
+    ).fullTrackTerm;
 
     guildMusicData.sendUpdateMessage(
       `Disconnecting from the radio to play a ${currentTrackIdentifier}...`

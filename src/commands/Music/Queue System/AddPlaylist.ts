@@ -239,7 +239,7 @@ export class AddPlaylistCommand extends Command {
         foundTracks = await playlist.all_tracks();
       } catch (error) {
         interaction.editReply({
-          content: `❌ | An error occurred while getting the ${namings.trackIdentifier}s of the playlist.`
+          content: `❌ | An error occurred while getting the ${namings.trackTerm}s of the playlist.`
         });
         this.container.logger.error(error);
         return;
@@ -285,7 +285,7 @@ export class AddPlaylistCommand extends Command {
         foundTracks = foundTracks.filter((track) => track.playable);
       } catch (error) {
         interaction.editReply({
-          content: `❌ | An error occurred while getting the ${namings.trackIdentifier}s of the playlist.`
+          content: `❌ | An error occurred while getting the ${namings.trackTerm}s of the playlist.`
         });
         this.container.logger.error(error);
         return;
@@ -313,7 +313,7 @@ export class AddPlaylistCommand extends Command {
 
     if (tracks.length === 0) {
       interaction.editReply({
-        content: `❌ | No ${namings.trackIdentifier}s were found in the playlist.`
+        content: `❌ | No ${namings.trackTerm}s were found in the playlist.`
       });
       return;
     }
@@ -345,9 +345,9 @@ export class AddPlaylistCommand extends Command {
 
     if (playlistMetadata.playlistLength !== undefined) {
       if (playlistMetadata.playlistLength !== tracks.length) {
-        lengthDescription += `${tracks.length}/${playlistMetadata.playlistLength} playable ${namings.trackIdentifier}s`;
+        lengthDescription += `${tracks.length}/${playlistMetadata.playlistLength} playable ${namings.trackTerm}s`;
       } else {
-        lengthDescription += `${tracks.length} ${namings.trackIdentifier}s `;
+        lengthDescription += `${tracks.length} ${namings.trackTerm}s `;
       }
     }
 
@@ -383,7 +383,7 @@ export class AddPlaylistCommand extends Command {
     if (source === 'Spotify') {
       embed.setFooter({
         text:
-          namings.fullIdentifier +
+          namings.fullTrackTerm +
           's may not have a matching track in other souces.'
       });
     }

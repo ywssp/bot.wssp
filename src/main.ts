@@ -4,8 +4,11 @@
 import { install } from 'source-map-support';
 install();
 
-import { SapphireClient } from '@sapphire/framework';
+import { LogLevel, SapphireClient } from '@sapphire/framework';
 import '@sapphire/plugin-hmr';
+
+// eslint-disable-next-line import/no-unresolved
+import '@sapphire/plugin-logger/register';
 
 import { GatewayIntentBits } from 'discord.js';
 import 'dotenv/config';
@@ -18,6 +21,9 @@ const client = new SapphireClient({
   ],
   hmr: {
     enabled: process.env.HOT_RELOAD === 'true'
+  },
+  logger: {
+    level: process.env.DEBUG ? LogLevel.Debug : LogLevel.Info
   }
 });
 

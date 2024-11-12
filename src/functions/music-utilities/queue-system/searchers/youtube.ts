@@ -43,7 +43,7 @@ async function fetchYoutubeTrackFromCache(
       fetchedTrack = (await playdl.video_basic_info(trackURL)).video_details;
     } catch {
       throw new Error(
-        `Could not fetch track information for ${YouTubeTerms.fullIdentifier} ID: ${trackURL}`
+        `Could not fetch track information for ${YouTubeTerms.fullTrackTerm} ID: ${trackURL}`
       );
     }
 
@@ -82,7 +82,7 @@ export async function searchYoutube(
       video = await fetchYoutubeTrackFromCache(id);
     } catch {
       throw new Error(
-        `Could not fetch information for ${YouTubeTerms.fullIdentifier} ID: ${id}`
+        `Could not fetch information for ${YouTubeTerms.fullTrackTerm} ID: ${id}`
       );
     }
 
@@ -102,12 +102,12 @@ export async function searchYoutube(
     });
   } catch {
     throw new Error(
-      `An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
+      `An error occurred while searching for ${YouTubeTerms.trackTerm}s.`
     );
   }
 
   if (searchResults.length === 0) {
-    throw new Error(`No ${YouTubeTerms.trackIdentifier}s found.`);
+    throw new Error(`No ${YouTubeTerms.trackTerm}s found.`);
   }
 
   return searchResults.map((item) => new TrackInfo(item));

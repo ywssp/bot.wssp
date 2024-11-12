@@ -238,7 +238,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YouTubeTerms.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YouTubeTerms.trackTerm}s.`
           });
         }
 
@@ -265,7 +265,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${YTMusicTerms.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${YTMusicTerms.trackTerm}s.`
           });
         }
 
@@ -292,7 +292,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${SoundCloudTerms.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${SoundCloudTerms.trackTerm}s.`
           });
         }
 
@@ -319,7 +319,7 @@ export class PlayMusicCommand extends Command {
           });
         } else {
           interaction.editReply({
-            content: `❌ | An error occurred while searching for ${SpotifyTerms.trackIdentifier}s.`
+            content: `❌ | An error occurred while searching for ${SpotifyTerms.trackTerm}s.`
           });
         }
 
@@ -341,7 +341,7 @@ export class PlayMusicCommand extends Command {
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)
-      .setTitle(`Added ${namings.fullIdentifier} to queue`);
+      .setTitle(`Added ${namings.fullTrackTerm} to queue`);
 
     if (cacheStatus !== undefined) {
       baseEmbed.setFooter({
