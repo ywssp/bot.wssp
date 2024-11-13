@@ -269,7 +269,9 @@ export class AddPlaylistCommand extends Command {
           await play.refreshToken();
         }
 
-        playlist = (await play.spotify(link)) as SpotifyPlaylist;
+        playlist = await (
+          (await play.spotify(link)) as SpotifyPlaylist
+        ).fetch();
       } catch (error) {
         interaction.editReply({
           content: `❌ | An error occurred while getting the ${source} playlist info.`
@@ -278,11 +280,16 @@ export class AddPlaylistCommand extends Command {
         return;
       }
 
-      let foundTracks: SpotifyTrack[];
+      const foundTracks: SpotifyTrack[] = [];
 
       try {
-        foundTracks = await playlist.all_tracks();
-        foundTracks = foundTracks.filter((track) => track.playable);
+        const pageCount = playlist.total_pages;
+
+        for (let i = 1; i <= pageCount; i++) {
+          const nextTracks = playlist.page(i).filter((track) => track.playable);
+
+          foundTracks.push(...nextTracks);
+        }
       } catch (error) {
         interaction.editReply({
           content: `❌ | An error occurred while getting the ${namings.trackTerm}s of the playlist.`
@@ -384,7 +391,7 @@ export class AddPlaylistCommand extends Command {
       embed.setFooter({
         text:
           namings.fullTrackTerm +
-          's may not have a matching track in other souces.'
+          's may not have a matching track in other sources.'
       });
     }
 
