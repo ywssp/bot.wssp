@@ -9,7 +9,10 @@ import {
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SpotifyTerms } from '../../../../settings/MusicSourceTerms';
 import { AdaptedTrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
-import { SpotifySearchSettings } from '../../../../settings/SpotifySearchSettings';
+import {
+  songMatchPoints,
+  SpotifySearchSettings
+} from '../../../../settings/SpotifySearchSettings';
 import { Duration } from 'luxon';
 import { searchYTMusic } from './youtubeMusic';
 
@@ -118,25 +121,9 @@ export async function matchYTMusicToSpotify(
     limit: 10
   })) as TrackInfo[];
 
-  type songMatchPoints = {
-    title: number;
-    titleEquals: number;
-    artists: number;
-    album: number;
-    albumEquals: number;
-    duration: number;
-  };
-
   const matchPoints: number[] = [];
 
-  const weights: songMatchPoints = {
-    title: 1,
-    titleEquals: 0.2,
-    artists: 1,
-    album: 1,
-    albumEquals: 0.1,
-    duration: 0.5
-  };
+  const weights = SpotifySearchSettings.matchWeights;
 
   if (SpotifySearchSettings.debugMatch) {
     container.logger.info('========================');
@@ -160,10 +147,10 @@ export async function matchYTMusicToSpotify(
     const durationMatch = matchDuration(spotifyTrack, ytMusicTrack);
 
     const currentPoints: songMatchPoints = {
-      title: titleMatch === 'none' ? 0 : weights.title,
+      title: titleMatch !== 'none' ? weights.title : 0,
       titleEquals: titleMatch === 'equals' ? weights.titleEquals : 0,
-      artists: artistMatch ? 0 : weights.artists,
-      album: albumMatch === 'none' ? 0 : weights.album,
+      artists: artistMatch ? weights.artists : 0,
+      album: albumMatch !== 'none' ? weights.album : 0,
       albumEquals: albumMatch === 'equals' ? weights.albumEquals : 0,
       duration: durationMatch ? weights.duration : 0
     };
