@@ -32,7 +32,7 @@ export function createEmbedFieldFromTrack(
     durationString = track.duration.toFormat('m:ss');
   }
 
-  const value = `${linkString} | By ${uploaderString} | ${durationString}`;
+  const value = `${linkString} | ${durationString} | By ${uploaderString}`;
 
   return {
     name,

@@ -165,13 +165,13 @@ export class AddPlaylistCommand extends Command {
 
     let playlistMetadata: {
       title: string;
-      url: string | undefined;
+      url?: string;
       channel: {
         name: string;
-        url: string | undefined;
+        url?: string;
       };
-      thumbnail: string | undefined;
-      playlistLength: number | undefined;
+      thumbnail?: string;
+      playlistLength?: number;
     };
 
     let tracks: QueuedTrackInfo[];
@@ -253,12 +253,11 @@ export class AddPlaylistCommand extends Command {
 
       playlistMetadata = {
         title: playlist.name,
-        url: undefined,
+        url: playlist.url,
         channel: {
           name: playlist.user.name,
           url: playlist.user.url
         },
-        thumbnail: undefined,
         playlistLength: playlist.total_tracks
       };
     } else {
@@ -308,7 +307,7 @@ export class AddPlaylistCommand extends Command {
 
       playlistMetadata = {
         title: playlist.name,
-        url: undefined,
+        url: playlist.url,
         channel: {
           name: playlist.owner.name,
           url: playlist.owner.url
