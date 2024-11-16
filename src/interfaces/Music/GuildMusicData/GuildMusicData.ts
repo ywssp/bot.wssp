@@ -1,9 +1,10 @@
 'use strict';
 
-import { RadioData } from './RadioData';
-import { QueueSystemData } from './QueueSystemData';
 import { container } from '@sapphire/framework';
 import { SendableChannels, VoiceBasedChannel } from 'discord.js';
+
+import { QueueSystemData } from './QueueSystemData';
+import { RadioData } from './RadioData';
 
 export class GuildMusicData {
   guildId: string;

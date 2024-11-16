@@ -2,11 +2,11 @@
 
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 import {
-  YouTubeTerms,
-  SoundCloudTerms,
-  YTMusicTerms,
   MusicSourceTerms,
-  SpotifyTerms
+  SoundCloudTerms,
+  SpotifyTerms,
+  YouTubeTerms,
+  YTMusicTerms
 } from '../../../settings/MusicSourceTerms';
 
 export function getTrackNamings(track: TrackInfo): MusicSourceTerms {

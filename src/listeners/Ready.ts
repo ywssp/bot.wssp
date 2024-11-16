@@ -3,12 +3,12 @@
 import { Listener } from '@sapphire/framework';
 import type { Client } from 'discord.js';
 
-import LRU from 'lru-cache';
-import { Duration } from 'luxon';
-
 import { getFreeClientID, setToken } from 'play-dl';
 
 import http from 'http';
+
+import LRU from 'lru-cache';
+import { Duration } from 'luxon';
 
 export class ReadyListener extends Listener {
   public constructor(context: Listener.Context, options: Listener.Options) {

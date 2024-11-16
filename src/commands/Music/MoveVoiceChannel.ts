@@ -2,17 +2,17 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
+  channelMention,
   ChannelType,
   GuildMember,
   PermissionFlagsBits,
-  VoiceChannel,
-  channelMention
+  VoiceChannel
 } from 'discord.js';
-
 import {
   DiscordGatewayAdapterCreator,
   joinVoiceChannel
 } from '@discordjs/voice';
+
 import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
 
 export class MoveVCCommand extends Command {

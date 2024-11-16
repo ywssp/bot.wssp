@@ -1,17 +1,31 @@
 'use strict';
 
 // Install source-map-support for easier debugging
-import { install } from 'source-map-support';
-install();
-
 import { LogLevel, SapphireClient } from '@sapphire/framework';
-import '@sapphire/plugin-hmr';
 
+import * as source_map_support from 'source-map-support';
+
+import '@sapphire/plugin-hmr';
 // eslint-disable-next-line import/no-unresolved
 import '@sapphire/plugin-logger/register';
 
 import { GatewayIntentBits } from 'discord.js';
+
 import 'dotenv/config';
+
+import LRU from 'lru-cache';
+import type WebSocket from 'ws';
+
+import { TetrioUserInfo, TetrioUserRecords } from './interfaces/APIs/TetrioAPI';
+import { GuildMusicData } from './interfaces/Music/GuildMusicData/GuildMusicData';
+import {
+  CachedAdaptedTrackInfo,
+  CachedTrackInfo
+} from './interfaces/Music/Queue System/TrackInfo';
+import { RadioStationNames } from './interfaces/Music/Radio/AvailableRadioStations';
+import { RadioWebsocketUpdate } from './interfaces/Music/Radio/RadioWebsocketUpdate';
+
+source_map_support.install();
 
 const client = new SapphireClient({
   intents: [
@@ -37,17 +51,6 @@ declare module '@sapphire/framework' {
     HasGuildMusicData: never;
   }
 }
-
-import { RadioStationNames } from './interfaces/Music/Radio/AvailableRadioStations';
-import { GuildMusicData } from './interfaces/Music/GuildMusicData/GuildMusicData';
-import { TetrioUserInfo, TetrioUserRecords } from './interfaces/APIs/TetrioAPI';
-import {
-  CachedAdaptedTrackInfo,
-  CachedTrackInfo
-} from './interfaces/Music/Queue System/TrackInfo';
-import { RadioWebsocketUpdate } from './interfaces/Music/Radio/RadioWebsocketUpdate';
-import type WebSocket from 'ws';
-import LRU from 'lru-cache';
 
 declare module '@sapphire/pieces' {
   interface Container {

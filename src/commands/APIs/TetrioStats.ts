@@ -1,6 +1,6 @@
 'use strict';
 
-import { Command, ChatInputCommand } from '@sapphire/framework';
+import { ChatInputCommand, Command } from '@sapphire/framework';
 import { fetch, FetchResultTypes } from '@sapphire/fetch';
 import {
   codeBlock,
@@ -10,19 +10,19 @@ import {
   InteractionReplyOptions
 } from 'discord.js';
 
-import type {
-  TetrioUserInfoAPIResponse,
-  TetrioUserRecordsAPIResponse,
-  TetrioUserInfo,
-  TetrioUserRecords,
-  RecordEndContext
-} from '../../interfaces/APIs/TetrioAPI';
-
 import {
   getName as getCountryName,
   isValid as isValidCountry
 } from 'i18n-iso-countries';
 import { Duration } from 'luxon';
+
+import type {
+  RecordEndContext,
+  TetrioUserInfo,
+  TetrioUserInfoAPIResponse,
+  TetrioUserRecords,
+  TetrioUserRecordsAPIResponse
+} from '../../interfaces/APIs/TetrioAPI';
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class TetrioCommand extends Command {

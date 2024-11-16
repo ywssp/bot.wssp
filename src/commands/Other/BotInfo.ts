@@ -1,10 +1,10 @@
 'use strict';
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
-import type { Client } from 'discord.js';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, type Client } from 'discord.js';
 
 import { DateTime, Duration } from 'luxon';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class BotInfoCommand extends Command {

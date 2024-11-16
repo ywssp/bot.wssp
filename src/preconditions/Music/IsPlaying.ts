@@ -1,7 +1,7 @@
 'use strict';
 
-import { getVoiceConnection } from '@discordjs/voice';
 import { ChatInputCommand, Precondition } from '@sapphire/framework';
+import { getVoiceConnection } from '@discordjs/voice';
 
 export class IsPlayingPrecondition extends Precondition {
   public override chatInputRun(interaction: ChatInputCommand.Interaction) {

@@ -3,11 +3,10 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-
-import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class SkipTrackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

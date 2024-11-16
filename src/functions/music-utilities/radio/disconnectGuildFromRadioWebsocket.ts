@@ -1,4 +1,7 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
+
 import { getGuildMusicData } from '../guildMusicDataManager';
 
 export function disconnectGuildFromRadioWebsocket(guildId: string) {

@@ -12,15 +12,15 @@ import {
 import { capitalize } from 'lodash';
 import { DateTime, Duration } from 'luxon';
 
-import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
-import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
-import { createFancyEmbedFromTrack } from '../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
 import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
+import { getGuildMusicData } from '../../functions/music-utilities/guildMusicDataManager';
+import { createFancyEmbedFromTrack } from '../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
 import { createFancyRadioSongEmbed } from '../../functions/music-utilities/radio/createFancyEmbedFromRadioSong';
-
-import { ColorPalette } from '../../settings/ColorPalette';
+import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 import { QueuedAdaptedTrackInfo } from '../../interfaces/Music/Queue System/TrackInfo';
+import { ColorPalette } from '../../settings/ColorPalette';
+
 export class NowPlayingCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
     super(context, {

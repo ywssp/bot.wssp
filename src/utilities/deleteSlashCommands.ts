@@ -3,8 +3,9 @@
 import 'dotenv/config';
 
 import { REST, Routes } from 'discord.js';
-import inquirer from 'inquirer';
+
 import chalk from 'chalk';
+import inquirer from 'inquirer';
 
 const token = process.env.BOT_TOKEN;
 const clientId = process.env.BOT_CLIENT_ID;

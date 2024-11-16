@@ -2,6 +2,7 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class PingCommand extends Command {

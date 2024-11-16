@@ -1,5 +1,9 @@
+'use strict';
+
 import { container } from '@sapphire/pieces';
+
 import { Duration } from 'luxon';
+
 import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { getGuildMusicData } from '../guildMusicDataManager';
 import { createFancyRadioSongEmbed } from './createFancyEmbedFromRadioSong';

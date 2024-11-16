@@ -2,34 +2,35 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
+  channelMention,
   EmbedBuilder,
   GuildMember,
-  PermissionFlagsBits,
-  channelMention
+  PermissionFlagsBits
 } from 'discord.js';
+
 import * as playdl from 'play-dl';
+
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
+import { createSimpleEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createSimpleEmbedFromTrack';
+import { getTrackNamings } from '../../../functions/music-utilities/queue-system/getTrackNamings';
+import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
+import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
+import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
+import { TrackCacheResult } from '../../../interfaces/Music/Queue System/TrackCacheResult';
 import {
   AdaptedTrackInfo,
   QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
-import { TrackCacheResult } from '../../../interfaces/Music/Queue System/TrackCacheResult';
-import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
-import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
-
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { getTrackNamings } from '../../../functions/music-utilities/queue-system/getTrackNamings';
-import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
-import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
-import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
-import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 import {
   SoundCloudTerms,
   SpotifyTerms,
-  YTMusicTerms,
-  YouTubeTerms
+  YouTubeTerms,
+  YTMusicTerms
 } from '../../../settings/MusicSourceTerms';
 
 export class PlayMusicCommand extends Command {
@@ -351,7 +352,7 @@ export class PlayMusicCommand extends Command {
       });
     }
 
-    const embed = createFancyEmbedFromTrack(baseEmbed, queuedTrack);
+    const embed = createSimpleEmbedFromTrack(baseEmbed, queuedTrack);
 
     interaction.editReply({ content: null, embeds: [embed] });
 

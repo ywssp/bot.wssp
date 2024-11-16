@@ -2,7 +2,13 @@
 'use strict';
 
 import { container } from '@sapphire/framework';
-
+import {
+  EmbedBuilder,
+  hideLinkEmbed,
+  hyperlink,
+  inlineCode,
+  User
+} from 'discord.js';
 import {
   AudioPlayer,
   AudioPlayerStatus,
@@ -12,37 +18,32 @@ import {
   getVoiceConnection,
   NoSubscriberBehavior
 } from '@discordjs/voice';
-import {
-  EmbedBuilder,
-  hideLinkEmbed,
-  hyperlink,
-  inlineCode,
-  User
-} from 'discord.js';
-import { getGuildMusicData } from '../guildMusicDataManager';
+
+import * as playdl from 'play-dl';
+import ytdl from '@distube/ytdl-core';
+
+import _ from 'lodash';
+import { Duration } from 'luxon';
+
+import { GuildMusicData } from '../../../interfaces/Music/GuildMusicData/GuildMusicData';
+import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 import {
   AdaptedTrackInfo,
   QueuedAdaptedTrackInfo,
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
-import * as playdl from 'play-dl';
-import ytdl from '@distube/ytdl-core';
 import { ColorPalette } from '../../../settings/ColorPalette';
-
-import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
-import { getPlayingType } from '../getPlayingType';
-import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
 import { connectToVoiceChannel } from '../connectToVoiceChannel';
-import { Duration } from 'luxon';
-import { GuildMusicData } from '../../../interfaces/Music/GuildMusicData/GuildMusicData';
-import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 import { disposeAudioPlayer } from '../disposeAudioPlayer';
-import { getTrackNamings } from './getTrackNamings';
-import _ from 'lodash';
-import { createSimpleEmbedFromTrack } from './createSimpleEmbedFromTrack';
-import { matchYTMusicToSpotify } from './searchers/spotify';
 import { getAudioPlayer } from '../getAudioPlayer';
+import { getPlayingType } from '../getPlayingType';
+import { getGuildMusicData } from '../guildMusicDataManager';
+import { disconnectGuildFromRadioWebsocket } from '../radio/disconnectGuildFromRadioWebsocket';
+import { createFancyEmbedFromTrack } from './createFancyEmbedFromTrack';
+import { createSimpleEmbedFromTrack } from './createSimpleEmbedFromTrack';
+import { getTrackNamings } from './getTrackNamings';
+import { matchYTMusicToSpotify } from './searchers/spotify';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   const currentTrack = guildMusicData.queueSystemData.currentTrack();

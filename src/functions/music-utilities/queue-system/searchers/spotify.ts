@@ -1,19 +1,22 @@
 'use strict';
 
 import { container } from '@sapphire/framework';
+
 import * as playdl from 'play-dl';
+
+import { Duration } from 'luxon';
+
+import { AdaptedTrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 import {
-  TrackInfo,
   AdaptedTrackInfo,
-  CachedAdaptedTrackInfo
+  CachedAdaptedTrackInfo,
+  TrackInfo
 } from '../../../../interfaces/Music/Queue System/TrackInfo';
 import { SpotifyTerms } from '../../../../settings/MusicSourceTerms';
-import { AdaptedTrackCacheResult } from '../../../../interfaces/Music/Queue System/TrackCacheResult';
 import {
   songMatchPoints,
   SpotifySearchSettings
 } from '../../../../settings/SpotifySearchSettings';
-import { Duration } from 'luxon';
 import { searchYTMusic } from './youtubeMusic';
 
 function createSearchQueryFromTrack(track: TrackInfo): string {

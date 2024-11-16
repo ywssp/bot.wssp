@@ -1,14 +1,16 @@
 'use strict';
 
-import { User, hideLinkEmbed, hyperlink } from 'discord.js';
-import { Duration } from 'luxon';
+import { hideLinkEmbed, hyperlink, User } from 'discord.js';
+
 import {
   extractID,
-  YouTubeVideo,
   SoundCloudTrack,
-  SpotifyTrack
+  SpotifyTrack,
+  YouTubeVideo
 } from 'play-dl';
 import { SongDetailed as YTMusicSong } from 'ytmusic-api';
+
+import { Duration } from 'luxon';
 
 type TrackSource = 'youtube' | 'soundcloud' | 'youtube_music' | 'spotify';
 type TrackArtist = {

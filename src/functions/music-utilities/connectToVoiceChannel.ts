@@ -1,11 +1,11 @@
 'use strict';
 
+import { VoiceBasedChannel } from 'discord.js';
 import {
   getVoiceConnection,
   joinVoiceChannel,
   VoiceConnection
 } from '@discordjs/voice';
-import { VoiceBasedChannel } from 'discord.js';
 
 export function connectToVoiceChannel(
   voiceChannel: VoiceBasedChannel

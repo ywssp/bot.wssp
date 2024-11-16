@@ -1,6 +1,7 @@
 'use strict';
 
 import { AudioResource } from '@discordjs/voice';
+
 import { MusicResourceMetadata } from '../../interfaces/Music/MusicResourceMetadata';
 import { getAudioPlayer } from './getAudioPlayer';
 

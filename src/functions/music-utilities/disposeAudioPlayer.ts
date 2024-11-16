@@ -1,6 +1,7 @@
 'use strict';
 
 import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+
 import { getAudioPlayer } from './getAudioPlayer';
 
 export function disposeAudioPlayer(guildId: string): void {

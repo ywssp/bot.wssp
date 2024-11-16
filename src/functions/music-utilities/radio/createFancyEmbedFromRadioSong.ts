@@ -4,11 +4,10 @@ import { EmbedBuilder } from 'discord.js';
 
 import { Duration } from 'luxon';
 
+import { RadioSongInfo } from '../../../interfaces/Music/Radio/RadioSongInfo';
+import { ColorPalette } from '../../../settings/ColorPalette';
 import { createRadioHyperlink } from './createRadioHyperlink';
 import { parseRadioSongArtists } from './parseRadioSongArtists';
-import { RadioSongInfo } from '../../../interfaces/Music/Radio/RadioSongInfo';
-
-import { ColorPalette } from '../../../settings/ColorPalette';
 
 export function createFancyRadioSongEmbed(song: RadioSongInfo) {
   const embed = new EmbedBuilder()

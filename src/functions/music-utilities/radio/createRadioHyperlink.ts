@@ -1,4 +1,7 @@
+'use strict';
+
 import { hyperlink } from 'discord.js';
+
 import type { basicInfo } from '../../../interfaces/Music/Radio/RadioSongInfo';
 
 export function createRadioHyperlink(

@@ -1,5 +1,10 @@
+'use strict';
+
 import { container } from '@sapphire/framework';
+
+import { DateTime } from 'luxon';
 import WebSocket from 'ws';
+
 import {
   RadioStationNames,
   RadioStations,
@@ -7,7 +12,6 @@ import {
 } from '../../../interfaces/Music/Radio/AvailableRadioStations';
 import { RadioWebsocketUpdate } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
 import { sendRadioUpdate } from './sendRadioUpdate';
-import { DateTime } from 'luxon';
 
 const radioWebsocketURLs: Record<
   RadioStationNames,
@@ -78,7 +82,6 @@ export function createRadioWebsocketConnection(radioName: 'kpop' | 'jpop') {
     }
 
     if (container.radioWebsockets[radioName].heartbeat !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       clearInterval(container.radioWebsockets[radioName].heartbeat!);
 
       container.radioWebsockets[radioName].heartbeat = null;

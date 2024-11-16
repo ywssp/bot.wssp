@@ -5,7 +5,6 @@ import { EmbedBuilder } from 'discord.js';
 
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
-
 import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class RemoveTrackCommand extends Command {

@@ -3,11 +3,11 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
+  channelMention,
   EmbedBuilder,
   GuildMember,
-  PermissionFlagsBits,
-  channelMention,
-  hyperlink
+  hyperlink,
+  PermissionFlagsBits
 } from 'discord.js';
 
 import play, {
@@ -18,16 +18,16 @@ import play, {
   YouTubePlayList
 } from 'play-dl';
 
-import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
-import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
-
-import { ColorPalette } from '../../../settings/ColorPalette';
 import { Duration } from 'luxon';
+
+import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
+import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
+import { QueuedTrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
+import { ColorPalette } from '../../../settings/ColorPalette';
 import {
+  MusicSourceTerms,
   SoundCloudTerms,
   SpotifyTerms,
-  MusicSourceTerms,
   YouTubeTerms
 } from '../../../settings/MusicSourceTerms';
 

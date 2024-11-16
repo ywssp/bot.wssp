@@ -3,10 +3,9 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
+import { createPagedEmbed } from '../../../functions/createPagedEmbed';
 import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
-import { createPagedEmbed } from '../../../functions/createPagedEmbed';
-
 import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class DisplayTrackHistoryCommand extends Command {

@@ -2,19 +2,24 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
-  GuildMember,
   ActionRowBuilder,
   ButtonBuilder,
-  MessageComponentInteraction,
-  EmbedBuilder,
   ButtonStyle,
+  channelMention,
   ComponentType,
-  PermissionFlagsBits,
-  channelMention
+  EmbedBuilder,
+  GuildMember,
+  MessageComponentInteraction,
+  PermissionFlagsBits
 } from 'discord.js';
 
 import { createGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-import { createFancyEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createFancyEmbedFromTrack';
+import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
+import { createSimpleEmbedFromTrack } from '../../../functions/music-utilities/queue-system/createSimpleEmbedFromTrack';
+import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
+import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
+import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
+import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
 import {
   AdaptedTrackInfo,
@@ -22,20 +27,14 @@ import {
   QueuedTrackInfo,
   TrackInfo
 } from '../../../interfaces/Music/Queue System/TrackInfo';
-
 import { ColorPalette } from '../../../settings/ColorPalette';
-import { createEmbedFieldFromTrack } from '../../../functions/music-utilities/queue-system/createEmbedFieldFromTrack';
 import {
+  MusicSourceTerms,
   SoundCloudTerms,
   SpotifyTerms,
-  MusicSourceTerms,
-  YTMusicTerms,
-  YouTubeTerms
+  YouTubeTerms,
+  YTMusicTerms
 } from '../../../settings/MusicSourceTerms';
-import { searchYoutube } from '../../../functions/music-utilities/queue-system/searchers/youtube';
-import { searchSoundCloud } from '../../../functions/music-utilities/queue-system/searchers/soundcloud';
-import { searchYTMusic } from '../../../functions/music-utilities/queue-system/searchers/youtubeMusic';
-import { searchSpotifyAdapt } from '../../../functions/music-utilities/queue-system/searchers/spotify';
 
 export class SearchVideosCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
@@ -315,7 +314,7 @@ export class SearchVideosCommand extends Command {
       .setColor(ColorPalette.Success)
       .setTitle(`Added ${namings.trackTerm} to queue`);
 
-    const replyEmbed = createFancyEmbedFromTrack(baseEmbed, queuedTrack);
+    const replyEmbed = createSimpleEmbedFromTrack(baseEmbed, queuedTrack);
 
     if (queuedTrack.thumbnail) {
       replyEmbed.setThumbnail(queuedTrack.thumbnail);

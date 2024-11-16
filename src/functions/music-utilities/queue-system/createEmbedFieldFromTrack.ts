@@ -1,6 +1,7 @@
 'use strict';
 
 import { EmbedField, hyperlink } from 'discord.js';
+
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
 /**

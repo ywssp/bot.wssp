@@ -2,40 +2,38 @@
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import {
+  channelMention,
   EmbedBuilder,
   GuildMember,
-  PermissionFlagsBits,
-  channelMention
+  PermissionFlagsBits
 } from 'discord.js';
-
 import {
-  createAudioPlayer,
-  NoSubscriberBehavior,
-  createAudioResource,
-  AudioPlayerStatus,
   AudioPlayerPlayingState,
-  AudioResource
+  AudioPlayerStatus,
+  AudioResource,
+  createAudioPlayer,
+  createAudioResource,
+  NoSubscriberBehavior
 } from '@discordjs/voice';
 
+import { connectToVoiceChannel } from '../../../functions/music-utilities/connectToVoiceChannel';
+import { disposeAudioPlayer } from '../../../functions/music-utilities/disposeAudioPlayer';
+import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
+import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
 import {
   createGuildMusicData,
   getGuildMusicData
 } from '../../../functions/music-utilities/guildMusicDataManager';
-import { createRadioWebsocketConnection } from '../../../functions/music-utilities/radio/setupRadioWebsocket';
-
-import { ColorPalette } from '../../../settings/ColorPalette';
-import { getPlayingType } from '../../../functions/music-utilities/getPlayingType';
-import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
 import { disconnectGuildFromRadioWebsocket } from '../../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
-import { connectToVoiceChannel } from '../../../functions/music-utilities/connectToVoiceChannel';
+import { sendRadioUpdate } from '../../../functions/music-utilities/radio/sendRadioUpdate';
+import { createRadioWebsocketConnection } from '../../../functions/music-utilities/radio/setupRadioWebsocket';
+import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
 import {
   RadioStationNames,
   RadioStations
 } from '../../../interfaces/Music/Radio/AvailableRadioStations';
-import { sendRadioUpdate } from '../../../functions/music-utilities/radio/sendRadioUpdate';
 import { RadioWebsocketUpdateData } from '../../../interfaces/Music/Radio/RadioWebsocketUpdate';
-import { disposeAudioPlayer } from '../../../functions/music-utilities/disposeAudioPlayer';
-import { MusicResourceMetadata } from '../../../interfaces/Music/MusicResourceMetadata';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class JoinRadioCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

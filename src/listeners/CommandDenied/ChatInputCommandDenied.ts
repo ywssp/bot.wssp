@@ -1,11 +1,12 @@
 'use strict';
 
 import {
+  ChatInputCommandDeniedPayload,
   Listener,
-  UserError,
-  ChatInputCommandDeniedPayload
+  UserError
 } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
+
 import { ColorPalette } from '../../settings/ColorPalette';
 
 export class ChatInputCommandDeniedListener extends Listener {

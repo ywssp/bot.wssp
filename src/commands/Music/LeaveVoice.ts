@@ -1,18 +1,17 @@
 'use strict';
 
 import { ChatInputCommand, Command } from '@sapphire/framework';
-
 import { getVoiceConnection } from '@discordjs/voice';
 
+import { disposeAudioPlayer } from '../../functions/music-utilities/disposeAudioPlayer';
+import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
+import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import {
   deleteGuildMusicData,
   getGuildMusicData
 } from '../../functions/music-utilities/guildMusicDataManager';
-import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
-import { getAudioPlayer } from '../../functions/music-utilities/getAudioPlayer';
-import { getPlayingType } from '../../functions/music-utilities/getPlayingType';
 import { disconnectGuildFromRadioWebsocket } from '../../functions/music-utilities/radio/disconnectGuildFromRadioWebsocket';
-import { disposeAudioPlayer } from '../../functions/music-utilities/disposeAudioPlayer';
+import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 
 export class LeaveVCCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {

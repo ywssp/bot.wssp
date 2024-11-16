@@ -1,10 +1,10 @@
 'use strict';
 
-import {
-  RadioStations,
-  RadioStationNames
-} from './Radio/AvailableRadioStations';
 import { QueuedTrackInfo } from './Queue System/TrackInfo';
+import {
+  RadioStationNames,
+  RadioStations
+} from './Radio/AvailableRadioStations';
 
 export type MusicResourceMetadata =
   | {

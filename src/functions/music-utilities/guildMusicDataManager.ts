@@ -1,6 +1,7 @@
 'use strict';
 
 import { container } from '@sapphire/framework';
+
 import { GuildMusicData } from '../../interfaces/Music/GuildMusicData/GuildMusicData';
 
 /**

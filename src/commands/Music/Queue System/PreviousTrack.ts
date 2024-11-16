@@ -3,12 +3,11 @@
 import { ChatInputCommand, Command } from '@sapphire/framework';
 import { EmbedBuilder } from 'discord.js';
 
-import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
-
-import { ColorPalette } from '../../../settings/ColorPalette';
 import { getAudioPlayer } from '../../../functions/music-utilities/getAudioPlayer';
+import { getGuildMusicData } from '../../../functions/music-utilities/guildMusicDataManager';
 import { createEmbedFromTrackArray } from '../../../functions/music-utilities/queue-system/createEmbedFromTrackArray';
 import { startQueuePlayback } from '../../../functions/music-utilities/queue-system/startQueuePlayback';
+import { ColorPalette } from '../../../settings/ColorPalette';
 
 export class PreviousTrackCommand extends Command {
   public constructor(context: Command.Context, options: Command.Options) {
