@@ -16,7 +16,7 @@ A Discord bot that only uses slash commands.
 ## Setup
 - Clone the repository, or download the zip file [here](https://github.com/ywssp/bot.wssp/archive/refs/heads/main.zip)
 - Install the dependencies by running `npm install` in the terminal
-- Create a file named `.env`, and [add these values](#required-env-contents)
+- Create a file named `.env`, and [add these values](#required-env-fields)
 - Compile the source code with `npm run build`
 - Setup play-dl by running `npm run setup-play-dl`, and add the YouTube cookies and Spotify application details.
 
