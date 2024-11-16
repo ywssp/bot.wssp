@@ -13,13 +13,21 @@ A Discord bot that only uses slash commands.
 - YouTube Cookies ([Guide](https://github.com/play-dl/play-dl/tree/6a8569feb8c562bb8218ecfd72850c3686d96256/instructions#youtube-cookies))
 - A Spotify Application ([Guide](https://github.com/play-dl/play-dl/tree/6a8569feb8c562bb8218ecfd72850c3686d96256/instructions#spotify))
 
-## Usage
+## Setup
 - Clone the repository, or download the zip file [here](https://github.com/ywssp/bot.wssp/archive/refs/heads/main.zip)
 - Install the dependencies by running `npm install` in the terminal
 - Create a file named `.env`, and [add these values](#required-env-contents)
 - Compile the source code with `npm run build`
-- Setup play-dl by running `npm run setup-play-dl`, and add the YouTube cookies and Spotify application details
+- Setup play-dl by running `npm run setup-play-dl`, and add the YouTube cookies and Spotify application details.
+
+## Running the bot
 - Run the bot with `npm run start`
+
+
+## Updating
+- Pull the latest changes from the repository, or re-download the zip file
+- Update dependencies with `npm update`
+- Recompile the source code with `npm run build`
 
 ## Required ENV fields
 ### Example `.env` file
