@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
-    "@discordjs/voice": "^0.14.0",
+    "@discordjs/voice": "^0.18.0",
     "@sapphire/discord.js-utilities": "^6.0.1",
     "@sapphire/fetch": "^2.4.1",
     "@sapphire/framework": "^4.0.2",
