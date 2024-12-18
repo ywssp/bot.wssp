@@ -377,8 +377,7 @@ async function playTrack(
     });
   } else {
     const streamedTrack = await playdl.stream(audioTrack.url, {
-      quality: 2,
-      discordPlayerCompatibility: false
+      quality: 2
     });
 
     streamedTrack.stream.on('error', (error) => {
