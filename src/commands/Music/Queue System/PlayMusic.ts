@@ -336,7 +336,7 @@ export class PlayMusicCommand extends Command {
       queuedTrack = new QueuedTrackInfo(searchResult, interaction.user);
     }
 
-    guildQueueData.trackList.push(queuedTrack);
+    guildQueueData.addTrackToQueue(queuedTrack);
 
     const namings = getTrackNamings(queuedTrack);
 

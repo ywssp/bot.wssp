@@ -47,7 +47,7 @@ import { matchYTMusicToSpotify } from './searchers/spotify';
 
 function sendNowPlayingMessage(guildMusicData: GuildMusicData) {
   const currentTrack = guildMusicData.queueSystemData.currentTrack();
-  const nextTrack = guildMusicData.queueSystemData.getQueue().shift();
+  const nextTrack = guildMusicData.queueSystemData.getQueue()[1];
 
   const announceStyle = guildMusicData.musicAnnounceStyle;
 
@@ -199,15 +199,14 @@ function handleTrackEnd(guildId: string) {
   const localQueueData = localMusicData.queueSystemData;
 
   if (localQueueData.loop.type === 'queue') {
-    localQueueData.trackList.push(localQueueData.currentTrack());
+    localQueueData.trackQueue.push(localQueueData.currentTrack());
   }
 
   if (localQueueData.loop.type !== 'track') {
-    localQueueData.trackListIndex++;
+    localQueueData.trackQueue.shift();
   }
 
-  const isQueueEmpty =
-    localQueueData.trackList.length === localQueueData.trackListIndex;
+  const isQueueEmpty = localQueueData.getQueue().length === 0;
 
   const isVCEmpty =
     localMusicData
@@ -237,8 +236,7 @@ function handleTrackEnd(guildId: string) {
       const futureMusicData = getGuildMusicData(guildId);
 
       const futureQueueEmpty =
-        futureMusicData?.queueSystemData.trackList.length ===
-        futureMusicData?.queueSystemData.trackListIndex;
+        futureMusicData?.queueSystemData.getQueue().length === 0;
 
       const futureVCEmpty =
         futureMusicData === undefined ||
@@ -278,13 +276,9 @@ function handleTrackEnd(guildId: string) {
       Math.random() * localQueueData.getQueue().length
     );
 
-    const selectedVideo = localQueueData.trackList.splice(randomIndex, 1)[0];
+    const selectedTrack = localQueueData.trackQueue.splice(randomIndex, 1)[0];
 
-    localQueueData.trackList.splice(
-      localQueueData.trackListIndex,
-      0,
-      selectedVideo
-    );
+    localQueueData.trackQueue.unshift(selectedTrack);
   }
 
   const audioPlayer = getAudioPlayer(guildId);
@@ -401,6 +395,8 @@ async function playTrack(
   // When the loop type is 'track' and the track was skipped
   if (!(!trackSkipped && isLoopingByTrack)) {
     musicData.queueSystemData.skipped = false;
+
+    musicData.queueSystemData.trackHistory.push(track);
 
     sendNowPlayingMessage(musicData);
   }

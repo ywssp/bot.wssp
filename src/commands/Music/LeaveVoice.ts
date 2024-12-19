@@ -61,22 +61,12 @@ export class LeaveVCCommand extends Command {
 
     if (playingType === 'radio') {
       disconnectGuildFromRadioWebsocket(interaction.guildId as string);
-    } else if (playingType === 'queued_track') {
-      const queueData = guildMusicData.queueSystemData;
-
-      if (queueData.loop.type !== 'track') {
-        queueData.modifyIndex(2);
-      }
     }
 
     switch (interaction.options.getString('clear') as 'queue' | 'data' | null) {
       case 'queue':
         if (guildMusicData.queueSystemData !== undefined) {
-          guildMusicData.queueSystemData.trackList.splice(
-            guildMusicData.queueSystemData.trackListIndex,
-            guildMusicData.queueSystemData.trackList.length -
-              guildMusicData.queueSystemData.trackListIndex
-          );
+          guildMusicData.queueSystemData.trackQueue.length = 0;
         }
         break;
       case 'data':

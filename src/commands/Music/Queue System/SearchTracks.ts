@@ -308,7 +308,7 @@ export class SearchVideosCommand extends Command {
 
     // TODO: Implement caching of selected track
     // Previous code: storeTrackInCache(queuedTrack);
-    guildQueueData.trackList.push(queuedTrack);
+    guildQueueData.addTrackToQueue(queuedTrack);
 
     const baseEmbed = new EmbedBuilder()
       .setColor(ColorPalette.Success)

@@ -399,7 +399,7 @@ export class AddPlaylistCommand extends Command {
       embeds: [embed]
     });
 
-    guildQueueData.trackList.push(...tracks);
+    guildQueueData.addTrackToQueue(...tracks);
 
     startQueuePlayback(interaction.guildId as string);
   }

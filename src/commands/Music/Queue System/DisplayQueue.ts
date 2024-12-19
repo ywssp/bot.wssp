@@ -32,14 +32,14 @@ export class DisplayQueueCommand extends Command {
 
     if (
       guildMusicData === undefined ||
-      guildMusicData.queueSystemData.getQueue().length === 0
+      guildMusicData.queueSystemData.getQueue().length <= 1
     ) {
       interaction.reply('❓ | The queue is empty.');
       return;
     }
 
     const guildQueueData = guildMusicData.queueSystemData;
-    const queue = guildQueueData.getQueue();
+    const queue = guildQueueData.getQueue().slice(1);
 
     const queueFields = queue.map((track, index) =>
       createEmbedFieldFromTrack(track, `${index + 1}. `)

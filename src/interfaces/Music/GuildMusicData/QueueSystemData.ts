@@ -6,8 +6,8 @@ import {
 } from '../Queue System/TrackInfo';
 
 export class QueueSystemData {
-  trackList: (QueuedTrackInfo | QueuedAdaptedTrackInfo)[];
-  trackListIndex: number;
+  trackQueue: (QueuedTrackInfo | QueuedAdaptedTrackInfo)[];
+  trackHistory: (QueuedTrackInfo | QueuedAdaptedTrackInfo)[];
   playing: boolean;
   /**
    * Whether the current track was skipped
@@ -27,8 +27,8 @@ export class QueueSystemData {
     | { type: 'queue'; emoji: '🔁' };
 
   constructor() {
-    this.trackList = [];
-    this.trackListIndex = 0;
+    this.trackQueue = [];
+    this.trackHistory = [];
     this.playing = false;
     this.skipped = false;
     this.shuffle = false;
@@ -41,30 +41,30 @@ export class QueueSystemData {
   /**
    * Returns the track in the list at the current index
    */
-  currentTrack(): (typeof this.trackList)[number] {
-    return this.trackList[this.trackListIndex];
+  currentTrack(): (typeof this.trackQueue)[number] {
+    return this.trackQueue[0];
   }
 
   /**
    * Updates the current track with the given track
    * @param track The track to update the current track with
    */
-  updateCurrentTrack(track: (typeof this.trackList)[number]) {
-    this.trackList[this.trackListIndex] = track;
+  updateCurrentTrack(track: (typeof this.trackQueue)[number]) {
+    this.trackQueue[0] = track;
   }
 
   /**
    * Returns the array of tracks after the current track
    */
-  getQueue(): typeof this.trackList {
-    return this.trackList.slice(this.trackListIndex + 1);
+  getQueue(): typeof this.trackQueue {
+    return this.trackQueue;
   }
 
   /**
    * Returns the array of tracks before the current track
    */
-  getHistory(): typeof this.trackList {
-    return this.trackList.slice(0, this.trackListIndex);
+  getHistory(): typeof this.trackHistory {
+    return this.trackHistory;
   }
 
   setLoopType(type: typeof this.loop.type) {
@@ -75,24 +75,15 @@ export class QueueSystemData {
   }
 
   /**
-   * Modifies the track list index by the given amount
-   * The index will be modified by 1 less than the amount if the loop type is not 'track'
-   * @param amount The amount to modify the track list index by
-   */
-  modifyIndex(amount: number) {
-    this.trackListIndex += amount;
-
-    if (this.loop.type !== 'track' && this.playing) {
-      this.trackListIndex--;
-    }
-  }
-
-  /**
    * Marks the current track as skipped
    * This will cause the track to be skipped when the audio player emits the Idle event, even if the loop type is 'track'
    * This should be called when the track is skipped manually
    */
   markSkipped() {
     this.skipped = true;
+  }
+
+  addTrackToQueue(...track: typeof this.trackQueue) {
+    this.trackQueue.push(...track);
   }
 }

@@ -60,10 +60,8 @@ export class SkipTrackCommand extends Command {
 
     if (
       skipNumber < 1 ||
-      (guildQueueData.trackList.length - 1 - guildQueueData.trackListIndex >
-        0 &&
-        skipNumber >=
-          guildQueueData.trackList.length - guildQueueData.trackListIndex)
+      (guildQueueData.getQueue().length - 1 > 0 &&
+        skipNumber >= guildQueueData.getQueue().length)
     ) {
       interaction.reply({
         content: `⛔ | Invalid number. The number must be between \`1-${
@@ -74,14 +72,12 @@ export class SkipTrackCommand extends Command {
       return;
     }
 
-    if (guildQueueData.trackList.length === 0) {
+    if (guildQueueData.getQueue().length === 0) {
       skipNumber = 1;
     }
 
-    const skippedTracks = guildQueueData.trackList.slice(
-      guildQueueData.trackListIndex,
-      guildQueueData.trackListIndex + skipNumber
-    );
+    const skippedTracks = guildQueueData.trackQueue.slice(0, skipNumber);
+    guildQueueData.trackQueue.splice(0, skipNumber - 1);
 
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.Notice)
@@ -91,7 +87,6 @@ export class SkipTrackCommand extends Command {
         } from the queue`
       );
 
-    guildQueueData.modifyIndex(skipNumber);
     guildQueueData.skipped = true;
 
     audioPlayer.stop();

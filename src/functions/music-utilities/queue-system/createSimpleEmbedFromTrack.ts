@@ -1,6 +1,6 @@
 'use strict';
 
-import { EmbedBuilder, hyperlink, quote } from 'discord.js';
+import { EmbedBuilder, heading, hyperlink } from 'discord.js';
 
 import { TrackInfo } from '../../../interfaces/Music/Queue System/TrackInfo';
 
@@ -15,7 +15,7 @@ export function createSimpleEmbedFromTrack(
   track: TrackInfo
 ) {
   let text = '';
-  text += quote(hyperlink(track.title, track.url));
+  text += heading(hyperlink(track.title, track.url), 2);
   text += `\nBy ${track.getArtistHyperlinks()}`;
 
   if (track.album !== undefined) {

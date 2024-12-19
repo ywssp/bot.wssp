@@ -40,6 +40,7 @@ export class DisplayTrackHistoryCommand extends Command {
     const history = guildMusicData.queueSystemData.getHistory();
 
     const historyFields = history
+      .slice(0)
       .reverse()
       .map((track, index) =>
         createEmbedFieldFromTrack(track, `${index + 1}. `)
@@ -47,10 +48,7 @@ export class DisplayTrackHistoryCommand extends Command {
 
     const embed = new EmbedBuilder()
       .setColor(ColorPalette.Default)
-      .setTitle('History')
-      .setFooter({
-        text: 'Use "/previous <number>" to go a specific song'
-      });
+      .setTitle('History');
 
     createPagedEmbed(interaction, historyFields, embed);
   }
