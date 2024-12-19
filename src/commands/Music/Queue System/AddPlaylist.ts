@@ -13,6 +13,7 @@ import {
 import play, {
   SoundCloudPlaylist,
   SoundCloudTrack,
+  SpotifyAlbum,
   SpotifyPlaylist,
   SpotifyTrack,
   YouTubePlayList
@@ -136,9 +137,10 @@ export class AddPlaylistCommand extends Command {
     const linkType = await play.validate(link);
 
     if (
-      linkType !== 'yt_playlist' &&
-      linkType !== 'so_playlist' &&
-      linkType !== 'sp_playlist'
+      !linkType ||
+      !['yt_playlist', 'so_playlist', 'sp_playlist', 'sp_album'].includes(
+        linkType
+      )
     ) {
       interaction.reply({
         content: '❓ | Invalid playlist link.',
@@ -163,13 +165,15 @@ export class AddPlaylistCommand extends Command {
 
     await interaction.reply(`Processing ${namings.source} Playlist...`);
 
+    type playlistOwner = {
+      name: string;
+      url?: string;
+    };
+
     let playlistMetadata: {
       title: string;
       url?: string;
-      channel: {
-        name: string;
-        url?: string;
-      };
+      owner: playlistOwner[];
       thumbnail?: string;
       playlistLength?: number;
     };
@@ -213,10 +217,12 @@ export class AddPlaylistCommand extends Command {
       playlistMetadata = {
         title: playlist.title ?? 'Unknown',
         url: playlist.url,
-        channel: {
-          name: playlist.channel?.name ?? 'Unknown',
-          url: playlist.channel?.url
-        },
+        owner: [
+          {
+            name: playlist.channel?.name ?? 'Unknown',
+            url: playlist.channel?.url
+          }
+        ],
         thumbnail: playlist.thumbnail?.url,
         playlistLength: playlist.videoCount
       };
@@ -254,14 +260,16 @@ export class AddPlaylistCommand extends Command {
       playlistMetadata = {
         title: playlist.name,
         url: playlist.url,
-        channel: {
-          name: playlist.user.name,
-          url: playlist.user.url
-        },
+        owner: [
+          {
+            name: playlist.user.name,
+            url: playlist.user.url
+          }
+        ],
         playlistLength: playlist.total_tracks
       };
     } else {
-      let playlist: SpotifyPlaylist;
+      let playlist: SpotifyPlaylist | SpotifyAlbum;
 
       try {
         if (play.is_expired()) {
@@ -269,7 +277,7 @@ export class AddPlaylistCommand extends Command {
         }
 
         playlist = await (
-          (await play.spotify(link)) as SpotifyPlaylist
+          (await play.spotify(link)) as SpotifyPlaylist | SpotifyAlbum
         ).fetch();
       } catch (error) {
         interaction.editReply({
@@ -285,9 +293,15 @@ export class AddPlaylistCommand extends Command {
         const pageCount = playlist.total_pages;
 
         for (let i = 1; i <= pageCount; i++) {
-          const nextTracks = playlist.page(i).filter((track) => track.playable);
+          const nextTracks = playlist.page(i);
 
-          foundTracks.push(...nextTracks);
+          if (nextTracks === undefined || nextTracks.length === 0) {
+            continue;
+          }
+
+          const playableTracks = nextTracks.filter((track) => track.playable);
+
+          foundTracks.push(...playableTracks);
         }
       } catch (error) {
         interaction.editReply({
@@ -308,13 +322,24 @@ export class AddPlaylistCommand extends Command {
       playlistMetadata = {
         title: playlist.name,
         url: playlist.url,
-        channel: {
-          name: playlist.owner.name,
-          url: playlist.owner.url
-        },
+        owner: [],
         thumbnail: playlist.thumbnail.url,
         playlistLength: playlist.total_tracks
       };
+
+      if (playlist instanceof SpotifyAlbum) {
+        playlistMetadata.owner = playlist.artists.map((artist) => ({
+          name: artist.name,
+          url: artist.url
+        }));
+      } else {
+        playlistMetadata.owner = [
+          {
+            name: playlist.owner.name,
+            url: playlist.owner.url
+          }
+        ];
+      }
     }
 
     if (tracks.length === 0) {
@@ -369,12 +394,11 @@ export class AddPlaylistCommand extends Command {
         },
         {
           name: 'Author',
-          value: playlistMetadata.channel.url
-            ? hyperlink(
-                playlistMetadata.channel.name,
-                playlistMetadata.channel.url
-              )
-            : playlistMetadata.channel.name
+          value: playlistMetadata.owner
+            .map((owner) =>
+              owner.url ? hyperlink(owner.name, owner.url) : owner.name
+            )
+            .join(', ')
         },
         {
           name: 'Length',
